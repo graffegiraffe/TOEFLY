@@ -1,0 +1,21 @@
+{
+  "weeks": [
+    { "n": 1, "dates": "Aug 30 – Sep 5", "status": "COMPLETED", "progress": 100 },
+    { "n": 2, "dates": "Sep 6 – Sep 12", "status": "COMPLETED", "progress": 94 },
+    { "n": 3, "dates": "Sep 13 – Sep 19", "status": "COMPLETED", "progress": 88 },
+    { "n": 4, "dates": "Sep 20 – Sep 26", "status": "COMPLETED", "progress": 100, "exam": true },
+    { "n": 5, "dates": "Sep 27 – Oct 3", "status": "COMPLETED", "progress": 81 },
+    { "n": 6, "dates": "Oct 4 – Oct 10", "status": "COMPLETED", "progress": 76 },
+    { "n": 7, "dates": "Oct 11 – Oct 17", "status": "IN_PROGRESS", "progress": 64 },
+    { "n": 8, "dates": "Oct 18 – Oct 24", "status": "AWAITING_TUTOR_APPROVAL", "progress": 0, "exam": true },
+    { "n": 9, "dates": "Oct 25 – Oct 31", "status": "PLANNED", "progress": 0 },
+    { "n": 10, "dates": "Nov 1 – Nov 7", "status": "PLANNED", "progress": 0 },
+    { "n": 11, "dates": "Nov 8 – Nov 14", "status": "PLANNED", "progress": 0 },
+    { "n": 12, "dates": "Nov 15 – Nov 21", "status": "PLANNED", "progress": 0 },
+    { "n": 13, "dates": "Nov 22 – Nov 28", "status": "PLANNED", "progress": 0 },
+    { "n": 14, "dates": "Nov 29 – Dec 5", "status": "PLANNED", "progress": 0 },
+    { "n": 15, "dates": "Dec 6 – Dec 12", "status": "PLANNED", "progress": 0 },
+    { "n": 16, "dates": "Dec 13 – Dec 19", "status": "PLANNED", "progress": 0 },
+    { "n": 17, "dates": "Dec 20 – Dec 26", "status": "PLANNED", "progress": 0, "exam": true }
+  ]
+}

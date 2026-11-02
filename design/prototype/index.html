@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOEFLY prototype</title>
+<script>
+  /* resolve the theme before first paint */
+  (function () {
+    var s = {}; try { s = JSON.parse(localStorage.getItem('toefly-prototype') || '{}'); } catch (e) {}
+    var t = s.theme || 'system';
+    if (t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+    if (s.reduced) document.documentElement.setAttribute('data-transparency', 'reduced');
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/screens-student.css">
+<link rel="stylesheet" href="css/screens-player.css">
+<link rel="stylesheet" href="css/screens-review.css">
+<link rel="stylesheet" href="css/screens-tutor.css">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div class="proto-bar" id="proto"></div>
+<div class="proto-menu" id="pmenu" role="dialog" aria-label="Screens"></div>
+<div id="stage"></div>
+
+<script src="js/core.js"></script>
+<script src="js/covers.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/screens/auth.js"></script>
+<script src="js/screens/student.js"></script>
+<script src="js/screens/players.js"></script>
+<script src="js/screens/reviews.js"></script>
+<script src="js/screens/tutor.js"></script>
+<script>P.boot();</script>
+</body>
+</html>
