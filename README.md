@@ -108,6 +108,41 @@ npx serve design/prototype
 
 Open the printed URL. The toolbar switches between the web and iPhone frames, light and dark themes, and reduced transparency. The **Screens** menu lists every screen.
 
+## Run locally
+
+You need JDK 21, Docker (Docker Desktop or OrbStack, 12 GB for the VM) and Node.js 20 or newer for the hooks.
+
+```bash
+cp infra/compose/.env.example infra/compose/.env
+docker compose -f infra/compose/compose.yaml up -d
+./mvnw verify
+```
+
+The default Compose profile starts PostgreSQL 17 with pgvector, Kafka, Kafka Connect with Debezium, Apicurio Registry, Keycloak, Valkey, SeaweedFS and Mailpit. Add `--profile ai` for Ollama and `--profile obs` for the OpenTelemetry Collector and Grafana LGTM on port 3000.
+
+A new service starts from the template:
+
+```bash
+tools/new-service.sh practice-service 8084
+./mvnw -pl services/practice-service spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Install the Git hooks once with `lefthook install`.
+
+## Repository structure
+
+| Folder | Contents |
+|---|---|
+| `libs/` | `platform-bom`, `toefly-parent` and the shared libraries for events, web, security, observability, outbox and tests |
+| `services/` | One Maven module per service, hexagonal packages |
+| `clients/` | Web (React), iOS (SwiftUI) and landing (Astro) clients |
+| `infra/compose/` | Local infrastructure in Docker Compose |
+| `infra/k8s/`, `infra/helm/`, `infra/argocd/` | Cluster deployment |
+| `infra/keycloak/` | Keycloak image and the `toefly` realm |
+| `tools/` | Service archetype and `new-service.sh` |
+| `design/prototype/` | Clickable prototype of the key screens |
+| `.github/` | CI workflows, PR and issue templates |
+
 ## Educational content
 
 Tasks taken from published study materials always name their source. The texts of those tasks are never stored in this repository. Rights holders can ask for material to be removed by opening an issue.
