@@ -1,0 +1,34 @@
+name: ci-ios
+
+on:
+  pull_request:
+    paths: ["clients/ios/**"]
+  push:
+    branches: [develop, main]
+    paths: ["clients/ios/**"]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    # The iOS client appears in phase 12; the job skips until the Xcode project exists.
+    if: hashFiles('clients/ios/Toefly.xcodeproj/project.pbxproj') != ''
+    runs-on: macos-26
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: clients/ios
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: swiftlint --strict
+      - run: swiftformat --lint .
+      - name: Build and test on the simulator
+        run: >-
+          xcodebuild test -project Toefly.xcodeproj -scheme Toefly
+          -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+          CODE_SIGNING_ALLOWED=NO

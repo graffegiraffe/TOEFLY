@@ -1,0 +1,23 @@
+name: Story or improvement
+description: A new user story or a change to an existing one
+labels: [enhancement]
+body:
+  - type: input
+    id: story
+    attributes:
+      label: Story id
+      description: US-NN.MM from docs/02-functional-requirements.md, if it exists.
+  - type: textarea
+    id: story-text
+    attributes:
+      label: Story
+      description: As a <role> I want <goal> so that <value>.
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Given / When / Then.
+    validations:
+      required: true

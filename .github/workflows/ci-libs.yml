@@ -1,0 +1,67 @@
+name: ci-libs
+
+on:
+  pull_request:
+    paths: ["libs/**", "tools/**", "pom.xml", ".mvn/**"]
+  push:
+    branches: [develop, main]
+    paths: ["libs/**", "tools/**", "pom.xml", ".mvn/**"]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  libs:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Check out baseline Avro schemas of the target branch
+        env:
+          BASE: ${{ github.base_ref || 'main' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/avro-baseline"
+          if git rev-parse --verify --quiet "origin/$BASE" > /dev/null \
+             && git cat-file -e "origin/$BASE:libs/toefly-common-events/src/main/avro" 2> /dev/null; then
+            git archive "origin/$BASE" libs/toefly-common-events/src/main/avro \
+              | tar -x -C "$RUNNER_TEMP/avro-baseline" --strip-components=5
+          fi
+      # Testcontainers tests (Docker is available on GitHub-hosted runners) and the Avro compatibility check:
+      # an incompatible schema change fails AvroSchemaCompatibilityTest.
+      - name: Verify libraries, archetype and the outbox round trip
+        run: >-
+          ./mvnw -B -ntp -pl libs/platform-bom,libs/toefly-parent,libs/toefly-common-events,libs/toefly-common-web,libs/toefly-common-security,libs/toefly-common-observability,libs/toefly-common-outbox,libs/toefly-common-test,tools/service-archetype
+          verify -Dtoefly.avro.baseline="$RUNNER_TEMP/avro-baseline"
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reports-libs
+          path: libs/*/target/*-reports
+          if-no-files-found: ignore
+
+  archetype:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Generate a service from the archetype and verify it
+        run: |
+          tools/new-service.sh archetype-check 8098
+          ./mvnw -B -ntp -pl services/archetype-check -am verify
