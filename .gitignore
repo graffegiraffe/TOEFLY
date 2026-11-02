@@ -1,0 +1,8 @@
+# OS
+.DS_Store
+
+# secrets (local .env only, never committed)
+.env
+
+# build output
+node_modules/
