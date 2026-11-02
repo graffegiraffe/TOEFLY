@@ -1,0 +1,149 @@
+/* TOEFLY design tokens. The web Tailwind theme and the iOS asset catalog use the same values.
+   Components use semantic tokens only. */
+
+:root {
+  /* brand scale */
+  --brand-50: #E6F7EF; --brand-100: #C7EEDB; --brand-200: #A7EBC8; --brand-300: #6FD9A4;
+  --brand-400: #3CC98A; --brand-500: #04AC6A; --brand-600: #08945B; --brand-700: #0F7D4D;
+  --brand-800: #106B44; --brand-900: #0D5236; --brand-950: #08311F;
+
+  /* neutral scale (grey-green, hue 140°) */
+  --neutral-0: #FFFFFF; --neutral-25: #F9FBFA; --neutral-50: #F4F8F5; --neutral-100: #EAF0EC;
+  --neutral-200: #DCE4DF; --neutral-300: #B9C7BE; --neutral-400: #8C9C92; --neutral-500: #6B7B71;
+  --neutral-600: #5B6B61; --neutral-700: #3C4C42; --neutral-800: #26352C; --neutral-900: #14231A;
+  --neutral-950: #0B140F;
+
+  /* semantic — light */
+  --canvas: #F4F8F5; --surface: #FFFFFF; --surface-raised: #FFFFFF; --surface-task: #FFFFFF; --surface-sunken: #EAF0EC;
+  --ink: #14231A; --ink-muted: #5B6B61; --ink-subtle: #6B7B71; --ink-inverse: #FFFFFF;
+  --border: #DCE4DF; --border-strong: #B9C7BE;
+  --accent: #04AC6A; --accent-soft: #E6F7EF; --accent-on-soft: #106B44;
+  --primary: #0F7D4D; --primary-hover: #106B44;
+  --link: #0F7D4D; --link-hover: #106B44; --focus-ring: #0F7D4D;
+  --success: #0F7D4D; --success-soft: #E6F7EF;
+  --warning: #B45309; --warning-soft: #FEF3C7;
+  --danger: #B42318; --danger-soft: #FEECEB; --danger-solid: #C9372C;
+  --info: #0B6378; --info-soft: #DDF4F8;
+  --recording: #C9372C; --overlay-scrim: rgba(11,20,15,.40);
+  --secondary-hover: #C7EEDB;
+  --tutor-mark: #FFF4C2;
+
+  --chart-1: #0F7D4D; --chart-2: #04AC6A; --chart-3: #0B6378; --chart-4: #9C2A6B; --chart-5: #7A5A00;
+
+  /* section tags */
+  --tag-reading-bg: #FFF4C2;    --tag-reading-fg: #7A5A00;
+  --tag-listening-bg: #DDF4F8;  --tag-listening-fg: #0B6378;
+  --tag-writing-bg: #FBE3F1;    --tag-writing-fg: #9C2A6B;
+  --tag-speaking-bg: #E6F7EF;   --tag-speaking-fg: #106B44;
+  --tag-vocabulary-bg: #ECE9FB; --tag-vocabulary-fg: #4B3FA6;
+  --tag-grammar-bg: #FDEBDD;    --tag-grammar-fg: #9A4A12;
+  --tag-resources-bg: #EEF2EF;  --tag-resources-fg: #3C4C42;
+
+  /* Liquid Glass */
+  --glass-fill: rgba(255,255,255,.42); --glass-stroke: rgba(255,255,255,.70);
+  --glass-highlight: rgba(255,255,255,.90); --glass-shadow: rgba(0,60,30,.10);
+  --glass-item-active: rgba(255,255,255,.75);
+  --sidebar-active-ink: #0F7D4D;
+
+  /* gradients */
+  --button-gradient: linear-gradient(135deg, #0F7D4D 0%, #0A8752 100%);
+  --button-gradient-hover: linear-gradient(135deg, #106B44 0%, #0F7D4D 100%);
+  --button-shadow: 0 4px 14px rgba(8,148,91,.35);
+  --cover-stop-1: #04AC6A; --cover-stop-2: #3CC98A; --cover-stop-3: #A7EBC8;
+  --cover-gradient: linear-gradient(120deg, var(--cover-stop-1) 0%, var(--cover-stop-2) 50%, var(--cover-stop-3) 100%);
+  --cover-overlay: transparent;
+  --bar-gradient: linear-gradient(90deg, #0F7D4D, #04AC6A);
+  --ring-track: rgba(0,0,0,.08);
+  --mesh-bg: #EAF6EE;
+  --mesh-opacity: 1;
+
+  /* radii */
+  --radius-xs: 6px; --radius-sm: 8px; --radius-nav: 10px; --radius: 12px; --radius-lg: 16px;
+  --radius-xl: 18px; --radius-2xl: 22px; --radius-full: 999px;
+
+  /* elevation */
+  --elevation-1: 0 1px 2px rgba(20,35,26,.06), 0 1px 1px rgba(20,35,26,.04);
+  --elevation-2: 0 8px 24px rgba(20,35,26,.10);
+  --elevation-glass: 0 8px 32px var(--glass-shadow);
+  --elevation-modal: 0 24px 64px rgba(20,35,26,.18);
+
+  /* motion */
+  --motion-instant: 80ms; --motion-fast: 150ms; --motion-base: 240ms; --motion-slow: 360ms; --motion-progress: 600ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1); --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+
+  /* type */
+  --font-web: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-ios: -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+/* dark — applied by class (system preference is resolved in app.js before first paint) */
+.dark {
+  --canvas: #0B140F; --surface: #14211A; --surface-raised: #1A2A21; --surface-task: #111C16; --surface-sunken: #0F1A14;
+  --ink: #E8F2EC; --ink-muted: #97A89E; --ink-subtle: #7F9086; --ink-inverse: #0B140F;
+  --border: rgba(255,255,255,.08); --border-strong: rgba(255,255,255,.18);
+  --accent: #04AC6A; --accent-soft: #173A25; --accent-on-soft: #6FD9A4;
+  --primary: #0F7D4D; --primary-hover: #106B44;
+  --link: #3CC98A; --link-hover: #6FD9A4; --focus-ring: #3CC98A;
+  --success: #3CC98A; --success-soft: #173A25;
+  --warning: #F5B544; --warning-soft: #33270C;
+  --danger: #FF8A80; --danger-soft: #3A1714; --danger-solid: #C9372C;
+  --info: #7FD3E6; --info-soft: #0E2A31;
+  --recording: #FF6B5E; --overlay-scrim: rgba(0,0,0,.60);
+  --secondary-hover: #1E4A30;
+  --tutor-mark: #2E2A12;
+
+  --chart-1: #04AC6A; --chart-2: #6FD9A4; --chart-3: #7FD3E6; --chart-4: #F0A3CF; --chart-5: #F2D46B;
+
+  --tag-reading-bg: #2E2A12;    --tag-reading-fg: #F2D46B;
+  --tag-listening-bg: #0E2A31;  --tag-listening-fg: #7FD3E6;
+  --tag-writing-bg: #33162A;    --tag-writing-fg: #F0A3CF;
+  --tag-speaking-bg: #173A25;   --tag-speaking-fg: #6FD9A4;
+  --tag-vocabulary-bg: #221E3D; --tag-vocabulary-fg: #B8AEF5;
+  --tag-grammar-bg: #33200F;    --tag-grammar-fg: #F5B583;
+  --tag-resources-bg: #1E2B24;  --tag-resources-fg: #C9D6CE;
+
+  --glass-fill: rgba(20,40,28,.45); --glass-stroke: rgba(255,255,255,.14);
+  --glass-highlight: rgba(255,255,255,.12); --glass-shadow: rgba(0,0,0,.40);
+  --glass-item-active: rgba(255,255,255,.12);
+  --sidebar-active-ink: #04AC6A;
+
+  --button-shadow: 0 4px 14px rgba(4,172,106,.25);
+  --cover-stop-1: #04AC6A; --cover-stop-2: #2FB57C; --cover-stop-3: #6FD9A4;
+  --cover-overlay: rgba(11,20,15,.18);
+  --ring-track: rgba(255,255,255,.10);
+  --mesh-bg: #0F1E15;
+  --mesh-opacity: .35;
+
+  --elevation-1: 0 1px 2px rgba(0,0,0,.5);
+  --elevation-2: 0 8px 24px rgba(0,0,0,.5);
+  --elevation-modal: 0 24px 64px rgba(0,0,0,.6);
+
+  color-scheme: dark;
+}
+
+/* Liquid Glass recipe — only on interface chrome */
+.glass {
+  background: var(--glass-fill);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 32px var(--glass-shadow);
+}
+.glass-item-active { background: var(--glass-item-active); }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--surface-raised); box-shadow: 0 8px 32px var(--glass-shadow); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: var(--surface-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .glass { background: var(--surface-raised); border-color: var(--border-strong); backdrop-filter: none; }
+}
+/* Manual switch: Settings → Appearance → "Reduce transparency" */
+[data-transparency="reduced"] .glass {
+  background: var(--surface-raised); backdrop-filter: none; -webkit-backdrop-filter: none;
+  border-color: var(--border);
+}
