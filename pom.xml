@@ -17,6 +17,7 @@
         <module>libs/toefly-parent</module>
         <module>libs/toefly-common-events</module>
         <module>libs/toefly-common-web</module>
+        <module>libs/toefly-common-security</module>
     </modules>
 
     <build>
