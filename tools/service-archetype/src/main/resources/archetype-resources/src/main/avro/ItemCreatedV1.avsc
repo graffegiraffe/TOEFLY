@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "ItemCreatedV1",
+  "namespace": "com.toefly.events.${serviceShort}",
+  "doc": "Sample event of the service template: an item was created.",
+  "fields": [
+    {"name": "eventId", "type": "string", "doc": "CloudEvents id (UUID)."},
+    {"name": "occurredAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Creation moment, UTC."},
+    {"name": "userId", "type": "string", "doc": "Owner of the item (UUID)."},
+    {"name": "correlationId", "type": ["null", "string"], "default": null, "doc": "Chain id (UUID)."},
+    {"name": "causationId", "type": ["null", "string"], "default": null, "doc": "Cause event id (UUID)."},
+    {"name": "itemId", "type": "string", "doc": "Created item (UUID)."},
+    {"name": "titleLength", "type": "int", "doc": "Title length in characters, 1 to 200; the title itself stays in the service."}
+  ]
+}
