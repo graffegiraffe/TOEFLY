@@ -6,3 +6,12 @@
 
 # build output
 node_modules/
+
+# Maven and IDEs
+target/
+.idea/
+*.iml
+.vscode/
+
+# local infrastructure secrets
+infra/compose/.env
