@@ -1,0 +1,285 @@
+# Local infrastructure of TOEFLY (docs/09-infrastructure.md §2). Services run from the IDE with the Spring
+# profile `local`. Default profile: data, messaging, identity, storage, mail. Extra profiles: `ai`, `obs`.
+#   cp infra/compose/.env.example infra/compose/.env
+#   docker compose -f infra/compose/compose.yaml up -d
+#   docker compose -f infra/compose/compose.yaml --profile ai --profile obs up -d
+# Images are pinned by tag; Renovate adds and updates digests (docs/09-infrastructure.md §8.9).
+name: toefly
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  postgres:
+    <<: *restart
+    image: pgvector/pgvector:0.8.7-pg17-trixie
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_replication_slots=24
+      - -c
+      - max_wal_senders=24
+      - -c
+      - max_connections=300
+      - -c
+      - max_slot_wal_keep_size=4GB
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      DEBEZIUM_PASSWORD: ${DEBEZIUM_PASSWORD:?set in .env}
+      APICURIO_DB_PASSWORD: ${APICURIO_DB_PASSWORD:?set in .env}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?set in .env}
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='apicurio_db'\" | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  kafka:
+    <<: *restart
+    image: apache/kafka:4.1.2
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:19092,EXTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    ports: ["9092:9092"]
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  kafka-init:
+    image: apache/kafka:4.1.2
+    depends_on:
+      kafka: { condition: service_healthy }
+    entrypoint: ["/bin/sh", "/scripts/create-topics.sh"]
+    environment:
+      BOOTSTRAP_SERVER: kafka:19092
+      TOPICS_FILE: /topics/topics.yaml
+    volumes:
+      - ./kafka/create-topics.sh:/scripts/create-topics.sh:ro
+      - ../k8s/kafka/topics.yaml:/topics/topics.yaml:ro
+
+  kafka-connect:
+    <<: *restart
+    image: quay.io/debezium/connect:3.7.0.Final
+    depends_on:
+      kafka: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+    environment:
+      BOOTSTRAP_SERVERS: kafka:19092
+      GROUP_ID: toefly-connect
+      CONFIG_STORAGE_TOPIC: toefly-connect-configs
+      OFFSET_STORAGE_TOPIC: toefly-connect-offsets
+      STATUS_STORAGE_TOPIC: toefly-connect-status
+      HEAP_OPTS: -Xms256m -Xmx512m
+    ports: ["8383:8083"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8083/connectors > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  connect-init:
+    image: curlimages/curl:8.23.0
+    depends_on:
+      kafka-connect: { condition: service_healthy }
+      kafka-init: { condition: service_completed_successfully }
+    entrypoint: ["/bin/sh", "/scripts/register-connectors.sh"]
+    environment:
+      CONNECT_URL: http://kafka-connect:8083
+      DEBEZIUM_PASSWORD: ${DEBEZIUM_PASSWORD:?set in .env}
+    volumes:
+      - ./connect/register-connectors.sh:/scripts/register-connectors.sh:ro
+      - ./connect/connectors:/connectors:ro
+
+  apicurio:
+    <<: *restart
+    image: quay.io/apicurio/apicurio-registry:3.3.3
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      APICURIO_STORAGE_KIND: sql
+      APICURIO_STORAGE_SQL_KIND: postgresql
+      APICURIO_DATASOURCE_URL: jdbc:postgresql://postgres:5432/apicurio_db
+      APICURIO_DATASOURCE_USERNAME: apicurio_app
+      APICURIO_DATASOURCE_PASSWORD: ${APICURIO_DB_PASSWORD:?set in .env}
+      QUARKUS_HTTP_CORS_ORIGINS: http://localhost:8381
+    ports: ["8380:8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/apis/registry/v3/system/info > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  apicurio-init:
+    image: curlimages/curl:8.23.0
+    depends_on:
+      apicurio: { condition: service_healthy }
+    entrypoint: ["/bin/sh", "/scripts/global-rules.sh"]
+    environment:
+      REGISTRY_URL: http://apicurio:8080/apis/registry/v3
+    volumes:
+      - ./apicurio/global-rules.sh:/scripts/global-rules.sh:ro
+
+  apicurio-ui:
+    <<: *restart
+    image: quay.io/apicurio/apicurio-registry-ui:3.3.3
+    depends_on: [apicurio]
+    environment:
+      REGISTRY_API_URL: http://localhost:8380/apis/registry/v3
+    ports: ["8381:8080"]
+
+  keycloak:
+    <<: *restart
+    build: ../keycloak
+    image: ghcr.io/${GH_OWNER:-toefly}/toefly-keycloak:local
+    command: ["start-dev", "--http-port=8080", "--health-enabled=true"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: keycloak_app
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?set in .env}
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set in .env}
+      KC_HOSTNAME: http://localhost:8180
+    ports: ["8180:8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+
+  keycloak-config:
+    image: adorsys/keycloak-config-cli:6.5.1-26.5.5
+    depends_on:
+      keycloak: { condition: service_healthy }
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set in .env}
+      IMPORT_FILES_LOCATIONS: /config/*.yaml
+      IMPORT_VARSUBSTITUTION_ENABLED: "true"
+      TOEFLY_WEB_BFF_SECRET: ${TOEFLY_WEB_BFF_SECRET:?set in .env}
+      KEYCLOAK_SSL_REQUIRED: none
+    volumes:
+      - ../keycloak/realm:/config:ro
+
+  valkey:
+    <<: *restart
+    image: valkey/valkey:8.1
+    command: ["valkey-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  object-storage:
+    <<: *restart
+    image: chrislusf/seaweedfs:4.52
+    command: ["server", "-dir=/data", "-ip=object-storage", "-ip.bind=0.0.0.0", "-s3", "-s3.port=8333", "-master.port=9333"]
+    ports:
+      - "9000:8333"
+      - "9001:9333"
+    volumes:
+      - object-storage-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9333/cluster/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  object-storage-init:
+    image: chrislusf/seaweedfs:4.52
+    depends_on:
+      object-storage: { condition: service_healthy }
+    entrypoint: ["/bin/sh", "/scripts/create-buckets.sh"]
+    environment:
+      MASTER: object-storage:9333
+    volumes:
+      - ./object-storage/create-buckets.sh:/scripts/create-buckets.sh:ro
+
+  mailpit:
+    <<: *restart
+    image: axllent/mailpit:v1.33.0
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  ollama:
+    <<: *restart
+    profiles: [ai]
+    image: ollama/ollama:0.40.13
+    environment:
+      OLLAMA_KEEP_ALIVE: 10m
+      OLLAMA_MAX_LOADED_MODELS: 2
+      OLLAMA_NUM_PARALLEL: 2
+    ports: ["11434:11434"]
+    volumes:
+      - ollama-models:/root/.ollama
+
+  ollama-init:
+    profiles: [ai]
+    image: ollama/ollama:0.40.13
+    depends_on: [ollama]
+    entrypoint: ["/bin/sh", "/scripts/pull-models.sh"]
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ./ollama/pull-models.sh:/scripts/pull-models.sh:ro
+
+  otel-collector:
+    <<: *restart
+    profiles: [obs]
+    image: otel/opentelemetry-collector-contrib:0.164.0
+    command: ["--config=/etc/otel/collector.yaml"]
+    depends_on: [lgtm]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./otel/collector.yaml:/etc/otel/collector.yaml:ro
+
+  lgtm:
+    <<: *restart
+    profiles: [obs]
+    image: grafana/otel-lgtm:0.39.0
+    ports: ["3000:3000"]
+    volumes:
+      - lgtm-data:/data
+      - ../observability/dashboards:/otel-lgtm/dashboards/toefly:ro
+
+volumes:
+  pg-data:
+  kafka-data:
+  valkey-data:
+  object-storage-data:
+  ollama-models:
+  lgtm-data:
