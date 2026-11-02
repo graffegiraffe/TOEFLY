@@ -1,0 +1,92 @@
+name: release-service
+
+on:
+  push:
+    branches: [main]
+    paths: ["services/**", "libs/**", "pom.xml"]
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Service folder under services/
+        required: true
+
+permissions: {}
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      services: ${{ steps.list.outputs.services }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+      - id: list
+        env:
+          REQUESTED: ${{ inputs.service }}
+        run: |
+          if [ -n "$REQUESTED" ]; then
+            names="$REQUESTED"
+          elif git diff --name-only HEAD~1 HEAD | grep -qE '^(libs/|pom.xml)'; then
+            names=$(find services -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2>/dev/null || true)
+          else
+            names=$(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort -u)
+          fi
+          echo "services=$(printf '%s\n' $names | jq -R . | jq -cs 'map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  image:
+    needs: changes
+    if: needs.changes.outputs.services != '[]'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.changes.outputs.services) }}
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/toefly-${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Build and push a multi-arch image with Jib
+        env:
+          GH_OWNER: ${{ github.repository_owner }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          ./mvnw -B -ntp -pl services/${{ matrix.service }} -am package jib:build -DskipTests
+          -Djib.to.image="$IMAGE:sha-${GITHUB_SHA::7}"
+          -Djib.to.auth.username="$REGISTRY_USER" -Djib.to.auth.password="$REGISTRY_TOKEN"
+          -Djib.outputPaths.digest=target/jib-image.digest
+      - id: digest
+        run: echo "digest=$(cat services/${{ matrix.service }}/target/jib-image.digest)" >> "$GITHUB_OUTPUT"
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE }}@${{ steps.digest.outputs.digest }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+      - name: Generate SBOM
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.digest.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Sign the image and attach the SBOM (keyless)
+        env:
+          REF: ${{ env.IMAGE }}@${{ steps.digest.outputs.digest }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | cosign login ghcr.io -u "${{ github.actor }}" --password-stdin
+          cosign sign --yes "$REF"
+          cosign attest --yes --type spdxjson --predicate sbom.spdx.json "$REF"
