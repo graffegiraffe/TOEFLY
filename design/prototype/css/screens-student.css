@@ -1,0 +1,132 @@
+/* Student screens: auth, onboarding, diagnostic, Today, Weeks, Week page, Section page, chat, settings. */
+
+.p-3 { padding: 12px; } .p-4 { padding: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.seg a { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; color: var(--ink-muted); }
+.seg a.on { background: var(--surface); color: var(--ink); box-shadow: var(--elevation-1); }
+.accent-ic { color: var(--accent); }
+.unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+
+/* ───────── auth and onboarding (mesh-auth + glass card) ───────── */
+.auth-page { min-height: 100%; display: grid; place-items: center; padding: 40px 16px; }
+.auth-card { width: 400px; max-width: 100%; border-radius: 20px; padding: 32px 28px; }
+.auth-card .logo { font-size: 22px; }
+.or { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--ink-muted); font-size: 13px; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--border-strong); }
+.pw { position: relative; }
+.pw .btn { position: absolute; right: 4px; top: 4px; }
+.btn-apple { background: #000; color: #fff; }
+.dark .btn-apple { background: #fff; color: #000; }
+.welcome { min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 120px 24px 60px !important; }
+.welcome .logo { font-size: 26px; }
+
+.onb-card { width: 560px; max-width: 100%; border-radius: 20px; padding: 28px; }
+.choice { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice-btn { min-width: 56px; height: 44px; padding: 0 16px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
+.choice-btn:hover { border-color: var(--primary); }
+.choice-btn.on { border: 2px solid var(--primary); background: var(--accent-soft); color: var(--accent-on-soft); padding: 0 15px; }
+.choice.goal .choice-btn { flex: 1; }
+.opt-card { height: auto; padding: 14px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; }
+.opt-card.on { padding: 13px 15px; }
+.cal { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.cal-h { font-size: 11px; font-weight: 600; color: var(--ink-muted); padding: 4px 0; }
+.cal-d { height: 36px; border: 0; border-radius: var(--radius-full); background: transparent; cursor: pointer; font-variant-numeric: tabular-nums; }
+.cal-d:hover { background: var(--surface-sunken); }
+.cal-d.on { background: var(--primary); color: #fff; font-weight: 600; }
+.consent { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.consent > span { display: flex; flex-direction: column; gap: 2px; }
+.consent .check { margin-top: 3px; }
+.diag-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* ───────── diagnostic runner (exam-like, solid) ───────── */
+.runner { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface-task); }
+.runner-bar { height: 56px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.runner-body { flex: 1; overflow: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 32px 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
+.runner-foot { height: 64px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-top: 1px solid var(--border); background: var(--surface); }
+.stim-email { border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 20px; align-self: start; max-width: 68ch; }
+.em-head { font-size: 14px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+.mcq-opt.sel { background: var(--surface-task); }
+.menu-wrap { position: relative; }
+.menu { position: absolute; right: 0; top: 48px; z-index: 40; min-width: 160px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--elevation-2); padding: 4px; }
+.menu-item { display: flex; gap: 8px; align-items: center; width: 100%; padding: 8px 10px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; text-align: left; font-size: 14px; }
+.menu-item:hover { background: var(--surface-sunken); }
+.ios .runner-bar { padding: 54px 16px 0; height: 104px; }
+.ios .runner-foot { height: 96px; padding: 0 16px 30px; }
+
+/* ───────── diagnostic result ───────── */
+.building { max-width: 420px; margin: 80px auto; }
+.strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+.week-card.mini { flex: 0 0 180px; scroll-snap-align: start; cursor: default; }
+
+/* ───────── Today ───────── */
+.today-top { display: grid; grid-template-columns: 1fr 260px; gap: 16px; }
+.today-top .glass-card { border-radius: var(--radius-lg); padding: 20px; }
+.streak-card { display: flex; flex-direction: column; justify-content: center; }
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+.task-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: box-shadow var(--motion-fast) var(--ease-standard); }
+a.task-row:hover { box-shadow: var(--elevation-1); }
+.task-row .tr-title { overflow: hidden; text-overflow: ellipsis; }
+.ios .task-row { border-radius: var(--radius-lg); }
+
+/* ───────── Weeks ───────── */
+.week-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.completed-weeks summary { list-style: none; cursor: pointer; }
+.completed-weeks summary::-webkit-details-marker { display: none; }
+.completed-weeks .chev { transition: transform var(--motion-fast); }
+.completed-weeks[open] .chev { transform: rotate(90deg); }
+
+/* ───────── Week page ───────── */
+.today-strip { display: flex; align-items: center; gap: 16px; border-radius: var(--radius-lg); padding: 14px 16px 14px 18px; }
+.week-table-wrap { overflow-x: auto; border-radius: var(--radius); }
+.week-table { table-layout: fixed; min-width: 1000px; }
+.week-table th:first-child, .week-table td:first-child { width: 44px; text-align: center; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+.cell-tags { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.cell-tags .ext { display: flex; gap: 6px; align-items: flex-start; }
+.cell-tags .ext .check { margin-top: 2px; }
+.section-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.inline-details { display: inline; }
+.inline-details summary { display: inline; list-style: none; }
+.inline-details summary::-webkit-details-marker { display: none; }
+.inline-details ul { padding-left: 18px; }
+.wk-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; }
+.ios-cover { position: relative; margin: 0 -18px; }
+.ios-cover .cover.week { height: 180px; border-radius: 0; }
+.ios-cover-back { position: absolute; left: 16px; top: 56px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); }
+.ios-props .list-row { gap: 16px; }
+
+/* ───────── AI tutor chat ───────── */
+.chat-page { position: absolute; inset: 0; display: flex; }
+.threads { width: 280px; flex: none; border-right: 1px solid var(--border); background: var(--surface); overflow: auto; margin: 14px 0; border-radius: var(--radius-xl) 0 0 var(--radius-xl); border: 1px solid var(--border); }
+.threads .list-row.on { background: var(--accent-soft); }
+.chat-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); margin: 14px 14px 14px 0; border-radius: 0 var(--radius-xl) var(--radius-xl) 0; border: 1px solid var(--border); border-left: 0; }
+.chat-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.chat-scroll { flex: 1; overflow: auto; padding: 24px; }
+.chat-col { max-width: 720px; margin: 0 auto; width: 100%; }
+.chat-foot { padding: 12px 24px 20px; }
+.ios .chat-page .threads { display: none; }
+.ios .chat-main { margin: 0; border: 0; border-radius: 0; padding-top: 54px; }
+.ios .chat-head { flex-wrap: wrap; gap: 8px; padding: 8px 16px; }
+.ios .chat-foot { padding: 8px 16px 40px; }
+.ios .chat-foot .chip { font-size: 12px; }
+
+/* ───────── Settings ───────── */
+.settings { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+.settings-nav { display: flex; flex-direction: column; gap: 2px; }
+.settings-nav .nav-item.on { background: var(--accent-soft); color: var(--accent-on-soft); }
+.settings-body { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+
+/* ───────── compact (iPhone frame and narrow web) ───────── */
+@container app (max-width: 767px) {
+  .today-top { grid-template-columns: 1fr; }
+  .today-top .glass-card { border-radius: var(--radius-2xl); padding: 16px; }
+  .week-grid { grid-template-columns: 1fr; }
+  .section-grid { grid-template-columns: 1fr 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .settings { grid-template-columns: 1fr; }
+  .settings-nav { flex-direction: row; overflow-x: auto; }
+  .runner-body { grid-template-columns: 1fr; padding: 20px 16px; gap: 20px; }
+  .onb-card { padding: 22px 18px; }
+  .auth-page { padding: 72px 16px 40px; align-items: start; }
+  .today-strip { border-radius: var(--radius-2xl); }
+}
