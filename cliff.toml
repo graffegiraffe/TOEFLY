@@ -1,0 +1,36 @@
+# git-cliff configuration: one CHANGELOG.md per module (--include-path) and a root one for platform/* tags.
+[changelog]
+header = "# Changelog\n"
+body = """
+{% if version %}\
+## {{ version | split(pat="/") | last }} ({{ timestamp | date(format="%Y-%m-%d") }})
+{% else %}\
+## Unreleased
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+{% for commit in commits %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}\
+{% if commit.breaking %} (breaking){% endif %}
+{%- endfor %}
+{% endfor %}
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+protect_breaking_commits = true
+filter_commits = true
+sort_commits = "oldest"
+commit_parsers = [
+  { message = "^feat", group = "<!-- 0 -->Features" },
+  { message = "^fix", group = "<!-- 1 -->Fixes" },
+  { message = "^perf", group = "<!-- 2 -->Performance" },
+  { message = "^refactor", group = "<!-- 3 -->Refactoring" },
+  { message = "^docs", group = "<!-- 4 -->Documentation" },
+  { message = "^chore\\(release\\)", skip = true },
+  { message = "^(build|ci|chore|style|test)", group = "<!-- 5 -->Maintenance" },
+  { message = "^revert", group = "<!-- 6 -->Reverts" },
+]
