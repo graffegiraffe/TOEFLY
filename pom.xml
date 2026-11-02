@@ -19,6 +19,7 @@
         <module>libs/toefly-common-web</module>
         <module>libs/toefly-common-security</module>
         <module>libs/toefly-common-observability</module>
+        <module>libs/toefly-common-outbox</module>
     </modules>
 
     <build>
