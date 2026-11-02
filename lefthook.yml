@@ -1,0 +1,24 @@
+# Git hooks (docs/12-implementation-plan.md §2.5). Install once: lefthook install. Never commit with --no-verify.
+pre-commit:
+  parallel: true
+  commands:
+    spotless:
+      glob: "*.java"
+      run: ./mvnw -q -B spotless:check
+    web:
+      root: clients/web/
+      glob: "*.{ts,tsx,js,css}"
+      run: pnpm exec eslint {staged_files} && pnpm exec prettier --check {staged_files}
+    landing:
+      root: clients/landing/
+      glob: "*.{ts,astro,js,css}"
+      run: pnpm exec prettier --check {staged_files}
+    ios:
+      root: clients/ios/
+      glob: "*.swift"
+      run: swiftformat --lint {staged_files} && swiftlint lint --strict {staged_files}
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx --yes -p @commitlint/cli@20 -p @commitlint/config-conventional@20 commitlint --edit {1}
