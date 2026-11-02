@@ -1,0 +1,43 @@
+# Base of realm `toefly`, applied idempotently by keycloak-config-cli. Phase 1 adds login options, MFA,
+# identity providers, the theme and the service clients (docs/00-README.md §9.1).
+realm: toefly
+enabled: true
+displayName: TOEFLY
+# Docker Desktop forwards host requests from an address Keycloak treats as external, so local Compose sets none.
+sslRequired: $(env:KEYCLOAK_SSL_REQUIRED:-external)
+registrationAllowed: true
+loginWithEmailAllowed: true
+duplicateEmailsAllowed: false
+resetPasswordAllowed: true
+accessTokenLifespan: 900
+roles:
+  realm:
+    - name: STUDENT
+      description: Learner preparing for the TOEFL iBT
+    - name: TUTOR
+      description: Tutor with connected students
+    - name: ADMIN
+      description: Content and platform administrator
+defaultRoles:
+  - STUDENT
+clients:
+  - clientId: toefly-web-bff
+    name: TOEFLY web (BFF)
+    enabled: true
+    publicClient: false
+    secret: $(env:TOEFLY_WEB_BFF_SECRET)
+    standardFlowEnabled: true
+    directAccessGrantsEnabled: false
+    redirectUris: ["http://localhost:8080/auth/callback"]
+    webOrigins: ["http://localhost:5173"]
+    attributes:
+      pkce.code.challenge.method: S256
+  - clientId: toefly-ios
+    name: TOEFLY iOS
+    enabled: true
+    publicClient: true
+    standardFlowEnabled: true
+    directAccessGrantsEnabled: false
+    redirectUris: ["app.toefly.ios:/oauth/callback"]
+    attributes:
+      pkce.code.challenge.method: S256
