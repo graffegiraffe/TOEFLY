@@ -15,6 +15,7 @@
     <modules>
         <module>libs/platform-bom</module>
         <module>libs/toefly-parent</module>
+        <module>libs/toefly-common-events</module>
     </modules>
 
     <build>
