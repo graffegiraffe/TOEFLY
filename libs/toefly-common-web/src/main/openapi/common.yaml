@@ -1,0 +1,88 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY common components
+  version: 0.1.0
+  description: Shared components referenced by every service specification (docs/05-api-contracts.md §1.1).
+paths: {}
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Page size, 1–100.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque cursor from `page.nextCursor`; bound to the sort and filters.
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, maxLength: 100 }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: { type: string }
+  schemas:
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'] }
+        hasMore: { type: boolean }
+        limit: { type: integer }
+    ProblemError:
+      type: object
+      required: [pointer, code, message]
+      properties:
+        pointer: { type: string, description: JSON Pointer to the invalid field }
+        code: { type: string }
+        message: { type: string }
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details with TOEFLY extensions.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$' }
+        requestId: { type: string }
+        traceId: { type: string }
+        errors:
+          type: array
+          items: { $ref: '#/components/schemas/ProblemError' }
+      additionalProperties: true
+  responses:
+    ValidationFailed:
+      description: Invalid request (`validation-failed`, `malformed-request`, `invalid-cursor`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthenticated:
+      description: Missing or expired token (`unauthenticated`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: No role or access to the resource (`forbidden`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Resource not found or not visible (`not-found`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: State conflict; the concrete type is in `type` and `code`.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
