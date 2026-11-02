@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "EventEnvelopeV1",
+  "namespace": "com.toefly.events.common",
+  "doc": "Reference set of envelope fields that every TOEFLY event record declares first, in this order (docs/05-api-contracts.md §8.1).",
+  "fields": [
+    {"name": "eventId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "CloudEvents id; the idempotency key of consumers."},
+    {"name": "occurredAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."},
+    {"name": "userId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "Learner the event is about; null for events without a user."},
+    {"name": "correlationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "End-to-end chain identifier; equals ce_correlationid."},
+    {"name": "causationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "ce_id of the event that caused this one; equals ce_causationid."}
+  ]
+}

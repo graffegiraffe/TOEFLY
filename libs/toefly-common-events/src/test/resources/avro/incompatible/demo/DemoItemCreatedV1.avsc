@@ -1,0 +1,6 @@
+{"type": "record", "name": "DemoItemCreatedV1", "namespace": "com.toefly.events.demo", "doc": "Fixture.",
+ "fields": [
+   {"name": "eventId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "Event id."},
+   {"name": "title", "type": "string", "doc": "Title."},
+   {"name": "priority", "type": "int", "doc": "Added without a default: old data cannot be read."}
+ ]}
