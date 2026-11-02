@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: ${artifactId}
+  datasource:
+    url: jdbc:postgresql://localhost:#[[${TOEFLY_POSTGRES_PORT:5432}]]#/${dbName}
+    username: ${dbRole}
+    password: ${dbRole}
+  flyway:
+    locations: classpath:db/migration,classpath:db/common
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ${artifactId}
+      auto-offset-reset: earliest
+      isolation-level: read_committed
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      properties:
+        apicurio.registry.url: ${toefly.events.registry-url}
+        apicurio.registry.use-specific-avro-reader: true
+        apicurio.registry.fault-tolerant-refresh: true
+    listener:
+      ack-mode: record
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/toefly
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: ${servicePort}
+
+toefly:
+  events:
+    registry-url: http://localhost:8380/apis/registry/v3
+    auto-register: false
+
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+toefly:
+  events:
+    auto-register: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+logging:
+  structured:
+    format:
+      console: ecs
