@@ -20,6 +20,7 @@
         <module>libs/toefly-common-security</module>
         <module>libs/toefly-common-observability</module>
         <module>libs/toefly-common-outbox</module>
+        <module>libs/toefly-common-test</module>
     </modules>
 
     <build>
