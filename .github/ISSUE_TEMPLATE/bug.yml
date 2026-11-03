@@ -1,0 +1,30 @@
+name: Bug
+description: Something does not work as the specification says
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Steps, the actual result and the expected result.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [web, ios, landing, service, infrastructure, content, docs]
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: [S1 blocker, S2 major, S3 minor, S4 cosmetic]
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Version, environment, request id or trace id. No personal data.

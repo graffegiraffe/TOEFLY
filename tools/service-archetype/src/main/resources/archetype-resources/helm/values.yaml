@@ -1,0 +1,12 @@
+# Values of ${artifactId} for the shared chart infra/helm/toefly-service-lib (phase 13 fills in the rest).
+image:
+  repository: ghcr.io/OWNER/toefly-${artifactId}
+  digest: ""
+service:
+  port: ${servicePort}
+database:
+  name: ${dbName}
+  role: ${dbRole}
+resources:
+  requests: { cpu: 50m, memory: 320Mi }
+  limits: { memory: 448Mi }

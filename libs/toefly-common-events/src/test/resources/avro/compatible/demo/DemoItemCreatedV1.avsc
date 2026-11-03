@@ -1,0 +1,6 @@
+{"type": "record", "name": "DemoItemCreatedV1", "namespace": "com.toefly.events.demo", "doc": "Fixture.",
+ "fields": [
+   {"name": "eventId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "Event id."},
+   {"name": "title", "type": "string", "doc": "Title."},
+   {"name": "note", "type": ["null", "string"], "default": null, "doc": "Added with a default."}
+ ]}

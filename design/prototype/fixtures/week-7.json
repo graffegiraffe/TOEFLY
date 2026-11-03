@@ -1,0 +1,38 @@
+{
+  "number": 7,
+  "dates": "Oct 11 – Oct 17, 2026",
+  "status": "IN_PROGRESS",
+  "progress": 64,
+  "coverId": "week-07-open-books",
+  "tutor": "Anna K. · approved Oct 10",
+  "days": ["Sun, Oct 11", "Mon, Oct 12", "Tue, Oct 13", "Wed, Oct 14", "Thu, Oct 15", "Fri, Oct 16", "Sat, Oct 17"],
+  "today": { "id": "r3", "title": "Complete the Words", "section": "READING", "minutes": 3, "href": "/tasks/ctw" },
+  "tasks": [
+    { "id": "r1", "section": "READING", "kind": "TUTOR_MATERIAL", "title": "100 questions Reading pp.12 (read the text and write out all new words)", "day": 0, "status": "DONE", "minutes": 25, "pages": "pp. 12–15" },
+    { "id": "r2", "section": "READING", "kind": "ITEM_SET", "type": "READ_DAILY_LIFE", "title": "Daily life: Campus Gym Email", "day": 1, "status": "DONE", "minutes": 4, "score": "3/3" },
+    { "id": "r3", "section": "READING", "kind": "ITEM_SET", "type": "COMPLETE_THE_WORDS", "title": "Complete the Words", "day": 2, "status": "PENDING", "minutes": 3, "href": "/tasks/ctw" },
+    { "id": "r4", "section": "READING", "kind": "ITEM_SET", "type": "READ_ACADEMIC_PASSAGE", "title": "Academic passage: Coral Reefs", "day": 4, "status": "PENDING", "minutes": 9, "href": "/tasks/passage" },
+    { "id": "l1", "section": "LISTENING", "kind": "TUTOR_MATERIAL", "title": "Fill in the Letters 146: Geological Time", "day": 0, "status": "DONE", "minutes": 15 },
+    { "id": "l2", "section": "LISTENING", "kind": "TUTOR_MATERIAL", "title": "100 Listening 2026 pp.14–17", "day": 1, "status": "DONE", "minutes": 20 },
+    { "id": "l3", "section": "LISTENING", "kind": "ITEM_SET", "type": "LISTEN_ACADEMIC_TALK", "title": "Academic talk: Biology", "day": 2, "status": "PENDING", "minutes": 6, "questions": 4, "href": "/tasks/listen" },
+    { "id": "l4", "section": "LISTENING", "kind": "ITEM_SET", "type": "LISTEN_CONVERSATION", "title": "Conversation: Library Hours", "day": 5, "status": "PENDING", "minutes": 4 },
+    { "id": "w1", "section": "WRITING", "kind": "ITEM_SET", "type": "WRITE_EMAIL", "title": "Email: Missing a Meeting", "day": 0, "status": "DONE", "minutes": 7, "score": "Writing 4/5" },
+    { "id": "w2", "section": "WRITING", "kind": "ITEM_SET", "type": "WRITE_ACADEMIC_DISCUSSION", "title": "Academic discussion: Longevity", "day": 1, "status": "DONE", "minutes": 10, "score": "Writing 3/5", "href": "/review/writing" },
+    { "id": "w3", "section": "WRITING", "kind": "ITEM_SET", "type": "BUILD_A_SENTENCE", "title": "Build a sentence: Practice 6", "day": 3, "status": "PENDING", "minutes": 6, "href": "/tasks/build" },
+    { "id": "s1", "section": "SPEAKING", "kind": "ITEM_SET", "type": "LISTEN_AND_REPEAT", "title": "Listen and Repeat practice 7", "day": 1, "status": "DONE", "minutes": 5, "score": "Speaking 4/5", "href": "/review/speaking" },
+    { "id": "s2", "section": "SPEAKING", "kind": "ITEM_SET", "type": "TAKE_AN_INTERVIEW", "title": "Take an Interview practice 7", "day": 2, "status": "PENDING", "minutes": 4, "href": "/tasks/interview" },
+    { "id": "v1", "section": "VOCABULARY", "kind": "VOCABULARY_UNIT", "title": "Collins Vocabulary Unit 7: Life Science", "day": 0, "status": "DONE", "minutes": 15 },
+    { "id": "v2", "section": "VOCABULARY", "kind": "VOCABULARY_REVIEW", "title": "12 words to review", "day": 2, "status": "PENDING", "minutes": 5, "href": "/vocabulary" },
+    { "id": "g1", "section": "GRAMMAR", "kind": "GRAMMAR_UNIT", "title": "Round-Up Unit 7: Conditionals", "day": 1, "status": "DONE", "minutes": 20, "href": "/grammar" },
+    { "id": "g2", "section": "GRAMMAR", "kind": "GRAMMAR_UNIT", "title": "Collins Grammar Unit 7", "day": 4, "status": "PENDING", "minutes": 20, "href": "/grammar" },
+    { "id": "x1", "section": "RESOURCES", "kind": "EXTERNAL_RESOURCE", "title": "TSTP site", "day": 0, "status": "DONE" },
+    { "id": "x2", "section": "RESOURCES", "kind": "TUTOR_MATERIAL", "title": "Collins Voc Gramm", "day": 0, "status": "DONE" },
+    { "id": "x3", "section": "RESOURCES", "kind": "EXTERNAL_RESOURCE", "title": "In the TG chat", "day": 1, "status": "DONE" },
+    { "id": "x4", "section": "RESOURCES", "kind": "EXTERNAL_RESOURCE", "title": "toeflresources", "day": 3, "status": "PENDING" }
+  ],
+  "units": {
+    "VOCABULARY": "Collins Vocabulary Unit 7: Life Science",
+    "GRAMMAR": "Round-Up Unit 7: Conditionals"
+  },
+  "reviewAvailable": "Oct 17"
+}

@@ -1,0 +1,58 @@
+# Kafka topics as code: the single source for Strimzi KafkaTopic resources and for the Compose script
+# infra/compose/kafka/create-topics.sh (docs/09-infrastructure.md §5.3). Every topic also gets .retry and .dlq.
+# The list matches the canonical catalog in docs/00-README.md §6.
+defaults:
+  main: { partitions: 3, retentionMs: 604800000 }
+  retry: { partitions: 3, retentionMs: 259200000 }
+  dlq: { partitions: 1, retentionMs: 2592000000 }
+topics:
+  - { name: toefly.profile.profile-created.v1 }
+  - { name: toefly.profile.onboarding-completed.v1 }
+  - { name: toefly.profile.preferences-updated.v1 }
+  - { name: toefly.profile.account-deletion-requested.v1, retentionMs: 2592000000, dlqRetentionMs: 7776000000 }
+  - { name: toefly.profile.official-score-reported.v1 }
+  - { name: toefly.profile.consent-changed.v1 }
+  - { name: toefly.content.item-set-published.v1 }
+  - { name: toefly.content.item-set-hidden.v1 }
+  - { name: toefly.content.item-difficulty-recalibrated.v1 }
+  - { name: toefly.content.item-key-corrected.v1 }
+  - { name: toefly.content-factory.generation-requested.v1, retentionMs: 1209600000 }
+  - { name: toefly.content-factory.item-set-generated.v1 }
+  - { name: toefly.content-factory.material-extraction-completed.v1 }
+  - { name: toefly.practice.attempt-started.v1 }
+  - { name: toefly.practice.attempt-submitted.v1 }
+  - { name: toefly.practice.attempt-scored.v1 }
+  - { name: toefly.practice.ability-updated.v1 }
+  - { name: toefly.practice.time-tracked.v1, retentionMs: 259200000 }
+  - { name: toefly.assessment.evaluation-requested.v1, retentionMs: 1209600000 }
+  - { name: toefly.assessment.submission-evaluated.v1 }
+  - { name: toefly.assessment.band-estimate-updated.v1 }
+  - { name: toefly.assessment.submission-tutor-reviewed.v1 }
+  - { name: toefly.speech.transcription-completed.v1 }
+  - { name: toefly.speech.pronunciation-assessed.v1 }
+  - { name: toefly.speech.audio-synthesized.v1 }
+  - { name: toefly.planning.study-plan-created.v1 }
+  - { name: toefly.planning.week-draft-generated.v1 }
+  - { name: toefly.planning.week-published.v1 }
+  - { name: toefly.planning.week-task-completed.v1 }
+  - { name: toefly.planning.week-rebalanced.v1 }
+  - { name: toefly.planning.week-completed.v1 }
+  - { name: toefly.planning.week-updated-by-tutor.v1 }
+  - { name: toefly.tutor-agent.weekly-review-generated.v1 }
+  - { name: toefly.tutor-agent.learner-model-updated.v1 }
+  - { name: toefly.tutor-agent.reengagement-message-created.v1 }
+  - { name: toefly.mockexam.exam-completed.v1 }
+  - { name: toefly.vocabulary.word-added.v1 }
+  - { name: toefly.vocabulary.review-completed.v1 }
+  - { name: toefly.classroom.student-enrolled.v1 }
+  - { name: toefly.classroom.student-unenrolled.v1 }
+  - { name: toefly.classroom.comment-added.v1 }
+  - { name: toefly.classroom.tutor-material-uploaded.v1 }
+  - { name: toefly.classroom.seat-overflow-attempted.v1 }
+  - { name: toefly.billing.subscription-activated.v1 }
+  - { name: toefly.billing.subscription-canceled.v1 }
+  - { name: toefly.billing.entitlements-changed.v1 }
+  - { name: toefly.billing.payment-failed.v1 }
+  - { name: toefly.billing.payment-succeeded.v1 }
+  - { name: toefly.billing.trial-ending.v1 }
+  - { name: toefly.ai-gateway.usage-recorded.v1, retentionMs: 259200000 }

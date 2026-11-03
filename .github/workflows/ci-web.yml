@@ -1,0 +1,33 @@
+name: ci-web
+
+on:
+  pull_request:
+    paths: ["clients/web/**"]
+  push:
+    branches: [develop, main]
+    paths: ["clients/web/**"]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    # The web client appears in phase 1; the job skips until clients/web/package.json exists.
+    if: hashFiles('clients/web/package.json') != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: clients/web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm run lint
+      - run: pnpm run test -- --coverage
+      - run: pnpm run build

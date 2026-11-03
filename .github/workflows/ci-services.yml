@@ -1,0 +1,77 @@
+name: ci-services
+
+on:
+  pull_request:
+    paths: ["services/**", "libs/**", "tools/service-archetype/**", "pom.xml", ".mvn/**"]
+  push:
+    branches: [develop, main]
+    paths: ["services/**", "libs/**", "tools/service-archetype/**", "pom.xml", ".mvn/**"]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      services: ${{ steps.services.outputs.list }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          list-files: shell
+          filters: |
+            shared:
+              - 'libs/**'
+              - 'pom.xml'
+              - '.mvn/**'
+            services:
+              - 'services/**'
+      - id: services
+        name: List services to build
+        env:
+          SHARED: ${{ steps.filter.outputs.shared }}
+          FILES: ${{ steps.filter.outputs.services_files }}
+        run: |
+          if [ "$SHARED" = "true" ]; then
+            names=$(find services -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2>/dev/null || true)
+          else
+            names=$(printf '%s\n' $FILES | cut -d/ -f2 | sort -u)
+          fi
+          echo "list=$(printf '%s\n' $names | jq -R . | jq -cs 'map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  service:
+    needs: changes
+    if: needs.changes.outputs.services != '[]'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.changes.outputs.services) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Verify ${{ matrix.service }}
+        run: ./mvnw -B -ntp -pl services/${{ matrix.service }} -am verify
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reports-${{ matrix.service }}
+          path: |
+            services/${{ matrix.service }}/target/surefire-reports
+            services/${{ matrix.service }}/target/failsafe-reports
+            services/${{ matrix.service }}/target/site/jacoco
+          if-no-files-found: ignore

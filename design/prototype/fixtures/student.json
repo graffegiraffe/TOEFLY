@@ -1,0 +1,19 @@
+{
+  "name": "Maria Petrova",
+  "short": "Maria P.",
+  "initials": "MP",
+  "email": "maria.petrova@example.com",
+  "goal": 5.0,
+  "examDate": "Dec 27, 2026",
+  "planCaption": "17-week plan · exam on Dec 27",
+  "todayCaption": "Tuesday, Oct 13 · Week 7, day 3",
+  "currentWeek": 7,
+  "band": { "low": 4.5, "high": 5.0, "cefr": "B2 → C1", "total": 95 },
+  "sections": { "R": 5.0, "L": 4.5, "W": 4.0, "S": 4.5 },
+  "streak": 12,
+  "minutesToday": 18,
+  "minutesGoal": 30,
+  "tutor": { "name": "Anna K.", "initials": "AK" },
+  "plan": "Pro via your tutor Anna K.",
+  "unreadNotifications": 3
+}
