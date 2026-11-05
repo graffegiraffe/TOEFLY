@@ -43,8 +43,15 @@ public class AuthController {
 
     @GetMapping("/auth/login")
     public Mono<ResponseEntity<Void>> login(
-            @RequestParam(required = false) @Nullable String returnTo, WebSession session) {
-        return start(session, returnTo, AUTHORIZATION_PATH);
+            @RequestParam(required = false) @Nullable String returnTo,
+            @RequestParam(defaultValue = "false") boolean reauth,
+            WebSession session) {
+        return start(
+                session,
+                returnTo,
+                reauth
+                        ? AUTHORIZATION_PATH + "?" + RegistrationAwareAuthorizationRequestResolver.REAUTH
+                        : AUTHORIZATION_PATH);
     }
 
     /** Same as sign-in, but Keycloak opens its registration page. */

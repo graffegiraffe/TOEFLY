@@ -19,6 +19,11 @@ paths:
       security: []
       parameters:
         - { name: returnTo, in: query, required: false, schema: { type: string, maxLength: 512 } }
+        - name: reauth
+          in: query
+          required: false
+          description: Ask for the credentials again (prompt=login), as account deletion needs a fresh sign-in
+          schema: { type: boolean, default: false }
       responses:
         '302': { description: Redirect to the Keycloak sign-in page, sets the session cookie }
         '429': { $ref: '#/components/responses/Problem' }

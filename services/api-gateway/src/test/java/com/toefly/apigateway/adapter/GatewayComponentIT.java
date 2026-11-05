@@ -338,6 +338,30 @@ class GatewayComponentIT {
     }
 
     @Test
+    @DisplayName("AC-31.04.1 re-authentication asks Keycloak for the credentials again")
+    void reauthenticationPromptsLogin() {
+        client.get()
+                .uri("/auth/login?returnTo=/settings/privacy&reauth=true")
+                .exchange()
+                .expectStatus()
+                .isFound()
+                .expectHeader()
+                .location("/oauth2/authorization/keycloak?reauth");
+
+        String location = client.get()
+                .uri("/oauth2/authorization/keycloak?reauth")
+                .exchange()
+                .expectStatus()
+                .isFound()
+                .returnResult(Void.class)
+                .getResponseHeaders()
+                .getLocation()
+                .toString();
+
+        assertThat(location).contains("/protocol/openid-connect/auth?").contains("prompt=login");
+    }
+
+    @Test
     @DisplayName("docs/10 §8.5 CORS allows only the web origin with credentials")
     void cors() {
         client.options()

@@ -10,11 +10,13 @@ import reactor.core.publisher.Mono;
 
 /**
  * Authorization Code with PKCE S256 for the confidential BFF client; with {@code ?register} the request goes to
- * the Keycloak registration endpoint instead of the sign-in page.
+ * the Keycloak registration endpoint instead of the sign-in page; with {@code ?reauth} Keycloak asks for the
+ * credentials again ({@code prompt=login}), which renews {@code auth_time} before account deletion (AC-31.04.1).
  */
 public class RegistrationAwareAuthorizationRequestResolver implements ServerOAuth2AuthorizationRequestResolver {
 
     static final String PARAMETER = "register";
+    static final String REAUTH = "reauth";
 
     private final DefaultServerOAuth2AuthorizationRequestResolver delegate;
 
@@ -37,7 +39,13 @@ public class RegistrationAwareAuthorizationRequestResolver implements ServerOAut
 
     private static OAuth2AuthorizationRequest customize(
             ServerWebExchange exchange, OAuth2AuthorizationRequest request) {
-        if (!exchange.getRequest().getQueryParams().containsKey(PARAMETER)) {
+        var query = exchange.getRequest().getQueryParams();
+        if (query.containsKey(REAUTH)) {
+            return OAuth2AuthorizationRequest.from(request)
+                    .additionalParameters(parameters -> parameters.put("prompt", "login"))
+                    .build();
+        }
+        if (!query.containsKey(PARAMETER)) {
             return request;
         }
         String registrations = request.getAuthorizationUri()
