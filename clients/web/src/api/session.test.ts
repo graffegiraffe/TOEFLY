@@ -16,6 +16,13 @@ describe('web session', () => {
     expect(registerUrl('https://evil.example')).toBe('http://api.toefly.localhost:8080/auth/register');
   });
 
+  it('AC-31.04.1 re-authentication asks Keycloak for the password again', () => {
+    expect(loginUrl('/settings/privacy', { reauth: true })).toBe(
+      'http://api.toefly.localhost:8080/auth/login?returnTo=%2Fsettings%2Fprivacy&reauth=true',
+    );
+    expect(loginUrl(undefined, { reauth: true })).toBe('http://api.toefly.localhost:8080/auth/login?reauth=true');
+  });
+
   it('AC-01.05.1 keeps the CSRF token in memory and sends it with changing requests only', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       jsonResponse(200, { authenticated: true, user: { id: 'u', roles: [], emailVerified: true }, csrfToken: 'c1' }),

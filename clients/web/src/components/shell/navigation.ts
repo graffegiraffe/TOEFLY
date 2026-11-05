@@ -38,7 +38,7 @@ export const TUTOR_NAV: NavItem[] = [
   { to: '/tutor/materials', labelKey: 'nav.materials', icon: FileText },
 ];
 
-export const SETTINGS_NAV: NavItem = { to: '/settings/privacy', labelKey: 'nav.settings', icon: Settings };
+export const SETTINGS_NAV: NavItem = { to: '/settings', labelKey: 'nav.settings', icon: Settings };
 
 export const PLACEHOLDER_SECTIONS = [
   'today',

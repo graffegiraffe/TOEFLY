@@ -43,8 +43,10 @@ function returnParam(returnTo: string | undefined): string {
     : '';
 }
 
-export function loginUrl(returnTo?: string): string {
-  return `${API_URL}/auth/login${returnParam(returnTo)}`;
+export function loginUrl(returnTo?: string, options: { reauth?: boolean } = {}): string {
+  const params = returnParam(returnTo);
+  const reauth = options.reauth ? `${params ? '&' : '?'}reauth=true` : '';
+  return `${API_URL}/auth/login${params}${reauth}`;
 }
 
 export function registerUrl(returnTo?: string): string {
