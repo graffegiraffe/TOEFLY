@@ -1,5 +1,11 @@
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ConsentRequestSourceEnum, type ConsentType, type OnboardingRequest } from './generated';
+import {
+  ConsentRequestSourceEnum,
+  type ConsentType,
+  type OnboardingRequest,
+  type Preferences,
+  type StudyGoalRequest,
+} from './generated';
 import { api } from './client';
 import { fetchSession } from './session';
 
@@ -70,5 +76,71 @@ export function useRequestDeletion() {
         idempotencyKey: crypto.randomUUID(),
         deletionRequest: { confirmation },
       }),
+  });
+}
+
+/** A resource with the ETag that a change must send back as If-Match (docs/05-api-contracts.md §2.7). */
+export interface Versioned<T> {
+  data: T;
+  etag: string;
+}
+
+async function versioned<T>(raw: Promise<{ raw: Response; value: () => Promise<T> }>): Promise<Versioned<T>> {
+  const response = await raw;
+  return { data: await response.value(), etag: response.raw.headers.get('ETag') ?? '' };
+}
+
+export const versionedProfileQuery = queryOptions({
+  queryKey: ['me', 'versioned'],
+  queryFn: () => versioned(api.profile.getMeRaw()),
+});
+
+export const preferencesQuery = queryOptions({
+  queryKey: ['me', 'preferences'],
+  queryFn: () => versioned(api.preferences.getPreferencesRaw()),
+});
+
+export const versionedStudyGoalQuery = queryOptions({
+  queryKey: ['me', 'study-goal', 'versioned'],
+  queryFn: () => versioned(api.onboarding.getStudyGoalRaw()),
+});
+
+export function useRenameProfile() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ displayName, etag }: { displayName: string; etag: string }) =>
+      api.profile.updateMe({ ifMatch: etag, updateProfileRequest: { displayName } }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['me'] }),
+  });
+}
+
+export function useUpdatePreferences() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ preferences, etag }: { preferences: Preferences; etag: string }) =>
+      api.preferences.updatePreferences({ ifMatch: etag, preferences }),
+    // Goal, profile and preferences share one version, so every versioned query is stale now.
+    onSuccess: () => client.invalidateQueries({ queryKey: ['me'] }),
+  });
+}
+
+export function useChangeStudyGoal() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ request, etag }: { request: StudyGoalRequest; etag: string }) =>
+      api.onboarding.changeStudyGoal({ ifMatch: etag, studyGoalRequest: request }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['me'] }),
+  });
+}
+
+/** Sign out of all devices (AC-01.05.4). */
+export function useSignOutEverywhere() {
+  return useMutation({ mutationFn: () => api.account.signOutEverywhere() });
+}
+
+export function useBecomeTutor() {
+  return useMutation({
+    mutationFn: () =>
+      api.account.becomeTutor({ idempotencyKey: crypto.randomUUID(), becomeTutorRequest: { acceptTutorTerms: true } }),
   });
 }

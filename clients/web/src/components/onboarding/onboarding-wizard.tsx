@@ -147,7 +147,15 @@ function StepShell({
   );
 }
 
-function BandPicker({ value, onChange, label }: { value: number; onChange: (band: number) => void; label: string }) {
+export function BandPicker({
+  value,
+  onChange,
+  label,
+}: {
+  value: number;
+  onChange: (band: number) => void;
+  label: string;
+}) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-1 text-caption font-semibold text-ink">{label}</legend>

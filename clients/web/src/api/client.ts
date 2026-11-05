@@ -1,4 +1,5 @@
 import {
+  AccountApi,
   Configuration,
   ConsentsApi,
   OnboardingApi,
@@ -39,4 +40,5 @@ export const api = {
   preferences: new PreferencesApi(configuration),
   consents: new ConsentsApi(configuration),
   privacy: new PrivacyApi(configuration),
+  account: new AccountApi(configuration),
 };
