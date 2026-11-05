@@ -164,17 +164,17 @@ class ProfileComponentIT {
     }
 
     @Test
-    @DisplayName("AC-02.01.3 an exam date beyond 12 months is a business rule violation")
+    @DisplayName("AC-02.01.3 an exam date beyond five years is a business rule violation")
     void invalidExamDate() throws Exception {
         mvc.perform(put("/api/v1/me/onboarding")
                         .with(student(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"examBooked\":true,\"examDate\":\""
-                                + LocalDate.now().plusDays(400) + "\"}"))
+                                + LocalDate.now().plusYears(5).plusDays(1) + "\"}"))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.type").value("https://toefly.app/problems/business-rule-violated"))
                 .andExpect(jsonPath("$.rule").value("exam-date"))
-                .andExpect(jsonPath("$.detail").value("Pick a date within the next 12 months"));
+                .andExpect(jsonPath("$.detail").value("Pick a date within the next 5 years"));
     }
 
     @Test

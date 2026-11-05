@@ -16,17 +16,17 @@ class ExamPlanTest {
     void rejectsPastAndToday() {
         assertThatThrownBy(() -> ExamPlan.bookedOn(TODAY, TODAY))
                 .isInstanceOf(InvalidProfileValueException.class)
-                .hasMessage("Pick a date within the next 12 months");
+                .hasMessage("Pick a date within the next 5 years");
         assertThatThrownBy(() -> ExamPlan.bookedOn(TODAY.minusDays(1), TODAY))
                 .isInstanceOf(InvalidProfileValueException.class);
     }
 
     @Test
-    @DisplayName("AC-02.01.3 a date more than 365 days ahead is rejected")
+    @DisplayName("AC-02.01.3 a date more than five years ahead is rejected")
     void rejectsMoreThanAYearAhead() {
-        assertThatThrownBy(() -> ExamPlan.bookedOn(TODAY.plusDays(366), TODAY))
+        assertThatThrownBy(() -> ExamPlan.bookedOn(TODAY.plusYears(5).plusDays(1), TODAY))
                 .isInstanceOf(InvalidProfileValueException.class);
-        assertThat(ExamPlan.bookedOn(TODAY.plusDays(365), TODAY).examDate()).isEqualTo(TODAY.plusDays(365));
+        assertThat(ExamPlan.bookedOn(TODAY.plusYears(5), TODAY).examDate()).isEqualTo(TODAY.plusYears(5));
     }
 
     @Test

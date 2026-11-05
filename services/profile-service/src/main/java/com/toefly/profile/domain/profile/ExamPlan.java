@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 /** Exam date of the learner; without a booked exam no date is stored (INV-PRF-02, AC-02.01.4). */
 public record ExamPlan(boolean booked, @Nullable LocalDate examDate) {
 
-    public static final int MAX_DAYS_AHEAD = 365;
+    public static final int MAX_YEARS_AHEAD = 5;
 
     public ExamPlan {
         if (booked != (examDate != null)) {
@@ -19,10 +19,10 @@ public record ExamPlan(boolean booked, @Nullable LocalDate examDate) {
         return new ExamPlan(false, null);
     }
 
-    /** A date entered today must lie after today and at most 365 days ahead (AC-02.01.3). */
+    /** A date entered today must lie after today and at most five years ahead (AC-02.01.3). */
     public static ExamPlan bookedOn(LocalDate examDate, LocalDate today) {
-        if (!examDate.isAfter(today) || examDate.isAfter(today.plusDays(MAX_DAYS_AHEAD))) {
-            throw new InvalidProfileValueException("exam-date", "Pick a date within the next 12 months");
+        if (!examDate.isAfter(today) || examDate.isAfter(today.plusYears(MAX_YEARS_AHEAD))) {
+            throw new InvalidProfileValueException("exam-date", "Pick a date within the next 5 years");
         }
         return new ExamPlan(true, examDate);
     }
