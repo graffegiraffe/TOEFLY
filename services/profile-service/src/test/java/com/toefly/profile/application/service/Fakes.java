@@ -157,6 +157,16 @@ final class Fakes {
         }
 
         @Override
+        public void addTutorRole(UUID userId) {
+            calls.add("addTutorRole");
+        }
+
+        @Override
+        public void endAllSessions(UUID userId) {
+            calls.add("endAllSessions");
+        }
+
+        @Override
         public void disableUser(UUID userId) {
             calls.add("disableUser");
         }

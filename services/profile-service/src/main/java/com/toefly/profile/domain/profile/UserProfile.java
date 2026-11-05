@@ -192,6 +192,35 @@ public record UserProfile(
                 createdAt);
     }
 
+    /**
+     * Adds the TUTOR role to a learner; the STUDENT role stays, so the tutor keeps preparing (docs/10 §5).
+     * The terms of the tutor workspace must be accepted.
+     */
+    public UserProfile becomeTutor(boolean acceptTutorTerms) {
+        requireStudent();
+        if (roles.contains(Role.TUTOR)) {
+            throw new TutorRoleAlreadyGrantedException();
+        }
+        if (!acceptTutorTerms) {
+            throw new InvalidProfileValueException("tutor-terms", "Accept the tutor terms to open a workspace.");
+        }
+        EnumSet<Role> withTutor = EnumSet.copyOf(roles);
+        withTutor.add(Role.TUTOR);
+        return new UserProfile(
+                userId,
+                email,
+                displayName,
+                withTutor,
+                preferences,
+                goal,
+                exam,
+                onboardingStatus,
+                filledSteps,
+                goalRevision,
+                version + 1,
+                createdAt);
+    }
+
     public void requireVersion(long expected) {
         if (expected != version) {
             throw new VersionMismatchException(version);

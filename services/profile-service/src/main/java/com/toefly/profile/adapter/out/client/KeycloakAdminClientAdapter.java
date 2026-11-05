@@ -15,6 +15,9 @@ public class KeycloakAdminClientAdapter implements IdentityProviderPort {
 
     private static final ParameterizedTypeReference<Map<String, Object>> ROLE = new ParameterizedTypeReference<>() {};
 
+    /** Clients that receive offline tokens (scope offline_access, docs/10 §4.1). */
+    private static final List<String> OFFLINE_CLIENTS = List.of("toefly-web-bff", "toefly-ios");
+
     private final RestClient keycloak;
 
     public KeycloakAdminClientAdapter(@Qualifier("keycloakAdminRestClient") RestClient keycloak) {
@@ -35,6 +38,28 @@ public class KeycloakAdminClientAdapter implements IdentityProviderPort {
                 .body(List.of(student))
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    @Override
+    public void addTutorRole(UUID userId) {
+        keycloak.post()
+                .uri("/users/{id}/role-mappings/realm", userId)
+                .body(List.of(role("TUTOR")))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    @Override
+    public void endAllSessions(UUID userId) {
+        keycloak.post().uri("/users/{id}/logout", userId).retrieve().toBodilessEntity();
+        for (String client : OFFLINE_CLIENTS) {
+            // Revoking the consent of a client revokes its offline tokens; a client never used has none (404).
+            keycloak.delete()
+                    .uri("/users/{id}/consents/{client}", userId, client)
+                    .retrieve()
+                    .onStatus(status -> status.value() == 404, (request, response) -> {})
+                    .toBodilessEntity();
+        }
     }
 
     @Override

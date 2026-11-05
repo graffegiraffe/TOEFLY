@@ -268,4 +268,37 @@ class ProfileComponentIT {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.type").value("https://toefly.app/problems/account-pending-deletion"));
     }
+
+    @Test
+    @DisplayName("AC-01.05.4 sign out of all devices ends Keycloak and gateway sessions")
+    void signOutEverywhere() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mvc.perform(post("/api/v1/me/session-revocation").with(student(userId))).andExpect(status().isNoContent());
+
+        verify(identity).endAllSessions(userId);
+        verify(sessions).revokeSessions(userId);
+    }
+
+    @Test
+    @DisplayName("POST /me/tutor-role adds TUTOR once; a second request is a conflict")
+    void becomeTutor() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mvc.perform(post("/api/v1/me/tutor-role")
+                        .with(student(userId))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"acceptTutorTerms\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles", org.hamcrest.Matchers.containsInAnyOrder("STUDENT", "TUTOR")));
+        verify(identity).addTutorRole(userId);
+
+        mvc.perform(post("/api/v1/me/tutor-role")
+                        .with(student(userId))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"acceptTutorTerms\":true}"))
+                .andExpect(status().isConflict());
+    }
 }
