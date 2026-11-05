@@ -21,11 +21,11 @@ describe('onboarding steps', () => {
 describe('exam date', () => {
   const today = new Date(2026, 10, 5);
 
-  it('AC-02.01.3 rejects past dates and dates more than a year ahead', () => {
-    expect(examDateError('2026-11-05', today)).toBe('Pick a date within the next 12 months');
-    expect(examDateError('2027-11-06', today)).toBe('Pick a date within the next 12 months');
+  it('AC-02.01.3 rejects past dates and dates more than five years ahead', () => {
+    expect(examDateError('2026-11-05', today)).toBe('Pick a date within the next 5 years');
+    expect(examDateError('2031-11-06', today)).toBe('Pick a date within the next 5 years');
     expect(examDateError('not-a-date', today)).not.toBeNull();
-    expect(examDateError('2027-11-05', today)).toBeNull();
+    expect(examDateError('2031-11-05', today)).toBeNull();
     expect(examDateError('2026-11-06', today)).toBeNull();
   });
 

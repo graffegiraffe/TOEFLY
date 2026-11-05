@@ -5,9 +5,11 @@ import { useTranslation } from 'react-i18next';
 import type { StudyGoal } from '@/api/generated';
 import { useChangeStudyGoal, versionedStudyGoalQuery } from '@/api/queries';
 import { BandPicker } from '@/components/onboarding/onboarding-wizard';
-import { inputClass, labelClass, SettingsForm } from '@/components/settings/settings-ui';
+import { SettingsForm } from '@/components/settings/settings-ui';
+import { Calendar } from '@/components/ui/calendar';
 import { bandHint } from '@/lib/band';
 import { cn } from '@/lib/cn';
+import { examDateBounds } from '@/lib/dates';
 import { examDateError, isoDate } from '@/lib/onboarding';
 import { goalChangeAppliesNextWeek } from '@/lib/settings';
 
@@ -32,6 +34,7 @@ function GoalForm({ goal, etag }: { goal: StudyGoal; etag: string }) {
   const savedDate = goal.examDate ? isoDate(goal.examDate) : '';
   const [date, setDate] = useState(savedDate);
   const [notice, setNotice] = useState<string | null>(null);
+  const bounds = examDateBounds(new Date());
   const error = !notBooked && date ? examDateError(date, new Date()) : null;
   const dirty = overall !== goal.overallTarget || notBooked !== !goal.examBooked || (!notBooked && date !== savedDate);
 
@@ -72,18 +75,15 @@ function GoalForm({ goal, etag }: { goal: StudyGoal; etag: string }) {
       <p className="-mt-2 text-body font-semibold text-accent-on-soft" data-testid="band-hint">
         {bandHint(overall)}
       </p>
-      <label className={labelClass}>
-        {t('onboarding.examDate.date')}
-        <input
-          type="date"
-          className={cn(inputClass, 'w-52 disabled:opacity-50')}
-          value={date}
-          disabled={notBooked}
-          aria-invalid={error !== null}
-          aria-describedby="goal-date-message"
-          onChange={(event) => setDate(event.target.value)}
-        />
-      </label>
+      <Calendar
+        label={t('onboarding.examDate.date')}
+        value={date ? new Date(`${date}T00:00:00`) : undefined}
+        onChange={(picked) => setDate(picked ? isoDate(picked) : '')}
+        min={bounds.min}
+        max={bounds.max}
+        disabled={notBooked}
+        describedBy="goal-date-message"
+      />
       <p id="goal-date-message" className={cn('-mt-3 text-caption', error ? 'text-danger' : 'text-warning')}>
         {error ?? t('settings.goal.warning')}
       </p>

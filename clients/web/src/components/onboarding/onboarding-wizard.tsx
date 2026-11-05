@@ -11,12 +11,14 @@ import {
 } from '@/api/generated';
 import { consentsQuery, onboardingQuery, useRecordConsent, useSaveOnboarding } from '@/api/queries';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { GlassPanel } from '@/components/ui/card';
 import { Logo } from '@/components/ui/logo';
 import { Mesh } from '@/components/ui/mesh';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { BANDS, bandHint, formatBand, overallOf } from '@/lib/band';
 import { cn } from '@/lib/cn';
+import { examDateBounds } from '@/lib/dates';
 import {
   browserTimeZone,
   examDateError,
@@ -240,6 +242,7 @@ function GoalStep({ state, onSubmit }: StepProps) {
 function ExamDateStep({ state, onSubmit }: StepProps) {
   const { t } = useTranslation();
   const today = new Date();
+  const bounds = examDateBounds(today);
   const [notBooked, setNotBooked] = useState(state.examBooked === false);
   const [date, setDate] = useState(state.examDate ? isoDate(state.examDate) : '');
   const error = !notBooked && date ? examDateError(date, today) : null;
@@ -251,19 +254,15 @@ function ExamDateStep({ state, onSubmit }: StepProps) {
         onSubmit(notBooked ? { examBooked: false } : { examBooked: true, examDate: new Date(`${date}T00:00:00`) })
       }
     >
-      <label className="flex flex-col gap-1 text-caption font-semibold text-ink">
-        {t('onboarding.examDate.date')}
-        <input
-          type="date"
-          className="h-11 rounded-lg border border-input bg-surface px-3 text-body text-ink disabled:opacity-50"
-          value={date}
-          min={isoDate(new Date(today.getTime() + 86_400_000))}
-          disabled={notBooked}
-          aria-invalid={error !== null}
-          aria-describedby="exam-date-message"
-          onChange={(event) => setDate(event.target.value)}
-        />
-      </label>
+      <Calendar
+        label={t('onboarding.examDate.date')}
+        value={date ? new Date(`${date}T00:00:00`) : undefined}
+        onChange={(picked) => setDate(picked ? isoDate(picked) : '')}
+        min={bounds.min}
+        max={bounds.max}
+        disabled={notBooked}
+        describedBy="exam-date-message"
+      />
       <p id="exam-date-message" className={cn('-mt-3 text-caption', error ? 'text-danger' : 'text-warning')}>
         {error ?? (!notBooked && date && isExamSoon(date, today) ? t('onboarding.examDate.soon') : '')}
       </p>
