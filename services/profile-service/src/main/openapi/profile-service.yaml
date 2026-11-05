@@ -1,0 +1,474 @@
+openapi: 3.1.0
+info:
+  title: profile-service
+  version: 0.1.0
+  description: Profile, onboarding, preferences, consents and GDPR requests of the signed-in user (docs/05-api-contracts.md §6.1).
+servers:
+  - url: http://localhost:8081
+security:
+  - bearerAuth: []
+tags:
+  - name: Profile
+  - name: Onboarding
+  - name: Preferences
+  - name: Consents
+  - name: Privacy
+paths:
+  /api/v1/me:
+    get:
+      tags: [Profile]
+      operationId: getMe
+      summary: Profile of the signed-in user; the first call creates it from the token claims
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '200':
+          description: Profile
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '401': { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [Profile]
+      operationId: updateMe
+      summary: Change the display name (JSON Merge Patch)
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      x-toefly-ownership: STUDENT_OWNER
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/UpdateProfileRequest' }
+      responses:
+        '200':
+          description: Updated profile
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '412': { $ref: '#/components/responses/Problem' }
+        '428': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/onboarding:
+    get:
+      tags: [Onboarding]
+      operationId: getOnboarding
+      summary: Saved onboarding values and the first unfilled step
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '200':
+          description: Onboarding state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OnboardingState' }
+    put:
+      tags: [Onboarding]
+      operationId: saveOnboarding
+      summary: Save onboarding steps; with complete=true finish the onboarding and publish onboarding-completed
+      x-toefly-roles: [STUDENT]
+      x-toefly-ownership: STUDENT_OWNER
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OnboardingRequest' }
+      responses:
+        '200':
+          description: Onboarding state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OnboardingState' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/study-goal:
+    get:
+      tags: [Onboarding]
+      operationId: getStudyGoal
+      summary: Current goal, exam date and daily minutes
+      x-toefly-roles: [STUDENT]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '200':
+          description: Study goal
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudyGoal' }
+        '404': { $ref: '#/components/responses/Problem' }
+    put:
+      tags: [Onboarding]
+      operationId: changeStudyGoal
+      summary: Change the goal after the onboarding; publishes onboarding-completed with the next revision
+      x-toefly-roles: [STUDENT]
+      x-toefly-ownership: STUDENT_OWNER
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StudyGoalRequest' }
+      responses:
+        '200':
+          description: Study goal
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudyGoal' }
+        '412': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '428': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/preferences:
+    get:
+      tags: [Preferences]
+      operationId: getPreferences
+      summary: Time zone, explanation language and study time
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '200':
+          description: Preferences
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preferences' }
+    put:
+      tags: [Preferences]
+      operationId: updatePreferences
+      summary: Change preferences; publishes preferences-updated
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Preferences' }
+      responses:
+        '200':
+          description: Preferences
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preferences' }
+        '412': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '428': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/consents:
+    get:
+      tags: [Consents]
+      operationId: listConsents
+      summary: Latest answer for every consent type
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '200':
+          description: Consents
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConsentList' }
+  /api/v1/me/consents/{consentType}:
+    put:
+      tags: [Consents]
+      operationId: recordConsent
+      summary: Give or withdraw a consent; publishes consent-changed
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      parameters:
+        - name: consentType
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/ConsentType' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConsentRequest' }
+      responses:
+        '200':
+          description: Recorded consent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Consent' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/data-exports:
+    post:
+      tags: [Privacy]
+      operationId: requestDataExport
+      summary: Start a GDPR export of all the user's data
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      x-toefly-idempotent: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Export accepted
+          headers:
+            Location: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataExport' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/data-exports/{exportId}:
+    get:
+      tags: [Privacy]
+      operationId: getDataExport
+      summary: Status of an export
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      parameters:
+        - name: exportId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Export
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataExport' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/deletion-request:
+    post:
+      tags: [Privacy]
+      operationId: requestAccountDeletion
+      summary: Delete the account; needs a sign-in at most five minutes old and the word DELETE
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      x-toefly-idempotent: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeletionRequest' }
+      responses:
+        '202':
+          description: Deletion accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDeletion' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+    get:
+      tags: [Privacy]
+      operationId: getAccountDeletion
+      summary: Status of the deletion request
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '200':
+          description: Deletion request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDeletion' }
+        '404': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  headers:
+    ETag:
+      description: Version of the resource
+      schema: { type: string }
+  parameters:
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: ETag of the version being changed; required, a missing header returns 428
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, maxLength: 100 }
+  responses:
+    Problem:
+      description: Error (RFC 9457)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Role:
+      type: string
+      enum: [STUDENT, TUTOR, ADMIN]
+    OnboardingStatus:
+      type: string
+      enum: [NOT_STARTED, IN_PROGRESS, COMPLETED]
+    OnboardingStep:
+      type: string
+      enum: [GOAL, EXAM_DATE, SCHEDULE, EXPLANATION_LANGUAGE]
+    ExplanationLanguage:
+      type: string
+      enum: [en, ru]
+    ConsentType:
+      type: string
+      enum: [TERMS, PRIVACY, AGE_16_PLUS, AI_PROCESSING, VOICE_RECORDINGS, MARKETING_EMAILS]
+    Band:
+      type: number
+      minimum: 1
+      maximum: 6
+      multipleOf: 0.5
+    LocalTime:
+      type: string
+      pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+      description: Local time HH:mm
+    UserProfile:
+      type: object
+      required: [id, email, roles, onboardingStatus, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        displayName: { type: string }
+        roles:
+          type: array
+          items: { $ref: '#/components/schemas/Role' }
+        onboardingStatus: { $ref: '#/components/schemas/OnboardingStatus' }
+        createdAt: { type: string, format: date-time }
+    UpdateProfileRequest:
+      type: object
+      properties:
+        displayName: { type: string, maxLength: 100 }
+    SectionTargets:
+      type: object
+      required: [reading, listening, writing, speaking]
+      properties:
+        reading: { $ref: '#/components/schemas/Band' }
+        listening: { $ref: '#/components/schemas/Band' }
+        writing: { $ref: '#/components/schemas/Band' }
+        speaking: { $ref: '#/components/schemas/Band' }
+    OnboardingState:
+      type: object
+      required: [status, filledSteps, minutesPerDay, preferredStudyTime, timezone, explanationLanguage]
+      properties:
+        status: { $ref: '#/components/schemas/OnboardingStatus' }
+        nextStep: { $ref: '#/components/schemas/OnboardingStep' }
+        filledSteps:
+          type: array
+          items: { $ref: '#/components/schemas/OnboardingStep' }
+        overallTarget: { $ref: '#/components/schemas/Band' }
+        sectionTargets: { $ref: '#/components/schemas/SectionTargets' }
+        examBooked: { type: boolean }
+        examDate: { type: string, format: date }
+        minutesPerDay: { type: integer }
+        preferredStudyTime: { $ref: '#/components/schemas/LocalTime' }
+        timezone: { type: string }
+        explanationLanguage: { $ref: '#/components/schemas/ExplanationLanguage' }
+    OnboardingRequest:
+      type: object
+      description: Values of the steps being saved; absent fields keep the saved values
+      properties:
+        overallTarget: { $ref: '#/components/schemas/Band' }
+        sectionTargets: { $ref: '#/components/schemas/SectionTargets' }
+        examBooked: { type: boolean }
+        examDate: { type: string, format: date }
+        minutesPerDay: { type: integer, minimum: 15, maximum: 180 }
+        preferredStudyTime: { $ref: '#/components/schemas/LocalTime' }
+        timezone: { type: string, maxLength: 64 }
+        explanationLanguage: { $ref: '#/components/schemas/ExplanationLanguage' }
+        complete: { type: boolean, default: false }
+    StudyGoal:
+      type: object
+      required: [overallTarget, examBooked, minutesPerDay, revision]
+      properties:
+        overallTarget: { $ref: '#/components/schemas/Band' }
+        sectionTargets: { $ref: '#/components/schemas/SectionTargets' }
+        examBooked: { type: boolean }
+        examDate: { type: string, format: date }
+        minutesPerDay: { type: integer }
+        revision: { type: integer }
+    StudyGoalRequest:
+      type: object
+      required: [examBooked, minutesPerDay]
+      properties:
+        overallTarget: { $ref: '#/components/schemas/Band' }
+        sectionTargets: { $ref: '#/components/schemas/SectionTargets' }
+        examBooked: { type: boolean }
+        examDate: { type: string, format: date }
+        minutesPerDay: { type: integer, minimum: 15, maximum: 180 }
+    Preferences:
+      type: object
+      required: [timezone, explanationLanguage, minutesPerDay, preferredStudyTime]
+      properties:
+        timezone: { type: string, maxLength: 64 }
+        explanationLanguage: { $ref: '#/components/schemas/ExplanationLanguage' }
+        minutesPerDay: { type: integer, minimum: 15, maximum: 180 }
+        preferredStudyTime: { $ref: '#/components/schemas/LocalTime' }
+    ConsentSource:
+      type: string
+      enum: [SIGN_UP, WEB, IOS]
+    Consent:
+      type: object
+      required: [consentType, granted, policyVersion, source, recordedAt]
+      properties:
+        consentType: { $ref: '#/components/schemas/ConsentType' }
+        granted: { type: boolean }
+        policyVersion: { type: string }
+        source: { $ref: '#/components/schemas/ConsentSource' }
+        recordedAt: { type: string, format: date-time }
+    ConsentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Consent' }
+    ConsentRequest:
+      type: object
+      required: [granted]
+      properties:
+        granted: { type: boolean }
+        source:
+          type: string
+          enum: [WEB, IOS]
+          default: WEB
+    DataExport:
+      type: object
+      required: [id, status, requestedAt]
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [REQUESTED, READY, EXPIRED]
+        requestedAt: { type: string, format: date-time }
+        readyAt: { type: string, format: date-time }
+    DeletionRequest:
+      type: object
+      required: [confirmation]
+      properties:
+        confirmation: { type: string, maxLength: 20 }
+    AccountDeletion:
+      type: object
+      required: [id, status, requestedAt, legalDeadlineAt]
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [REQUESTED, PROCESSING, COMPLETED]
+        requestedAt: { type: string, format: date-time }
+        legalDeadlineAt: { type: string, format: date-time }
+    Problem:
+      type: object
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string }
+        requestId: { type: string }
+        traceId: { type: string }
