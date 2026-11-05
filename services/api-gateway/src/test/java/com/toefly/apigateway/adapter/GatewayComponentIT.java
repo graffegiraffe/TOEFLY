@@ -317,6 +317,7 @@ class GatewayComponentIT {
                 .startsWith("http://localhost:8180/realms/toefly/protocol/openid-connect/auth?")
                 .contains("code_challenge_method=S256")
                 .contains("client_id=toefly-web-bff")
+                .contains("ui_locales=en")
                 .contains("redirect_uri=http://localhost:");
     }
 

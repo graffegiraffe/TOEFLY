@@ -20,7 +20,9 @@ public class RegistrationAwareAuthorizationRequestResolver implements ServerOAut
 
     public RegistrationAwareAuthorizationRequestResolver(ReactiveClientRegistrationRepository registrations) {
         this.delegate = new DefaultServerOAuth2AuthorizationRequestResolver(registrations);
-        this.delegate.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
+        // Interface texts are English (docs/02 §0.3) whatever language the browser prefers.
+        this.delegate.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce()
+                .andThen(builder -> builder.parameters(parameters -> parameters.put("ui_locales", "en"))));
     }
 
     @Override
