@@ -1,0 +1,22 @@
+name: revoke_sessions
+description: >
+  profile-service ends every web session of a user and rejects tokens issued before now
+  (sign out of all devices, account deletion; docs/10-security-privacy.md §4.7)
+request:
+  method: POST
+  url: /internal/v1/sessions/revocations
+  headers:
+    Authorization: Bearer service-token
+    Content-Type: application/json
+  body:
+    userId: 0b6f1c0e-3b0c-4f3e-9d57-6a3f1c1d7a11
+  matchers:
+    headers:
+      - key: Authorization
+        regex: "Bearer .+"
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+response:
+  status: 204
