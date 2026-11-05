@@ -20,7 +20,7 @@ function NavLink({ item }: { item: NavItem }) {
       activeOptions={{ exact: item.to === '/' }}
       className="flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[14px] font-medium leading-5 text-neutral-700 hover:bg-[var(--glass-item-active)] dark:text-[#CFE0D5]"
       activeProps={{
-        className: 'glass-item-active !font-semibold !text-brand-700 dark:!text-brand-500',
+        className: 'glass-item-active !font-semibold !text-brand-700 dark:!text-brand-300',
         'aria-current': 'page',
       }}
     >
