@@ -50,14 +50,14 @@ export function isoDate(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-/** An exam date is after today and at most 365 days ahead (AC-02.01.3). */
+/** An exam date is after today and at most five years ahead (AC-02.01.3). */
 export function examDateError(value: string, today: Date): string | null {
   const date = new Date(`${value}T00:00:00`);
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const latest = new Date(start);
-  latest.setDate(latest.getDate() + 365);
+  latest.setFullYear(latest.getFullYear() + 5);
   if (Number.isNaN(date.getTime()) || date <= start || date > latest) {
-    return 'Pick a date within the next 12 months';
+    return 'Pick a date within the next 5 years';
   }
   return null;
 }

@@ -25,10 +25,15 @@ test.describe('US-02.03 US-02.05 US-32.02 AC-01.05.4 settings', () => {
     // AC-02.05.1 a new exam date applies from next week.
     await page.getByRole('link', { name: 'Goal' }).click();
     await page.getByLabel('I haven’t booked the exam yet').uncheck();
-    const inFiveWeeks = new Date(Date.now() + 35 * 86_400_000).toISOString().slice(0, 10);
-    await page.getByLabel('Exam date').fill(inFiveWeeks);
+    // The calendar offers five years ahead (AC-02.01.3): pick 15 March of the next year.
+    const calendar = page.getByRole('group', { name: 'Exam date' });
+    const year = String(new Date().getFullYear() + 1);
+    await calendar.getByRole('combobox').nth(1).selectOption(year);
+    await calendar.getByRole('combobox').nth(0).selectOption({ label: 'March' });
+    await calendar.getByRole('button', { name: new RegExp(`15 March ${year}`) }).click();
+    await expect(calendar.getByTestId('calendar-value')).toContainText(year);
     await page.getByRole('button', { name: 'Save changes' }).click();
-    await expect(page.getByRole('status')).toHaveText('Changes apply from next week');
+    await expect(page.getByRole('status').filter({ hasText: 'Changes apply from next week' })).toBeVisible();
 
     // AC-32.02.1 explanations in Russian.
     await page.getByRole('link', { name: 'Learning' }).click();
