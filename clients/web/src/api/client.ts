@@ -1,0 +1,42 @@
+import {
+  Configuration,
+  ConsentsApi,
+  OnboardingApi,
+  PreferencesApi,
+  PrivacyApi,
+  ProfileApi,
+  type Middleware,
+} from './generated';
+import { API_URL } from './config';
+import { currentCsrfToken } from './session';
+
+const SAFE = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+/** Sends the session CSRF token with changing requests (docs/10-security-privacy.md §4.2). */
+export const csrfMiddleware: Middleware = {
+  pre: async ({ url, init }) => {
+    const method = (init.method ?? 'GET').toUpperCase();
+    const token = currentCsrfToken();
+    if (SAFE.has(method) || !token) {
+      return { url, init };
+    }
+    const headers = new Headers(init.headers);
+    headers.set('X-CSRF-Token', token);
+    headers.set('X-Client-Platform', 'web');
+    return { url, init: { ...init, headers } };
+  },
+};
+
+const configuration = new Configuration({
+  basePath: API_URL,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
+export const api = {
+  profile: new ProfileApi(configuration),
+  onboarding: new OnboardingApi(configuration),
+  preferences: new PreferencesApi(configuration),
+  consents: new ConsentsApi(configuration),
+  privacy: new PrivacyApi(configuration),
+};
