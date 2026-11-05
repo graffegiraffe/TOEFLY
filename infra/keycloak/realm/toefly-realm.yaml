@@ -74,6 +74,11 @@ roles:
 defaultRoles:
   - STUDENT
 browserFlow: toefly browser
+# Built-in registration with the sign-up attempt notice first (AC-01.01.3, toefly-keycloak-extensions).
+registrationFlow: toefly registration
+# Security emails: password changed and second factor removed (AC-01.06.2, AC-01.07.4); KC_SPI_EVENTS_LISTENER
+# settings in Compose limit the email listener to these events.
+eventsListeners: [jboss-logging, email]
 # The sign-up form asks for the account type and the required consents (AC-01.01.1, AC-01.01.4, AC-01.03.3).
 # Keycloak keeps the declarative user profile as a component with the JSON configuration.
 components:
@@ -316,6 +321,9 @@ requiredActions:
     enabled: true
     defaultAction: false
     priority: 50
+    # 60 seconds between emails (AC-01.02.4); the hourly cap of five is in toefly-keycloak-extensions.
+    config:
+      emailResendCooldownSeconds: "60"
   - alias: CONFIGURE_TOTP
     name: Configure OTP
     providerId: CONFIGURE_TOTP
@@ -340,6 +348,35 @@ otpPolicyDigits: 6
 otpPolicyPeriod: 30
 otpPolicyLookAheadWindow: 1
 authenticationFlows:
+  - alias: toefly registration
+    description: Sign-up; a taken email gets a neutral answer and its owner a notice (AC-01.01.3)
+    providerId: basic-flow
+    topLevel: true
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: registration-page-form
+        flowAlias: toefly registration form
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: true
+  - alias: toefly registration form
+    description: Sign-up form actions
+    providerId: form-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: toefly-sign-up-attempt-notice
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: registration-user-creation
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+      - authenticator: registration-password-action
+        requirement: REQUIRED
+        priority: 30
+        autheticatorFlow: false
   - alias: toefly browser
     description: Browser sign-in with TOTP for tutors, administrators and learners who turned it on
     providerId: basic-flow

@@ -166,6 +166,8 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set in .env}
       KC_HOSTNAME: http://localhost:8180
+      # Only security emails, no "failed sign-in" mails that would help guess accounts (docs/10 §4.5).
+      KC_SPI_EVENTS_LISTENER__EMAIL__INCLUDE_EVENTS: UPDATE_PASSWORD,REMOVE_TOTP,REMOVE_CREDENTIAL
     ports: ["8180:8080"]
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q UP <&3"]

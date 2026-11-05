@@ -2,10 +2,10 @@ name: ci-libs
 
 on:
   pull_request:
-    paths: ["libs/**", "tools/**", "pom.xml", ".mvn/**"]
+    paths: ["libs/**", "tools/**", "infra/keycloak/extensions/**", "pom.xml", ".mvn/**"]
   push:
     branches: [develop, main]
-    paths: ["libs/**", "tools/**", "pom.xml", ".mvn/**"]
+    paths: ["libs/**", "tools/**", "infra/keycloak/extensions/**", "pom.xml", ".mvn/**"]
 
 permissions: {}
 
@@ -39,9 +39,9 @@ jobs:
           fi
       # Testcontainers tests (Docker is available on GitHub-hosted runners) and the Avro compatibility check:
       # an incompatible schema change fails AvroSchemaCompatibilityTest.
-      - name: Verify libraries, archetype and the outbox round trip
+      - name: Verify libraries, archetype, Keycloak providers and the outbox round trip
         run: >-
-          ./mvnw -B -ntp -pl libs/platform-bom,libs/toefly-parent,libs/toefly-common-events,libs/toefly-common-web,libs/toefly-common-security,libs/toefly-common-observability,libs/toefly-common-outbox,libs/toefly-common-test,tools/service-archetype
+          ./mvnw -B -ntp -pl libs/platform-bom,libs/toefly-parent,libs/toefly-common-events,libs/toefly-common-web,libs/toefly-common-security,libs/toefly-common-observability,libs/toefly-common-outbox,libs/toefly-common-test,tools/service-archetype,infra/keycloak/extensions
           verify -Dtoefly.avro.baseline="$RUNNER_TEMP/avro-baseline"
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
