@@ -55,6 +55,9 @@ toefly:
     session:
       cookie-name: toefly_sid
       secure-cookie: true
+      # Local Keycloak runs on localhost:8180, another site than api.toefly.localhost: a Strict cookie would not
+      # come back to /auth/callback. Clusters keep Strict (docs/10-security-privacy.md §4.2).
+      same-site: Lax
       max-inactive-days: 14
     keycloak:
       issuer: http://localhost:8180/realms/toefly
@@ -107,6 +110,11 @@ spring:
   config:
     activate:
       on-profile: k8s
+toefly:
+  gateway:
+    session:
+      cookie-name: __Host-toefly_sid
+      same-site: Strict
 logging:
   structured:
     format:

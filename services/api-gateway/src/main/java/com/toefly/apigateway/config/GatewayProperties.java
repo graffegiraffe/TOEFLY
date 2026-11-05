@@ -23,7 +23,15 @@ public record GatewayProperties(
         Map<RateLimitTier, Map<EndpointGroup, TokenBucket>> rateLimits) {
 
     /** {@code __Host-toefly_sid} in cluster environments, {@code toefly_sid} locally (ADR-0023). */
-    public record Session(String cookieName, boolean secureCookie, int maxInactiveDays) {}
+    /** {@code sameSite} is Strict in clusters and Lax locally, where Keycloak is another site (docs/10 §4.2). */
+    public record Session(String cookieName, boolean secureCookie, int maxInactiveDays, String sameSite) {
+
+        public Session {
+            if (sameSite == null || sameSite.isBlank()) {
+                sameSite = "Strict";
+            }
+        }
+    }
 
     public record Keycloak(String endSessionUri) {}
 }

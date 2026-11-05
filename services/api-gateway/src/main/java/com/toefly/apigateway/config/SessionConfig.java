@@ -8,7 +8,8 @@ import org.springframework.web.server.session.WebSessionIdResolver;
 
 /**
  * Web sessions in Valkey ({@code spring:session:*}) indexed by user, so all sessions of a user can be ended at once.
- * The cookie is {@code HttpOnly; Secure; SameSite=Strict} (ADR-0023); 14 days of inactivity end a session.
+ * The cookie is {@code HttpOnly; Secure; SameSite=Strict} (ADR-0023; Lax only locally, docs/10 §4.2); 14 days of
+ * inactivity end a session.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableRedisIndexedWebSession(maxInactiveIntervalInSeconds = 1_209_600)
@@ -20,7 +21,7 @@ public class SessionConfig {
         resolver.setCookieName(properties.session().cookieName());
         resolver.addCookieInitializer(cookie -> cookie.httpOnly(true)
                 .secure(properties.session().secureCookie())
-                .sameSite("Strict")
+                .sameSite(properties.session().sameSite())
                 .path("/"));
         return resolver;
     }

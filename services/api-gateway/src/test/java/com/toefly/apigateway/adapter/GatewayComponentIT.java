@@ -62,6 +62,8 @@ class GatewayComponentIT {
         registry.add("spring.data.redis.host", VALKEY::getHost);
         registry.add("spring.data.redis.port", () -> VALKEY.getMappedPort(6379));
         registry.add("toefly.gateway.services.profile-service", () -> "http://localhost:" + PROFILE.port());
+        // The cluster value (docs/10 §4.2); local runs use Lax.
+        registry.add("toefly.gateway.session.same-site", () -> "Strict");
         registry.add("toefly.gateway.rate-limits.STUDENT_PRO.GENERAL.replenish-rate", () -> "0.5");
         registry.add("toefly.gateway.rate-limits.STUDENT_PRO.GENERAL.burst-capacity", () -> "3");
     }

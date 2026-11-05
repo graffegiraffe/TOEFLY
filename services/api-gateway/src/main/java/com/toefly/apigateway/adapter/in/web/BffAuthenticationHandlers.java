@@ -1,6 +1,8 @@
 package com.toefly.apigateway.adapter.in.web;
 
 import java.net.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -16,6 +18,8 @@ import reactor.core.publisher.Mono;
  */
 public class BffAuthenticationHandlers
         implements ServerAuthenticationSuccessHandler, ServerAuthenticationFailureHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(BffAuthenticationHandlers.class);
 
     private final String webOrigin;
 
@@ -36,6 +40,8 @@ public class BffAuthenticationHandlers
 
     @Override
     public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
+        // The reason stays in the log only: the browser gets the neutral sign-in page.
+        log.warn("Web sign-in failed: {}", exception.getMessage());
         return redirect(webFilterExchange.getExchange(), webOrigin + "/sign-in");
     }
 
