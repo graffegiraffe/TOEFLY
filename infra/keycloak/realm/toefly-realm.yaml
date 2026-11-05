@@ -1,15 +1,68 @@
-# Base of realm `toefly`, applied idempotently by keycloak-config-cli. Phase 1 adds login options, MFA,
-# identity providers, the theme and the service clients (docs/00-README.md §9.1).
+# Realm `toefly` as code, applied idempotently by keycloak-config-cli (docs/10-security-privacy.md §4).
+# Secrets and provider keys come from infra/compose/.env; empty Google keys leave the provider disabled.
 realm: toefly
 enabled: true
 displayName: TOEFLY
+displayNameHtml: "<b>TOE</b><span class=\"toefly-fly\">FLY</span>"
 # Docker Desktop forwards host requests from an address Keycloak treats as external, so local Compose sets none.
 sslRequired: $(env:KEYCLOAK_SSL_REQUIRED:-external)
 registrationAllowed: true
+registrationEmailAsUsername: true
+verifyEmail: true
 loginWithEmailAllowed: true
 duplicateEmailsAllowed: false
 resetPasswordAllowed: true
+rememberMe: false
+editUsernameAllowed: false
+loginTheme: toefly
+emailTheme: toefly
+internationalizationEnabled: true
+supportedLocales: [en, ru]
+defaultLocale: en
+# Length and a blocklist instead of composition rules (NIST SP 800-63B), AC-01.01.2.
+passwordPolicy: length(10) and maxLength(128) and notUsername and notEmail and passwordHistory(3) and passwordBlacklist(common-passwords-10k.txt) and hashAlgorithm(argon2)
+# Temporary lockout after 5 failures for 15 minutes (AC-01.05.2, AC-01.07.2).
+bruteForceProtected: true
+permanentLockout: false
+failureFactor: 5
+waitIncrementSeconds: 900
+maxFailureWaitSeconds: 900
+maxDeltaTimeSeconds: 900
+quickLoginCheckMilliSeconds: 1000
+minimumQuickLoginWaitSeconds: 60
 accessTokenLifespan: 900
+ssoSessionIdleTimeout: 28800
+ssoSessionMaxLifespan: 36000
+offlineSessionIdleTimeout: 2592000
+offlineSessionMaxLifespanEnabled: true
+offlineSessionMaxLifespan: 15552000
+revokeRefreshToken: true
+refreshTokenMaxReuse: 0
+actionTokenGeneratedByUserLifespan: 1800
+attributes:
+  # Email verification links live 24 hours, password reset links 30 minutes (AC-01.02.1, AC-01.06.2).
+  actionTokenGeneratedByUserLifespan.verify-email: "86400"
+  actionTokenGeneratedByUserLifespan.reset-credentials: "1800"
+eventsEnabled: true
+eventsExpiration: 31536000
+adminEventsEnabled: true
+adminEventsDetailsEnabled: true
+browserSecurityHeaders:
+  contentSecurityPolicy: "frame-src 'self'; frame-ancestors 'none'; object-src 'none';"
+  xFrameOptions: DENY
+  xContentTypeOptions: nosniff
+  strictTransportSecurity: max-age=15552000; includeSubDomains
+  referrerPolicy: no-referrer
+# Mailpit locally; Brevo when the KEYCLOAK_SMTP_* variables are set (docs/12-implementation-plan.md §8).
+smtpServer:
+  host: $(env:KEYCLOAK_SMTP_HOST:-mailpit)
+  port: "$(env:KEYCLOAK_SMTP_PORT:-1025)"
+  from: $(env:KEYCLOAK_SMTP_FROM:-no-reply@toefly.localhost)
+  fromDisplayName: TOEFLY
+  auth: "$(env:KEYCLOAK_SMTP_AUTH:-false)"
+  starttls: "$(env:KEYCLOAK_SMTP_STARTTLS:-false)"
+  user: $(env:KEYCLOAK_SMTP_USER:-)
+  password: $(env:KEYCLOAK_SMTP_PASSWORD:-)
 roles:
   realm:
     - name: STUDENT
@@ -20,24 +73,789 @@ roles:
       description: Content and platform administrator
 defaultRoles:
   - STUDENT
+browserFlow: toefly browser
+# The sign-up form asks for the account type and the required consents (AC-01.01.1, AC-01.01.4, AC-01.03.3).
+# Keycloak keeps the declarative user profile as a component with the JSON configuration.
+components:
+  org.keycloak.userprofile.UserProfileProvider:
+    - providerId: declarative-user-profile
+      subComponents: {}
+      config:
+        kc.user.profile.config:
+          - |
+            {
+              "unmanagedAttributePolicy": "ADMIN_EDIT",
+              "attributes": [
+                {
+                  "name": "username",
+                  "displayName": "${username}",
+                  "validations": {
+                    "length": {
+                      "min": 3,
+                      "max": 255
+                    },
+                    "username-prohibited-characters": {},
+                    "up-username-not-idn-homograph": {}
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  }
+                },
+                {
+                  "name": "email",
+                  "displayName": "${email}",
+                  "required": {
+                    "roles": [
+                      "user"
+                    ]
+                  },
+                  "validations": {
+                    "email": {},
+                    "length": {
+                      "max": 255
+                    }
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  }
+                },
+                {
+                  "name": "firstName",
+                  "displayName": "${firstName}",
+                  "validations": {
+                    "length": {
+                      "max": 100
+                    },
+                    "person-name-prohibited-characters": {}
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  }
+                },
+                {
+                  "name": "lastName",
+                  "displayName": "${lastName}",
+                  "validations": {
+                    "length": {
+                      "max": 100
+                    },
+                    "person-name-prohibited-characters": {}
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  }
+                },
+                {
+                  "name": "accountType",
+                  "displayName": "${toeflyAccountType}",
+                  "required": {
+                    "roles": [
+                      "user"
+                    ]
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  },
+                  "validations": {
+                    "options": {
+                      "options": [
+                        "STUDENT",
+                        "TUTOR"
+                      ]
+                    }
+                  },
+                  "annotations": {
+                    "inputType": "select-radiobuttons",
+                    "inputOptionLabels": {
+                      "STUDENT": "${toeflyAccountStudent}",
+                      "TUTOR": "${toeflyAccountTutor}"
+                    }
+                  }
+                },
+                {
+                  "name": "termsAccepted",
+                  "displayName": "${toeflyConsentTerms}",
+                  "multivalued": true,
+                  "required": {
+                    "roles": [
+                      "user"
+                    ]
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  },
+                  "validations": {
+                    "options": {
+                      "options": [
+                        "accepted"
+                      ]
+                    }
+                  },
+                  "annotations": {
+                    "inputType": "multiselect-checkboxes",
+                    "inputOptionLabels": {
+                      "accepted": "${toeflyConsentTerms}"
+                    }
+                  }
+                },
+                {
+                  "name": "privacyAccepted",
+                  "displayName": "${toeflyConsentPrivacy}",
+                  "multivalued": true,
+                  "required": {
+                    "roles": [
+                      "user"
+                    ]
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  },
+                  "validations": {
+                    "options": {
+                      "options": [
+                        "accepted"
+                      ]
+                    }
+                  },
+                  "annotations": {
+                    "inputType": "multiselect-checkboxes",
+                    "inputOptionLabels": {
+                      "accepted": "${toeflyConsentPrivacy}"
+                    }
+                  }
+                },
+                {
+                  "name": "ageConfirmed",
+                  "displayName": "${toeflyConsentAge}",
+                  "multivalued": true,
+                  "required": {
+                    "roles": [
+                      "user"
+                    ]
+                  },
+                  "permissions": {
+                    "view": [
+                      "admin",
+                      "user"
+                    ],
+                    "edit": [
+                      "admin",
+                      "user"
+                    ]
+                  },
+                  "validations": {
+                    "options": {
+                      "options": [
+                        "accepted"
+                      ]
+                    }
+                  },
+                  "annotations": {
+                    "inputType": "multiselect-checkboxes",
+                    "inputOptionLabels": {
+                      "accepted": "${toeflyConsentAge}"
+                    }
+                  }
+                }
+              ],
+              "groups": []
+            }
+requiredActions:
+  - alias: VERIFY_EMAIL
+    name: Verify Email
+    providerId: VERIFY_EMAIL
+    enabled: true
+    defaultAction: false
+    priority: 50
+  - alias: CONFIGURE_TOTP
+    name: Configure OTP
+    providerId: CONFIGURE_TOTP
+    enabled: true
+    defaultAction: false
+    priority: 10
+  - alias: UPDATE_PASSWORD
+    name: Update Password
+    providerId: UPDATE_PASSWORD
+    enabled: true
+    defaultAction: false
+    priority: 30
+  - alias: TERMS_AND_CONDITIONS
+    name: Terms and Conditions
+    providerId: TERMS_AND_CONDITIONS
+    enabled: false
+    defaultAction: false
+    priority: 20
+otpPolicyType: totp
+otpPolicyAlgorithm: HmacSHA1
+otpPolicyDigits: 6
+otpPolicyPeriod: 30
+otpPolicyLookAheadWindow: 1
+authenticationFlows:
+  - alias: toefly browser
+    description: Browser sign-in with TOTP for tutors, administrators and learners who turned it on
+    providerId: basic-flow
+    topLevel: true
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: auth-cookie
+        requirement: ALTERNATIVE
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: identity-provider-redirector
+        requirement: ALTERNATIVE
+        priority: 25
+        autheticatorFlow: false
+      - flowAlias: toefly browser forms
+        requirement: ALTERNATIVE
+        priority: 30
+        autheticatorFlow: true
+  - alias: toefly browser forms
+    description: Password, then TOTP by role
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: auth-username-password-form
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - flowAlias: toefly browser mfa tutor
+        requirement: CONDITIONAL
+        priority: 20
+        autheticatorFlow: true
+      - flowAlias: toefly browser mfa admin
+        requirement: CONDITIONAL
+        priority: 30
+        autheticatorFlow: true
+      - flowAlias: toefly browser mfa optional
+        requirement: CONDITIONAL
+        priority: 40
+        autheticatorFlow: true
+  - alias: toefly browser mfa tutor
+    description: TOTP is required for tutors (AC-01.07.3)
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly browser role tutor
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: auth-otp-form
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+  - alias: toefly browser mfa admin
+    description: TOTP is required for administrators (AC-01.07.3)
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly browser role admin
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: auth-otp-form
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+  - alias: toefly browser mfa optional
+    description: Learners who turned TOTP on are asked for a code (AC-01.07.2, AC-01.07.5)
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: conditional-user-configured
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly browser not tutor
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly browser not admin
+        requirement: REQUIRED
+        priority: 30
+        autheticatorFlow: false
+      - authenticator: auth-otp-form
+        requirement: REQUIRED
+        priority: 40
+        autheticatorFlow: false
+  - alias: toefly post broker login
+    description: TOTP after Google or Apple by the same rules (AC-01.07.5)
+    providerId: basic-flow
+    topLevel: true
+    builtIn: false
+    authenticationExecutions:
+      - flowAlias: toefly broker mfa tutor
+        requirement: CONDITIONAL
+        priority: 10
+        autheticatorFlow: true
+      - flowAlias: toefly broker mfa admin
+        requirement: CONDITIONAL
+        priority: 20
+        autheticatorFlow: true
+      - flowAlias: toefly broker mfa optional
+        requirement: CONDITIONAL
+        priority: 30
+        autheticatorFlow: true
+  - alias: toefly broker mfa tutor
+    description: TOTP is required for tutors (AC-01.07.3)
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly broker role tutor
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: auth-otp-form
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+  - alias: toefly broker mfa admin
+    description: TOTP is required for administrators (AC-01.07.3)
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly broker role admin
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: auth-otp-form
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+  - alias: toefly broker mfa optional
+    description: Learners who turned TOTP on are asked for a code (AC-01.07.2, AC-01.07.5)
+    providerId: basic-flow
+    topLevel: false
+    builtIn: false
+    authenticationExecutions:
+      - authenticator: conditional-user-configured
+        requirement: REQUIRED
+        priority: 10
+        autheticatorFlow: false
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly broker not tutor
+        requirement: REQUIRED
+        priority: 20
+        autheticatorFlow: false
+      - authenticator: conditional-user-role
+        authenticatorConfig: toefly broker not admin
+        requirement: REQUIRED
+        priority: 30
+        autheticatorFlow: false
+      - authenticator: auth-otp-form
+        requirement: REQUIRED
+        priority: 40
+        autheticatorFlow: false
+authenticatorConfig:
+  - alias: toefly browser role tutor
+    config:
+      condUserRole: TUTOR
+      negate: "false"
+  - alias: toefly browser role admin
+    config:
+      condUserRole: ADMIN
+      negate: "false"
+  - alias: toefly browser not tutor
+    config:
+      condUserRole: TUTOR
+      negate: "true"
+  - alias: toefly browser not admin
+    config:
+      condUserRole: ADMIN
+      negate: "true"
+  - alias: toefly broker role tutor
+    config:
+      condUserRole: TUTOR
+      negate: "false"
+  - alias: toefly broker role admin
+    config:
+      condUserRole: ADMIN
+      negate: "false"
+  - alias: toefly broker not tutor
+    config:
+      condUserRole: TUTOR
+      negate: "true"
+  - alias: toefly broker not admin
+    config:
+      condUserRole: ADMIN
+      negate: "true"
+identityProviders:
+  - alias: google
+    displayName: Google
+    providerId: google
+    enabled: $(env:GOOGLE_IDP_ENABLED:-false)
+    # Google confirms the address, so no second verification (AC-01.02.5); linking needs the password (AC-01.03.2).
+    trustEmail: true
+    storeToken: false
+    addReadTokenRoleOnCreate: false
+    linkOnly: false
+    firstBrokerLoginFlowAlias: first broker login
+    postBrokerLoginFlowAlias: toefly post broker login
+    config:
+      clientId: $(env:GOOGLE_CLIENT_ID:-not-configured)
+      clientSecret: $(env:GOOGLE_CLIENT_SECRET:-not-configured)
+      defaultScope: openid email profile
+      syncMode: IMPORT
+      hideOnLoginPage: "false"
+  # Sign in with Apple needs a paid Apple Developer account (docs/12 §8); disabled until its keys exist.
+  - alias: apple
+    displayName: Apple
+    providerId: oidc
+    enabled: $(env:APPLE_IDP_ENABLED:-false)
+    trustEmail: true
+    storeToken: false
+    firstBrokerLoginFlowAlias: first broker login
+    postBrokerLoginFlowAlias: toefly post broker login
+    config:
+      issuer: https://appleid.apple.com
+      authorizationUrl: https://appleid.apple.com/auth/authorize
+      tokenUrl: https://appleid.apple.com/auth/token
+      jwksUrl: https://appleid.apple.com/auth/keys
+      validateSignature: "true"
+      useJwksUrl: "true"
+      clientId: $(env:APPLE_CLIENT_ID:-not-configured)
+      clientSecret: $(env:APPLE_CLIENT_SECRET:-not-configured)
+      clientAuthMethod: client_secret_post
+      defaultScope: openid name email
+      syncMode: IMPORT
+clientScopes:
+  - name: toefly-api-audience
+    description: Audience toefly-api of every service (docs/05-api-contracts.md §2.8)
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: "false"
+      display.on.consent.screen: "false"
+    protocolMappers:
+      - name: toefly-api audience
+        protocol: openid-connect
+        protocolMapper: oidc-audience-mapper
+        consentRequired: false
+        config:
+          included.custom.audience: toefly-api
+          access.token.claim: "true"
+          id.token.claim: "false"
+          introspection.token.claim: "true"
+  - name: toefly-signup
+    description: Account type and consents of the sign-up form for profile-service
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: "false"
+      display.on.consent.screen: "false"
+    protocolMappers:
+      - name: accountType
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        consentRequired: false
+        config:
+          user.attribute: accountType
+          claim.name: account_type
+          jsonType.label: String
+          multivalued: "true"
+          access.token.claim: "true"
+          id.token.claim: "false"
+          userinfo.token.claim: "false"
+          introspection.token.claim: "true"
+      - name: termsAccepted
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        consentRequired: false
+        config:
+          user.attribute: termsAccepted
+          claim.name: consents.terms
+          jsonType.label: String
+          multivalued: "true"
+          access.token.claim: "true"
+          id.token.claim: "false"
+          userinfo.token.claim: "false"
+          introspection.token.claim: "true"
+      - name: privacyAccepted
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        consentRequired: false
+        config:
+          user.attribute: privacyAccepted
+          claim.name: consents.privacy
+          jsonType.label: String
+          multivalued: "true"
+          access.token.claim: "true"
+          id.token.claim: "false"
+          userinfo.token.claim: "false"
+          introspection.token.claim: "true"
+      - name: ageConfirmed
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        consentRequired: false
+        config:
+          user.attribute: ageConfirmed
+          claim.name: consents.age
+          jsonType.label: String
+          multivalued: "true"
+          access.token.claim: "true"
+          id.token.claim: "false"
+          userinfo.token.claim: "false"
+          introspection.token.claim: "true"
+  - name: internal
+    description: Calls between services with client credentials (docs/10-security-privacy.md §7.2)
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: "true"
+      display.on.consent.screen: "false"
 clients:
   - clientId: toefly-web-bff
-    name: TOEFLY web (BFF)
+    name: TOEFLY web (BFF in api-gateway)
     enabled: true
     publicClient: false
     secret: $(env:TOEFLY_WEB_BFF_SECRET)
     standardFlowEnabled: true
+    implicitFlowEnabled: false
     directAccessGrantsEnabled: false
-    redirectUris: ["http://localhost:8080/auth/callback"]
-    webOrigins: ["http://localhost:5173"]
+    serviceAccountsEnabled: false
+    redirectUris: ["$(env:TOEFLY_GATEWAY_URL:-http://api.toefly.localhost:8080)/auth/callback"]
+    webOrigins: []
     attributes:
       pkce.code.challenge.method: S256
+      post.logout.redirect.uris: "$(env:TOEFLY_WEB_URL:-http://app.toefly.localhost:5173)/*"
+      use.refresh.tokens: "true"
+    defaultClientScopes: [basic, acr, roles, email, profile, toefly-api-audience, toefly-signup]
+    optionalClientScopes: [offline_access]
   - clientId: toefly-ios
     name: TOEFLY iOS
     enabled: true
     publicClient: true
     standardFlowEnabled: true
+    implicitFlowEnabled: false
     directAccessGrantsEnabled: false
-    redirectUris: ["app.toefly.ios:/oauth/callback"]
+    redirectUris: ["app.toefly://oauth/callback"]
+    webOrigins: []
     attributes:
       pkce.code.challenge.method: S256
+      use.refresh.tokens: "true"
+    defaultClientScopes: [basic, acr, roles, email, profile, toefly-api-audience, toefly-signup]
+    optionalClientScopes: [offline_access]
+  - clientId: svc-api-gateway
+    name: api-gateway service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_API_GATEWAY_SECRET:-svc-api-gateway-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-profile-service
+    name: profile-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_PROFILE_SERVICE_SECRET:-svc-profile-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-content-service
+    name: content-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_CONTENT_SERVICE_SECRET:-svc-content-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-content-factory
+    name: content-factory service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_CONTENT_FACTORY_SECRET:-svc-content-factory-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-practice-service
+    name: practice-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_PRACTICE_SERVICE_SECRET:-svc-practice-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-assessment-service
+    name: assessment-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_ASSESSMENT_SERVICE_SECRET:-svc-assessment-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-speech-service
+    name: speech-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_SPEECH_SERVICE_SECRET:-svc-speech-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-planning-service
+    name: planning-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_PLANNING_SERVICE_SECRET:-svc-planning-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-tutor-agent-service
+    name: tutor-agent-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_TUTOR_AGENT_SERVICE_SECRET:-svc-tutor-agent-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-mockexam-service
+    name: mockexam-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_MOCKEXAM_SERVICE_SECRET:-svc-mockexam-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-vocabulary-service
+    name: vocabulary-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_VOCABULARY_SERVICE_SECRET:-svc-vocabulary-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-classroom-service
+    name: classroom-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_CLASSROOM_SERVICE_SECRET:-svc-classroom-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-billing-service
+    name: billing-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_BILLING_SERVICE_SECRET:-svc-billing-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-notification-service
+    name: notification-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_NOTIFICATION_SERVICE_SECRET:-svc-notification-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-analytics-service
+    name: analytics-service service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_ANALYTICS_SERVICE_SECRET:-svc-analytics-service-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+  - clientId: svc-ai-gateway
+    name: ai-gateway service account
+    enabled: true
+    publicClient: false
+    secret: $(env:SVC_AI_GATEWAY_SECRET:-svc-ai-gateway-local)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    defaultClientScopes: [basic, roles, toefly-api-audience, internal]
+    optionalClientScopes: []
+users:
+  # svc-profile-service assigns roles, disables and deletes accounts through the Admin API (R-18).
+  - username: service-account-svc-profile-service
+    enabled: true
+    serviceAccountClientId: svc-profile-service
+    clientRoles:
+      realm-management: [manage-users, view-users, query-users, view-realm]
