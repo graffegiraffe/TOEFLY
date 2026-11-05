@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: profile-service
+  datasource:
+    url: jdbc:postgresql://localhost:${TOEFLY_POSTGRES_PORT:5432}/profile_db
+    username: profile_app
+    password: profile_app
+  flyway:
+    locations: classpath:db/migration,classpath:db/common
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: profile-service
+      auto-offset-reset: earliest
+      isolation-level: read_committed
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      properties:
+        apicurio.registry.url: ${toefly.events.registry-url}
+        apicurio.registry.use-specific-avro-reader: true
+        apicurio.registry.fault-tolerant-refresh: true
+    listener:
+      ack-mode: record
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+      client:
+        registration:
+          svc-profile-service:
+            provider: keycloak
+            client-id: svc-profile-service
+            client-secret: ${SVC_PROFILE_SERVICE_SECRET:svc-profile-service-local}
+            authorization-grant-type: client_credentials
+            scope: internal
+        provider:
+          keycloak:
+            # Explicit endpoint: no discovery request at startup.
+            token-uri: http://localhost:8180/realms/toefly/protocol/openid-connect/token
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8081
+
+toefly:
+  events:
+    registry-url: http://localhost:8380/apis/registry/v3
+    auto-register: false
+  profile:
+    # Version of the Terms and Privacy Policy that sign-up consents refer to (AC-31.01.2).
+    policy-version: "2026-11-01"
+    keycloak-admin-url: http://localhost:8180/admin/realms/toefly
+    gateway-url: http://localhost:8080
+
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+toefly:
+  events:
+    auto-register: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+logging:
+  structured:
+    format:
+      console: ecs
