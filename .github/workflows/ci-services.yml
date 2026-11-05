@@ -32,15 +32,19 @@ jobs:
               - 'libs/**'
               - 'pom.xml'
               - '.mvn/**'
+            # Consumers read the contracts of their producers (ADR-0031), so a changed contract rebuilds every service.
+            contracts:
+              - 'services/*/src/test/resources/contracts/**'
             services:
               - 'services/**'
       - id: services
         name: List services to build
         env:
           SHARED: ${{ steps.filter.outputs.shared }}
+          CONTRACTS: ${{ steps.filter.outputs.contracts }}
           FILES: ${{ steps.filter.outputs.services_files }}
         run: |
-          if [ "$SHARED" = "true" ]; then
+          if [ "$SHARED" = "true" ] || [ "$CONTRACTS" = "true" ]; then
             names=$(find services -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2>/dev/null || true)
           else
             names=$(printf '%s\n' $FILES | cut -d/ -f2 | sort -u)
