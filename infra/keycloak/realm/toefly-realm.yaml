@@ -477,6 +477,11 @@ authenticationFlows:
     topLevel: true
     builtIn: false
     authenticationExecutions:
+      # A flow of only conditional steps fails when none applies (a learner without TOTP), so one step always passes.
+      - authenticator: allow-access-authenticator
+        requirement: REQUIRED
+        priority: 5
+        autheticatorFlow: false
       - flowAlias: toefly broker mfa tutor
         requirement: CONDITIONAL
         priority: 10
