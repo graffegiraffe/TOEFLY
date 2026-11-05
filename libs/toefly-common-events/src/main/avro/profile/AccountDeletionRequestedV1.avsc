@@ -1,0 +1,100 @@
+{
+  "type": "record",
+  "name": "AccountDeletionRequestedV1",
+  "namespace": "com.toefly.events.profile",
+  "doc": "The user requested account deletion (toefly.profile.account-deletion-requested.v1); every service deletes the user's data.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "deletionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Identifier of the deletion request."
+    },
+    {
+      "name": "requestedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment of the request, UTC."
+    },
+    {
+      "name": "legalDeadlineAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "GDPR deadline of the deletion (requestedAt + 30 days), UTC."
+    },
+    {
+      "name": "roles",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "enum",
+          "name": "Role",
+          "namespace": "com.toefly.events.common",
+          "doc": "Role of a user (docs/00-README.md §5.2).",
+          "symbols": [
+            "UNKNOWN",
+            "STUDENT",
+            "TUTOR",
+            "ADMIN"
+          ],
+          "default": "UNKNOWN"
+        }
+      },
+      "doc": "Roles of the user at the time of the request."
+    }
+  ]
+}

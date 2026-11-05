@@ -1,0 +1,139 @@
+{
+  "type": "record",
+  "name": "OnboardingCompletedV1",
+  "namespace": "com.toefly.events.profile",
+  "doc": "The learner set the goal, exam date and daily minutes (toefly.profile.onboarding-completed.v1); published again with a higher revision when the goal changes.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "revision",
+      "type": "int",
+      "doc": "1 for the onboarding, then incremented with every goal change."
+    },
+    {
+      "name": "overallTarget",
+      "type": "double",
+      "doc": "Overall target band, 1.0 to 6.0 in steps of 0.5."
+    },
+    {
+      "name": "readingTarget",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Reading target band, 1.0 to 6.0 in steps of 0.5; null when not set per section."
+    },
+    {
+      "name": "listeningTarget",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Listening target band; null when not set per section."
+    },
+    {
+      "name": "writingTarget",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Writing target band; null when not set per section."
+    },
+    {
+      "name": "speakingTarget",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Speaking target band; null when not set per section."
+    },
+    {
+      "name": "examBooked",
+      "type": "boolean",
+      "doc": "Whether the learner has an exam date."
+    },
+    {
+      "name": "examDate",
+      "type": [
+        "null",
+        {
+          "type": "int",
+          "logicalType": "date"
+        }
+      ],
+      "default": null,
+      "doc": "Exam date in the learner's time zone; null when not booked."
+    },
+    {
+      "name": "timezone",
+      "type": "string",
+      "doc": "IANA time zone of the learner's day, for example Europe/Minsk."
+    },
+    {
+      "name": "explanationLanguage",
+      "type": "string",
+      "doc": "Language of AI explanations: en or ru."
+    },
+    {
+      "name": "minutesPerDay",
+      "type": "int",
+      "doc": "Planned study minutes per day, 15 to 180."
+    },
+    {
+      "name": "preferredStudyTime",
+      "type": "string",
+      "doc": "Local time of the daily reminder, HH:mm."
+    }
+  ]
+}

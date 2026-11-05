@@ -1,0 +1,81 @@
+{
+  "type": "record",
+  "name": "ProfileCreatedV1",
+  "namespace": "com.toefly.events.profile",
+  "doc": "A profile was created on the first sign-in (toefly.profile.profile-created.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "roles",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "enum",
+          "name": "Role",
+          "namespace": "com.toefly.events.common",
+          "doc": "Role of a user (docs/00-README.md §5.2).",
+          "symbols": [
+            "UNKNOWN",
+            "STUDENT",
+            "TUTOR",
+            "ADMIN"
+          ],
+          "default": "UNKNOWN"
+        }
+      },
+      "doc": "Roles of the user when the profile was created."
+    },
+    {
+      "name": "emailVerified",
+      "type": "boolean",
+      "doc": "Whether Keycloak had verified the email address at creation."
+    }
+  ]
+}

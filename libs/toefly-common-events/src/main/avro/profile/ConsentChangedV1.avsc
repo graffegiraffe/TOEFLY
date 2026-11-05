@@ -1,0 +1,86 @@
+{
+  "type": "record",
+  "name": "ConsentChangedV1",
+  "namespace": "com.toefly.events.profile",
+  "doc": "A consent was given or withdrawn (toefly.profile.consent-changed.v1, compacted by user).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "consentType",
+      "type": {
+        "type": "enum",
+        "name": "ConsentType",
+        "namespace": "com.toefly.events.common",
+        "doc": "Kind of consent (docs/00-README.md §5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "TERMS",
+          "PRIVACY",
+          "AGE_16_PLUS",
+          "AI_PROCESSING",
+          "VOICE_RECORDINGS",
+          "MARKETING_EMAILS"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Kind of consent."
+    },
+    {
+      "name": "granted",
+      "type": "boolean",
+      "doc": "true when given, false when withdrawn."
+    },
+    {
+      "name": "policyVersion",
+      "type": "string",
+      "doc": "Version of the document the consent refers to."
+    }
+  ]
+}
