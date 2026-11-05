@@ -1,14 +1,8 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { expectNoSeriousViolations } from './flows';
 import { actionLinkFor } from './mailpit';
 
 const API = process.env.E2E_API_URL ?? 'http://api.toefly.localhost:8080';
-
-async function expectNoSeriousViolations(page: Page) {
-  const results = await new AxeBuilder({ page }).analyze();
-  const serious = results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''));
-  expect(serious.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
-}
 
 test.describe('US-01.01 US-01.02 US-02.04 sign-up, email confirmation, onboarding, Home', () => {
   test('a new learner registers, confirms the email, completes the onboarding and sees Home', async ({
@@ -46,7 +40,9 @@ test.describe('US-01.01 US-01.02 US-02.04 sign-up, email confirmation, onboardin
 
     // AC-01.05.1 the browser holds only the HttpOnly session cookie, no tokens in storage.
     const cookie = (await context.cookies(API)).find((candidate) => candidate.name === 'toefly_sid');
-    expect(cookie).toMatchObject({ httpOnly: true, secure: true, sameSite: 'Strict' });
+    // Strict in clusters; Lax locally, where Keycloak on localhost:8180 is another site (docs/10 §4.2).
+    const sameSite = process.env.E2E_COOKIE_SAME_SITE ?? 'Lax';
+    expect(cookie).toMatchObject({ httpOnly: true, secure: true, sameSite });
     const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
     expect(stored).not.toMatch(/eyJ[A-Za-z0-9_-]{10,}/);
     await expectNoSeriousViolations(page);
