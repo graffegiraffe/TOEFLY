@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.avro.specific.SpecificRecord;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
@@ -51,15 +52,36 @@ public class ApicurioEventPayloadSerializer implements EventPayloadSerializer, A
                         .queryParam("groupId", "toefly")
                         .queryParam("artifactId", TopicNames.valueArtifactId(topic))
                         .build())
+                // The registry gzips responses for clients that accept it, and the JDK client does not inflate them.
+                .header(HttpHeaders.ACCEPT_ENCODING, "identity")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(schema)
                 .retrieve()
                 .body(VersionSearchResults.class);
         if (found == null || found.versions() == null || found.versions().isEmpty()) {
+            // The serde registers named types of other namespaces (shared enums) as references, so the stored
+            // content differs from the inlined schema; the version the serde just resolved is the latest one.
+            found = latestVersion(topic);
+        }
+        if (found == null || found.versions() == null || found.versions().isEmpty()) {
             throw new IllegalStateException("Schema of " + topic + " is not registered in Apicurio");
         }
         String version = found.versions().getLast().version();
         return TopicNames.dataSchema(topic, Integer.parseInt(version));
+    }
+
+    private VersionSearchResults latestVersion(String topic) {
+        return registry.get()
+                .uri(uri -> uri.path("/search/versions")
+                        .queryParam("groupId", "toefly")
+                        .queryParam("artifactId", TopicNames.valueArtifactId(topic))
+                        .queryParam("orderby", "globalId")
+                        .queryParam("order", "desc")
+                        .queryParam("limit", 1)
+                        .build())
+                .header(HttpHeaders.ACCEPT_ENCODING, "identity")
+                .retrieve()
+                .body(VersionSearchResults.class);
     }
 
     @Override
