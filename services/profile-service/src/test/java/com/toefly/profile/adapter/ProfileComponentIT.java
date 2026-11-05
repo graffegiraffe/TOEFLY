@@ -14,8 +14,12 @@ import com.toefly.common.test.ApicurioTestcontainersConfiguration;
 import com.toefly.common.test.KafkaTestcontainersConfiguration;
 import com.toefly.common.test.OutboxAssertions;
 import com.toefly.common.test.PostgresTestcontainersConfiguration;
+import com.toefly.common.test.contract.ContractCoverage;
+import com.toefly.common.test.contract.ContractTests;
+import com.toefly.common.test.contract.OutboxMessageReceiver;
 import com.toefly.profile.application.port.out.IdentityProviderPort;
 import com.toefly.profile.application.port.out.SessionRevocationPort;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,9 +27,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
@@ -300,5 +308,79 @@ class ProfileComponentIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"acceptTutorTerms\":true}"))
                 .andExpect(status().isConflict());
+    }
+
+    // Contracts of the consumers of profile events (ADR-0031, docs/11-quality-testing.md §8.4).
+
+    static final Path CONTRACTS = Path.of("src/test/resources/contracts");
+
+    @Value("${toefly.events.registry-url}")
+    String registryUrl;
+
+    @TestFactory
+    @DisplayName("ADR-0031 profile events fulfil the contracts of their consumers")
+    Stream<DynamicTest> eventContracts() {
+        OutboxMessageReceiver receiver = new OutboxMessageReceiver(jdbc, registryUrl);
+        return ContractTests.messages(CONTRACTS, this, receiver).onClose(receiver::close);
+    }
+
+    @Test
+    @DisplayName("docs/11 §8.5 every published profile topic has a message contract")
+    void contractsCoverTopics() {
+        ContractCoverage.assertMessagesCover(
+                CONTRACTS,
+                List.of(
+                        PROFILE_CREATED,
+                        "toefly.profile.onboarding-completed.v1",
+                        "toefly.profile.preferences-updated.v1",
+                        "toefly.profile.consent-changed.v1",
+                        "toefly.profile.account-deletion-requested.v1"));
+    }
+
+    void profileCreated() throws Exception {
+        mvc.perform(get("/api/v1/me").with(student(UUID.randomUUID()))).andExpect(status().isOk());
+    }
+
+    void onboardingCompleted() throws Exception {
+        mvc.perform(put("/api/v1/me/onboarding")
+                        .with(student(UUID.randomUUID()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"overallTarget\":5.0,\"examBooked\":false,\"minutesPerDay\":60,"
+                                + "\"preferredStudyTime\":\"19:00\",\"timezone\":\"Europe/Minsk\","
+                                + "\"explanationLanguage\":\"en\",\"complete\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("COMPLETED"));
+    }
+
+    void preferencesUpdated() throws Exception {
+        UUID userId = UUID.randomUUID();
+        mvc.perform(get("/api/v1/me").with(student(userId))).andExpect(status().isOk());
+        mvc.perform(put("/api/v1/me/preferences")
+                        .with(student(userId))
+                        .header("If-Match", "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"timezone\":\"Asia/Tokyo\",\"explanationLanguage\":\"ru\","
+                                + "\"minutesPerDay\":30,\"preferredStudyTime\":\"20:00\"}"))
+                .andExpect(status().isOk());
+    }
+
+    void aiProcessingWithdrawn() throws Exception {
+        UUID userId = UUID.randomUUID();
+        // The first request records the sign-up consents in their own transaction.
+        mvc.perform(get("/api/v1/me").with(student(userId))).andExpect(status().isOk());
+        mvc.perform(put("/api/v1/me/consents/AI_PROCESSING")
+                        .with(student(userId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"granted\":false}"))
+                .andExpect(status().isOk());
+    }
+
+    void accountDeletionRequested() throws Exception {
+        mvc.perform(post("/api/v1/me/deletion-request")
+                        .with(student(UUID.randomUUID()))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"confirmation\":\"DELETE\"}"))
+                .andExpect(status().isAccepted());
     }
 }

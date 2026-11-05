@@ -1,0 +1,24 @@
+name: profile_created
+description: >
+  billing-service starts the 7-day Pro trial of a new learner from profile-created (written by profile-service
+  for its first declared consumer until billing-service adds its own fields, docs/11 §8.4)
+input:
+  triggeredBy: profileCreated()
+outputMessage:
+  sentTo: toefly.profile.profile-created.v1
+  headers:
+    ce_type: toefly.profile.profile-created.v1
+    ce_specversion: "1.0"
+    ce_source: /toefly/profile-service
+    content-type: application/avro
+  body:
+    roles: [STUDENT]
+    emailVerified: true
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid
