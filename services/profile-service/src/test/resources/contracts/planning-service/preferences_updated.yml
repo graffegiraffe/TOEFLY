@@ -1,0 +1,24 @@
+name: preferences_updated
+description: planning-service moves day boundaries to the new time zone from the full snapshot of preferences
+input:
+  triggeredBy: preferencesUpdated()
+outputMessage:
+  sentTo: toefly.profile.preferences-updated.v1
+  headers:
+    ce_type: toefly.profile.preferences-updated.v1
+    ce_specversion: "1.0"
+    ce_source: /toefly/profile-service
+    content-type: application/avro
+  body:
+    timezone: Asia/Tokyo
+    explanationLanguage: ru
+    minutesPerDay: 30
+    preferredStudyTime: "20:00"
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid

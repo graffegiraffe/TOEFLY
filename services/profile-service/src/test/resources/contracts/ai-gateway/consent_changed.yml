@@ -1,0 +1,23 @@
+name: consent_changed
+description: ai-gateway stops external AI processing for a user who withdrew the AI processing consent
+input:
+  triggeredBy: aiProcessingWithdrawn()
+outputMessage:
+  sentTo: toefly.profile.consent-changed.v1
+  headers:
+    ce_type: toefly.profile.consent-changed.v1
+    ce_specversion: "1.0"
+    ce_source: /toefly/profile-service
+    content-type: application/avro
+  body:
+    consentType: AI_PROCESSING
+    granted: false
+    policyVersion: "2026-11-01"
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid

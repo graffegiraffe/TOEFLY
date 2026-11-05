@@ -1,0 +1,28 @@
+name: onboarding_completed
+description: planning-service builds the plan from the goal, the exam date and the daily minutes
+input:
+  triggeredBy: onboardingCompleted()
+outputMessage:
+  sentTo: toefly.profile.onboarding-completed.v1
+  headers:
+    ce_type: toefly.profile.onboarding-completed.v1
+    ce_specversion: "1.0"
+    ce_source: /toefly/profile-service
+    content-type: application/avro
+  body:
+    revision: 1
+    overallTarget: 5.0
+    examBooked: false
+    examDate: null
+    minutesPerDay: 60
+    preferredStudyTime: "19:00"
+    timezone: Europe/Minsk
+    explanationLanguage: en
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid
