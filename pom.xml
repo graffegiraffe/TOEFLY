@@ -21,6 +21,7 @@
         <module>libs/toefly-common-observability</module>
         <module>libs/toefly-common-outbox</module>
         <module>libs/toefly-common-test</module>
+        <module>services/profile-service</module>
         <module>tools/service-archetype</module>
     </modules>
 
