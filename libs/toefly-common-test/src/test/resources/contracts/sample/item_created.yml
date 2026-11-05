@@ -1,0 +1,15 @@
+name: item_created
+description: sample message contract of the verifier tests
+input:
+  triggeredBy: createItem()
+outputMessage:
+  sentTo: toefly.demo.item-created.v1
+  headers:
+    ce_type: toefly.demo.item-created.v1
+  body:
+    title: Photosynthesis
+  matchers:
+    body:
+      - path: $.itemId
+        type: by_regex
+        predefined: uuid

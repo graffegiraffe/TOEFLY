@@ -1,0 +1,36 @@
+name: create_item
+description: sample REST contract of the verifier tests
+request:
+  method: POST
+  url: /internal/v1/items
+  headers:
+    Authorization: Bearer service-token
+    Content-Type: application/json
+  body:
+    userId: 0b6f1c0e-3b0c-4f3e-9d57-6a3f1c1d7a11
+    title: Photosynthesis
+  matchers:
+    headers:
+      - key: Authorization
+        regex: "Bearer .+"
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+response:
+  status: 201
+  headers:
+    Content-Type: application/json
+  body:
+    id: 7c0d6c3a-0f0e-4d8b-9a52-2b6a3f0d4e11
+    title: Photosynthesis
+    score: 1
+    tags: [READING]
+  matchers:
+    body:
+      - path: $.id
+        type: by_regex
+        predefined: uuid
+      - path: $.tags
+        type: by_type
+        minOccurrence: 1
