@@ -1,0 +1,93 @@
+/* TOEFLY tokens over PatternFly 5 (docs/07-ux-ui.md §2). The login card is the only glass element. */
+:root {
+  --toefly-canvas: #F4F8F5;
+  --toefly-ink: #14231A;
+  --toefly-ink-muted: #5B6B61;
+  --toefly-primary: #0F7D4D;
+  --toefly-primary-hover: #106B44;
+  --toefly-brand: #04AC6A;
+  --toefly-glass-fill: rgba(255, 255, 255, .72);
+  --toefly-glass-stroke: rgba(255, 255, 255, .80);
+  --toefly-glass-shadow: rgba(0, 60, 30, .10);
+  --pf-v5-global--primary-color--100: var(--toefly-primary);
+  --pf-v5-global--primary-color--200: var(--toefly-primary-hover);
+  --pf-v5-global--link--Color: var(--toefly-primary);
+  --pf-v5-global--link--Color--hover: var(--toefly-primary-hover);
+  --pf-v5-global--FontFamily--text: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --pf-v5-global--FontFamily--heading: var(--pf-v5-global--FontFamily--text);
+  --pf-v5-global--BorderRadius--sm: 10px;
+}
+
+.pf-v5-theme-dark {
+  --toefly-canvas: #0B140F;
+  --toefly-ink: #E8F2EC;
+  --toefly-ink-muted: #97A89E;
+  --toefly-primary: #0F7D4D;
+  --toefly-glass-fill: rgba(20, 40, 28, .62);
+  --toefly-glass-stroke: rgba(255, 255, 255, .14);
+  --toefly-glass-shadow: rgba(0, 0, 0, .40);
+  --pf-v5-global--link--Color: #3CC98A;
+  --pf-v5-global--link--Color--hover: #6FD9A4;
+}
+
+/* mesh-auth: blurred brand circles on the canvas */
+.pf-v5-c-login {
+  background-color: var(--toefly-canvas);
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(4, 172, 106, .22), transparent 38%),
+    radial-gradient(circle at 88% 12%, rgba(60, 201, 138, .18), transparent 34%),
+    radial-gradient(circle at 70% 92%, rgba(167, 235, 200, .30), transparent 40%);
+  color: var(--toefly-ink);
+}
+
+.pf-v5-c-login__main {
+  background: var(--toefly-glass-fill);
+  border: 1px solid var(--toefly-glass-stroke);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 8px 32px var(--toefly-glass-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  max-width: 440px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .pf-v5-c-login__main { background: #FFFFFF; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .pf-v5-theme-dark .pf-v5-c-login__main { background: #1A2A21; }
+}
+
+#kc-header-wrapper, .pf-v5-c-login__header .pf-v5-c-brand, #kc-header {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--toefly-ink);
+}
+
+.toefly-fly { color: var(--toefly-primary); }
+.pf-v5-theme-dark .toefly-fly { color: var(--toefly-brand); }
+
+.pf-v5-c-button.pf-m-primary {
+  background-image: linear-gradient(135deg, #0F7D4D 0%, #0A8752 100%);
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(8, 148, 91, .35);
+}
+
+.pf-v5-c-button.pf-m-primary:hover {
+  background-image: linear-gradient(135deg, #106B44 0%, #0F7D4D 100%);
+}
+
+.pf-v5-c-button.pf-m-primary:disabled,
+.pf-v5-c-button.pf-m-primary.pf-m-disabled {
+  background-image: none;
+  box-shadow: none;
+}
+
+.pf-v5-c-form-control:focus-within { outline: 2px solid var(--toefly-primary); outline-offset: 1px; }
+
+.pf-v5-c-login__header,
+#kc-header-wrapper {
+  color: var(--toefly-ink) !important;
+}
+
+.pf-v5-c-login__main {
+  border-top: 1px solid var(--toefly-glass-stroke) !important;
+}
