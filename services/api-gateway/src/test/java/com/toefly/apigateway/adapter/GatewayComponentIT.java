@@ -4,16 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import com.toefly.common.test.contract.ContractCoverage;
+import com.toefly.common.test.contract.ContractTests;
+import com.toefly.common.test.contract.WebTestClientExchanger;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
@@ -56,6 +63,7 @@ class GatewayComponentIT {
             .bindNow();
 
     static final Map<String, Jwt> TOKENS = new ConcurrentHashMap<>();
+    static final Path CONTRACTS = Path.of("src/test/resources/contracts");
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -236,6 +244,23 @@ class GatewayComponentIT {
                 .expectBody()
                 .jsonPath("$.reason")
                 .isEqualTo("EMAIL_NOT_VERIFIED");
+    }
+
+    @TestFactory
+    @DisplayName("ADR-0031 contracts of the consumers of api-gateway, signed as each consumer")
+    Stream<DynamicTest> contracts() {
+        // contracts/<consumer>/ holds the contracts of svc-<consumer>, so the caller policy is checked too.
+        return Stream.of("profile-service")
+                .flatMap(consumer -> ContractTests.rest(
+                        CONTRACTS.resolve(consumer),
+                        WebTestClientExchanger.of(
+                                client, headers -> headers.setBearerAuth(serviceToken("svc-" + consumer)))));
+    }
+
+    @Test
+    @DisplayName("docs/11 §8.5 every caller of an internal operation has a contract")
+    void contractsCoverCallers() {
+        ContractCoverage.assertCallersCover(CONTRACTS, List.of("profile-service"));
     }
 
     @Test
