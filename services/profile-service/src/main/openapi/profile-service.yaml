@@ -13,6 +13,7 @@ tags:
   - name: Preferences
   - name: Consents
   - name: Privacy
+  - name: Account
 paths:
   /api/v1/me:
     get:
@@ -277,6 +278,39 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/AccountDeletion' }
         '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/session-revocation:
+    post:
+      tags: [Account]
+      operationId: signOutEverywhere
+      summary: Sign out of all devices; the next request from any device gets 401 (AC-01.05.4)
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      x-toefly-ownership: STUDENT_OWNER
+      responses:
+        '204': { description: Every session of the user ended }
+        '401': { $ref: '#/components/responses/Problem' }
+  /api/v1/me/tutor-role:
+    post:
+      tags: [Account]
+      operationId: becomeTutor
+      summary: Add the TUTOR role; sessions end so that the next sign-in sets up two-factor authentication
+      x-toefly-roles: [STUDENT]
+      x-toefly-ownership: STUDENT_OWNER
+      x-toefly-idempotent: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BecomeTutorRequest' }
+      responses:
+        '200':
+          description: Profile with the TUTOR role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -451,6 +485,14 @@ components:
       required: [confirmation]
       properties:
         confirmation: { type: string, maxLength: 20 }
+    BecomeTutorRequest:
+      type: object
+      additionalProperties: false
+      required: [acceptTutorTerms]
+      properties:
+        acceptTutorTerms:
+          type: boolean
+          description: The user accepts the tutor terms; false is rejected with 422
     AccountDeletion:
       type: object
       required: [id, status, requestedAt, legalDeadlineAt]
