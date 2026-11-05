@@ -4,7 +4,11 @@
   var CONSENTS = ["termsAccepted", "privacyAccepted", "ageConfirmed"];
 
   function init() {
-    var form = document.getElementById("kc-register-form") || document.getElementById("kc-update-profile-form");
+    // Sign-up, the profile update and the first sign-in with Google or Apple (AC-01.03.3) ask for the same consents.
+    var form =
+      document.getElementById("kc-register-form") ||
+      document.getElementById("kc-update-profile-form") ||
+      document.getElementById("kc-idp-review-profile-form");
     if (!form) {
       return;
     }

@@ -91,3 +91,8 @@
 .pf-v5-c-login__main {
   border-top: 1px solid var(--toefly-glass-stroke) !important;
 }
+
+/* PatternFly draws a 4px blue line above the card; TOEFLY uses only its own tokens (docs/10 §4.6). */
+.pf-v5-c-login__main-header {
+  border-top: 0;
+}
