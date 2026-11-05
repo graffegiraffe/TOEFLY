@@ -1,0 +1,113 @@
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: toefly-web-bff
+            client-secret: ${TOEFLY_WEB_BFF_SECRET:web-bff-local-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/auth/callback"
+            scope: openid,profile,email,offline_access
+        provider:
+          keycloak:
+            # Explicit endpoints: no discovery request at startup.
+            issuer-uri: ${toefly.gateway.keycloak.issuer}
+            authorization-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/auth
+            token-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/token
+            jwk-set-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/certs
+            user-info-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/userinfo
+            user-name-attribute: sub
+      resourceserver:
+        jwt:
+          issuer-uri: ${toefly.gateway.keycloak.issuer}
+          jwk-set-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/certs
+          audiences: toefly-api
+  cloud:
+    gateway:
+      server:
+        webflux:
+          default-filters:
+            # Keeps a refreshed access token in the session, then sends it to the service instead of the cookie.
+            - SaveSession
+            - TokenRelay
+            - RemoveRequestHeader=Cookie
+          # Routes of each service are a separate block; a phase adds only its own (docs/12 §6.3).
+          routes:
+            - id: profile-service
+              uri: ${toefly.gateway.services.profile-service}
+              predicates:
+                - Path=/api/v1/me,/api/v1/me/**
+
+server:
+  port: 8080
+
+toefly:
+  gateway:
+    web-origin: http://app.toefly.localhost:5173
+    session:
+      cookie-name: toefly_sid
+      secure-cookie: true
+      max-inactive-days: 14
+    keycloak:
+      issuer: http://localhost:8180/realms/toefly
+      end-session-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/logout
+    services:
+      profile-service: http://localhost:8081
+    internal-callers: [svc-profile-service]
+    # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
+    rate-limits:
+      ANONYMOUS:
+        GENERAL: { replenish-rate: 2, burst-capacity: 10, requested-tokens: 1 }
+        AUTH: { replenish-rate: 1, burst-capacity: 60, requested-tokens: 6 }
+      STUDENT_FREE:
+        GENERAL: { replenish-rate: 5, burst-capacity: 20, requested-tokens: 1 }
+        AI: { replenish-rate: 1, burst-capacity: 60, requested-tokens: 6 }
+        UPLOADS: { replenish-rate: 1, burst-capacity: 3600, requested-tokens: 120 }
+      STUDENT_PRO:
+        GENERAL: { replenish-rate: 10, burst-capacity: 40, requested-tokens: 1 }
+        AI: { replenish-rate: 1, burst-capacity: 60, requested-tokens: 2 }
+        UPLOADS: { replenish-rate: 1, burst-capacity: 3600, requested-tokens: 30 }
+      TUTOR:
+        GENERAL: { replenish-rate: 15, burst-capacity: 60, requested-tokens: 1 }
+        AI: { replenish-rate: 1, burst-capacity: 60, requested-tokens: 1 }
+        UPLOADS: { replenish-rate: 1, burst-capacity: 3600, requested-tokens: 12 }
+      ADMIN:
+        GENERAL: { replenish-rate: 30, burst-capacity: 100, requested-tokens: 1 }
+        AI: { replenish-rate: 2, burst-capacity: 120, requested-tokens: 1 }
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+logging:
+  structured:
+    format:
+      console: ecs

@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: api-gateway
+  version: 0.1.0
+  description: >-
+    Endpoints of api-gateway itself (docs/10-security-privacy.md §4.2): the BFF web session outside /api/v1 and
+    the internal revocation call. Every /api/v1 route belongs to its service and is described there.
+servers:
+  - url: http://api.toefly.localhost:8080
+tags:
+  - name: WebSession
+  - name: InternalSessions
+paths:
+  /auth/login:
+    get:
+      tags: [WebSession]
+      operationId: startLogin
+      summary: Start Authorization Code with PKCE at Keycloak; returnTo is a relative path of the web app
+      security: []
+      parameters:
+        - { name: returnTo, in: query, required: false, schema: { type: string, maxLength: 512 } }
+      responses:
+        '302': { description: Redirect to the Keycloak sign-in page, sets the session cookie }
+        '429': { $ref: '#/components/responses/Problem' }
+  /auth/register:
+    get:
+      tags: [WebSession]
+      operationId: startRegistration
+      summary: Same as /auth/login, opening the Keycloak registration page
+      security: []
+      parameters:
+        - { name: returnTo, in: query, required: false, schema: { type: string, maxLength: 512 } }
+      responses:
+        '302': { description: Redirect to the Keycloak registration page }
+  /auth/callback:
+    get:
+      tags: [WebSession]
+      operationId: completeLogin
+      summary: Exchange the code for tokens, keep them in the session and return to the web app
+      security: []
+      parameters:
+        - { name: code, in: query, required: false, schema: { type: string } }
+        - { name: state, in: query, required: true, schema: { type: string } }
+      responses:
+        '302': { description: Redirect to the web app path chosen at sign-in, or to /sign-in on failure }
+  /auth/session:
+    get:
+      tags: [WebSession]
+      operationId: getSession
+      summary: Signed-in user and the CSRF token of the session; tokens are never returned
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebSession' }
+        '401': { $ref: '#/components/responses/Problem' }
+  /auth/logout:
+    post:
+      tags: [WebSession]
+      operationId: logout
+      summary: End the web session; the app opens logoutUrl to end the Keycloak session
+      security:
+        - sessionCookie: []
+      parameters:
+        - { name: X-CSRF-Token, in: header, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [logoutUrl]
+                properties:
+                  logoutUrl: { type: string, format: uri }
+        '403': { $ref: '#/components/responses/Problem' }
+  /internal/v1/sessions/revocations:
+    post:
+      tags: [InternalSessions]
+      operationId: revokeSessions
+      summary: End all web sessions of a user and reject tokens issued before now
+      x-toefly-internal: true
+      x-toefly-callers: [svc-profile-service]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string, format: uuid }
+      responses:
+        '204': { description: Revoked }
+        '403': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    sessionCookie: { type: apiKey, in: cookie, name: toefly_sid }
+  responses:
+    Problem:
+      description: Error (RFC 9457)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    WebSession:
+      type: object
+      required: [authenticated, user, csrfToken]
+      properties:
+        authenticated: { type: boolean }
+        user:
+          type: object
+          required: [id, roles, emailVerified]
+          properties:
+            id: { type: string, format: uuid }
+            roles:
+              type: array
+              items: { type: string, enum: [STUDENT, TUTOR, ADMIN] }
+            emailVerified: { type: boolean }
+        csrfToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+    Problem:
+      type: object
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string }
+        requestId: { type: string }
+        traceId: { type: string }
