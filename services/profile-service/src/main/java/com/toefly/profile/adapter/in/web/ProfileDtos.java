@@ -140,7 +140,7 @@ final class ProfileDtos {
         }
         if (examDate == null) {
             throw new com.toefly.profile.domain.profile.InvalidProfileValueException(
-                    "exam-date", "Pick a date within the next 12 months");
+                    "exam-date", "Pick a date within the next 5 years");
         }
         return ExamPlan.bookedOn(examDate, today);
     }
