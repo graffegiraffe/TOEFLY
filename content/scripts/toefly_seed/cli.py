@@ -9,17 +9,18 @@ from . import SCRIPT_VERSION
 from .common import schema
 from .common.hashing import sha256_hex
 from .common.envelope import Report
-from .sources import secret_toefl_html, tst_listening_2026, tst_listening_legacy, tst_reading_2026, tst_reading_legacy
+from .sources import secret_toefl_html, tst_listening_2026, tst_complete_test_2026, tst_listening_legacy, tst_reading_2026, tst_reading_legacy
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTENT = ROOT
-EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026, tst_reading_legacy, tst_listening_legacy)}
+EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026, tst_reading_legacy, tst_listening_legacy, tst_complete_test_2026)}
 RAW = Path("/Users/katusarublevsk/Documents/English")
 SOURCE_FILES = {
     "secret-toefl-society-reading": "TOEFL Reading Sets - The Secret TOEFL Society.html",
     "tst-reading-2026": "toefl-reading-100-questions-freebie-2026.pdf",
     "tst-reading-legacy-2020": "TG__TST Prep - 100 TOEFL Reading Practice Questions.pdf",
     "tst-listening-legacy-2020": "TST Prep - 100 TOEFL Listening Practice Questions.pdf",
+    "tst-complete-test-1-2026": "toefl-complete-test-1-2026.pdf",
     "tst-listening-2026": "2026 toefl-listening-100-questions-freebie-2026.pdf",
 }
 
@@ -33,10 +34,10 @@ def extract(args) -> int:
     module = EXTRACTORS[args.source]
     report = Report()
     out = Path(args.out) / args.source
-    _write(out / "source.json", module.source_info())
     for envelope in module.extract_file(Path(args.input or RAW / SOURCE_FILES[args.source]), report):
         relative = envelope.pop("_file")
         _write(out / relative, envelope)
+    _write(out / "source.json", module.source_info())
     _write(
         out / "_report" / "extraction-report.json",
         {"scriptVersion": SCRIPT_VERSION, "sets": report.sets, "items": report.items, "byType": report.by_type,
