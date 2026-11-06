@@ -5,125 +5,645 @@
   "scriptVersion": "0.1.0",
   "sources": [
     {
-      "bundleSha256": "sha256:1a65e0e2c2ca03e7094cf569ed2b490d80c9afa95c2499054911ed70ed39e1af",
+      "bundleSha256": "sha256:7211c80e81b5c9d1fae8ae5784d23049ad8310f5dd92be63719d4a3b8c8967cc",
       "counts": {
         "LEGACY_READING": 16
       },
       "files": [
         {
-          "bytes": 10583,
+          "bytes": 10659,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-01-the-domestication-of-maize.json",
           "seedId": "secret-toefl-society-reading/reading-set-01",
-          "sha256": "sha256:3d4aa6a7902e8654e287bc15f4de5a10df19f04e94c5438e6c37d419d6c61f87"
+          "sha256": "sha256:90e6885fef0f317ab61efcd54d7d733bd49ffa5f567f14a37d3e2759b75b1ebc"
         },
         {
-          "bytes": 10772,
+          "bytes": 10848,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-02-the-second-world-war-and-american-women-in-the-workforce.json",
           "seedId": "secret-toefl-society-reading/reading-set-02",
-          "sha256": "sha256:5157635ac60400bd702361e3ab56478e88209582d3a743e6e87773cb39ba9807"
+          "sha256": "sha256:578d81ff62b1bded2ec3302aece88ba0c0315766d4739cb6c8ec8c6e32589aab"
         },
         {
-          "bytes": 10880,
+          "bytes": 10956,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-03-optical-astronomy.json",
           "seedId": "secret-toefl-society-reading/reading-set-03",
-          "sha256": "sha256:fcb3a37691160d79e737d8eec342b92fdada216e4e9dddd3e96fedac4677d379"
+          "sha256": "sha256:40165be3124ba767f79ffd2a1e5d7148d55664122b290e2f29a1c2260c119783"
         },
         {
-          "bytes": 10963,
+          "bytes": 11039,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-04-thermodynamics-and-ecosystems.json",
           "seedId": "secret-toefl-society-reading/reading-set-04",
-          "sha256": "sha256:1fd92983acc3e131e8ac40442aaf22aef6459d5e3efcf0eb9fdf0882978802ed"
+          "sha256": "sha256:52b7b5af014606dec816960f365e75e36ef978113f57509209f07eeb43367077"
         },
         {
-          "bytes": 9647,
+          "bytes": 9723,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-05-the-effects-of-urbanization-on-bird-populations.json",
           "seedId": "secret-toefl-society-reading/reading-set-05",
-          "sha256": "sha256:945069b093e93e2c66dc24224f71cc7fbc9ad09e600abcdf980374d26f86c38f"
+          "sha256": "sha256:716a1bccb4f1a2c6c946f4b4977864bda972d24899c35356d5e7fae8b68e8efa"
         },
         {
-          "bytes": 10466,
+          "bytes": 10542,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-06-mysterious-viking-sunstones.json",
           "seedId": "secret-toefl-society-reading/reading-set-06",
-          "sha256": "sha256:a657b1fdf35601455b1956fbac10934afe88e4e8190df2cc030ba6e58e45a3e0"
+          "sha256": "sha256:7c7b19968aa911135f8cbb827e041f874fa63c5f29f27d0bb092ffbb8a300230"
         },
         {
-          "bytes": 11367,
+          "bytes": 11443,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-07-understanding-ecological-systems-theory.json",
           "seedId": "secret-toefl-society-reading/reading-set-07",
-          "sha256": "sha256:fb4399605e121a5f4c13774eb80325bf7aa2e14df2d36546661b32b0d379d7d8"
+          "sha256": "sha256:394a9ab12958a416460e65df6e1be2a616fde7c2db729a013234139757198cd1"
         },
         {
-          "bytes": 10497,
+          "bytes": 10573,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-08-cybernetic-prosthetics.json",
           "seedId": "secret-toefl-society-reading/reading-set-08",
-          "sha256": "sha256:bd251b7e1012c2acc3eea95f6fbf7fe28281eb567f100364f271dff5f6e65452"
+          "sha256": "sha256:66364ffedb42a376337caf16b7fddb60e2cbe243bde0baf96926e5ecee5a4fd1"
         },
         {
-          "bytes": 9959,
+          "bytes": 10035,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-09-ancient-egyptian-medicine.json",
           "seedId": "secret-toefl-society-reading/reading-set-09",
-          "sha256": "sha256:2122bce7ccbaf3045e95218488fe532161e2afe6cd4e09437c431fbffc77326f"
+          "sha256": "sha256:3c6452fb20ab439f076a6e9a296752414207927a88300046b164cba48beb181a"
         },
         {
-          "bytes": 10579,
+          "bytes": 10655,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-10-wind-ensemble-conducting.json",
           "seedId": "secret-toefl-society-reading/reading-set-10",
-          "sha256": "sha256:f28e5637c2d280ed2d99c3c03a5b85eb32f22cfa28f95686db96d7c3f9a71ca9"
+          "sha256": "sha256:914a2cac93ee10bde9d787137c877cfba3ce9bb23cdbbe917724c640b51fbe65"
         },
         {
-          "bytes": 10350,
+          "bytes": 10426,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-11-the-shifting-art-of-playwriting.json",
           "seedId": "secret-toefl-society-reading/reading-set-11",
-          "sha256": "sha256:a5ce238882fedcc4aec91b8b4d00275c7ecca96839d47d1285f4332577dc5e47"
+          "sha256": "sha256:58870d4528f6f09f160474866eb39eb220bd26dfae6d6e543c70e88e944cfcbb"
         },
         {
-          "bytes": 10262,
+          "bytes": 10338,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-12-smart-textiles.json",
           "seedId": "secret-toefl-society-reading/reading-set-12",
-          "sha256": "sha256:0b44495645a3234ae0b881cb1244254c7b94cfa03ffcdab36a8873501d5b0ee7"
+          "sha256": "sha256:5ba43dce0724e3b8296024de03a28fc0e2de3f80a9f0e22d0d4294551a9b0fbf"
         },
         {
-          "bytes": 9632,
+          "bytes": 9708,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-13-the-mysteries-of-opal.json",
           "seedId": "secret-toefl-society-reading/reading-set-13",
-          "sha256": "sha256:ba19a4e7675d844e2f3432ce4d03f21b569f59f1e53825c32b27b3214d731ac9"
+          "sha256": "sha256:7c3740eae1b2ff1e688c6c1ba726869d9f54762847b71457b700e82c308f3817"
         },
         {
-          "bytes": 9715,
+          "bytes": 9791,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-14-radio-astronomy-a-new-perspective.json",
           "seedId": "secret-toefl-society-reading/reading-set-14",
-          "sha256": "sha256:21b1d46c069e16418ab59255ff588917fc4165b5a2066fee84cab25e5a8150b3"
+          "sha256": "sha256:5267fd4e106379f0d9f41ddca9baa59f883b6a645051cdcd93e91ea45834326e"
         },
         {
-          "bytes": 10746,
+          "bytes": 10822,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-15-video-evidence-in-u-s-courts.json",
           "seedId": "secret-toefl-society-reading/reading-set-15",
-          "sha256": "sha256:d88cdccc3291cb45831e7afab036e4e1cad6b0ee5400a05ee53fb461e6dbff7b"
+          "sha256": "sha256:15a29800db4b377a37abb297f428f4d729a9953a46e64457111c64b4530324c9"
         },
         {
-          "bytes": 8483,
+          "bytes": 8550,
           "kind": "ITEM_SET",
           "path": "secret-toefl-society-reading/item-sets/reading-set-16-twin-stars.json",
           "seedId": "secret-toefl-society-reading/reading-set-16",
-          "sha256": "sha256:e759165924300b1786d30d771ad6d93759823b047bfd35ca66e9c6c81cbca7e5"
+          "sha256": "sha256:3529758d5a1aa728515e1686d7af49b59d7e305fd1922f0bd0c33227648a2752"
         }
       ],
       "sourceCode": "secret-toefl-society-reading"
+    },
+    {
+      "bundleSha256": "sha256:357d62293105a62d35f1d27739301a95a97527c3463b6528896ce193441dd154",
+      "counts": {
+        "LISTEN_ACADEMIC_TALK": 10,
+        "LISTEN_ANNOUNCEMENT": 12,
+        "LISTEN_CHOOSE_RESPONSE": 6,
+        "LISTEN_CONVERSATION": 15
+      },
+      "files": [
+        {
+          "bytes": 9359,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-001.json",
+          "seedId": "tst-listening-2026/academic-talk-001",
+          "sha256": "sha256:358ac4e63207bce828cf734e5bd2c383a81faee7274bde642077e1bb3cffefee"
+        },
+        {
+          "bytes": 8989,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-002.json",
+          "seedId": "tst-listening-2026/academic-talk-002",
+          "sha256": "sha256:7094f33e55b8884397dc8cac8e376e908777d8c3d4e38a7b0dc89c8431c22948"
+        },
+        {
+          "bytes": 8926,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-003.json",
+          "seedId": "tst-listening-2026/academic-talk-003",
+          "sha256": "sha256:306b4b19a8b27cca08efed2737f86effbb4555977fcdd33851e4128f71c4fcf8"
+        },
+        {
+          "bytes": 8787,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-004.json",
+          "seedId": "tst-listening-2026/academic-talk-004",
+          "sha256": "sha256:47c32a7d67e4e56bf7ec51240497d55b6e0167e285d4fbd500b75b5a31005f28"
+        },
+        {
+          "bytes": 9065,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-005.json",
+          "seedId": "tst-listening-2026/academic-talk-005",
+          "sha256": "sha256:b91c77ef4cd02484fce09642606db6d8e5558263a499b21cd1af33340432a7d6"
+        },
+        {
+          "bytes": 9399,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-006.json",
+          "seedId": "tst-listening-2026/academic-talk-006",
+          "sha256": "sha256:363d4de460c495fa669f35e08882de8aadf35097d2faf40bb27037938924ec1f"
+        },
+        {
+          "bytes": 9168,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-007.json",
+          "seedId": "tst-listening-2026/academic-talk-007",
+          "sha256": "sha256:b6443820e22afd3774ce8bde2dbce744b5d9d467a4097e2a7e198f6b1b23f701"
+        },
+        {
+          "bytes": 10288,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-008.json",
+          "seedId": "tst-listening-2026/academic-talk-008",
+          "sha256": "sha256:c98a44d984175585dec34fd6e2d571bd1bc50d5458a2c4c68ba68883af23507e"
+        },
+        {
+          "bytes": 10543,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-009.json",
+          "seedId": "tst-listening-2026/academic-talk-009",
+          "sha256": "sha256:4f6f5a6e2d9adfd650148cfe229f01c93a73601025674206a90edf34710fcc83"
+        },
+        {
+          "bytes": 10828,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/academic-talk-010.json",
+          "seedId": "tst-listening-2026/academic-talk-010",
+          "sha256": "sha256:ce97f464f1097a9eabe2eeed77907280c6cb8bf7373fe0d1b8c501c11ac552f5"
+        },
+        {
+          "bytes": 5325,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-001.json",
+          "seedId": "tst-listening-2026/announcement-001",
+          "sha256": "sha256:b26f2343c8215f68959e6c112afd07157bb48658e0547cd830d582b632dd8f54"
+        },
+        {
+          "bytes": 5050,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-002.json",
+          "seedId": "tst-listening-2026/announcement-002",
+          "sha256": "sha256:af451dbc4d530015d70c9096ec30ae278ac2393b65f3ab44fe063d03aa3b2e9e"
+        },
+        {
+          "bytes": 5365,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-003.json",
+          "seedId": "tst-listening-2026/announcement-003",
+          "sha256": "sha256:f74b7c4be4a8e9cf417b4e905c93d54b1823d22ec5176f379692945af3ead17c"
+        },
+        {
+          "bytes": 5302,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-004.json",
+          "seedId": "tst-listening-2026/announcement-004",
+          "sha256": "sha256:0bbca4e9cf610884660667a6d2ebc7848c553b3b16106ba56976ff212444fc9e"
+        },
+        {
+          "bytes": 5199,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-005.json",
+          "seedId": "tst-listening-2026/announcement-005",
+          "sha256": "sha256:71683093c43197457742fba55548c125a9f4ae70bb51c06579a8e9fd7120f861"
+        },
+        {
+          "bytes": 5012,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-006.json",
+          "seedId": "tst-listening-2026/announcement-006",
+          "sha256": "sha256:ea55836021edfbae3086a4440a6e26f5bc71c96930163ab80a872809d17ad41a"
+        },
+        {
+          "bytes": 5233,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-007.json",
+          "seedId": "tst-listening-2026/announcement-007",
+          "sha256": "sha256:6f7240688fd99f4c12b24fe13cbe221e8f9125bf33ebda888be619b32be9a560"
+        },
+        {
+          "bytes": 5299,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-008.json",
+          "seedId": "tst-listening-2026/announcement-008",
+          "sha256": "sha256:ccd93ed93f1f320471cf8b86a3d72f10d9edea145b6576108d9e315b5d642941"
+        },
+        {
+          "bytes": 5046,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-009.json",
+          "seedId": "tst-listening-2026/announcement-009",
+          "sha256": "sha256:c4417fd476620c65df5ec4d8313561add88f061fe8e4f69c1cd852e52f2a514f"
+        },
+        {
+          "bytes": 5168,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-010.json",
+          "seedId": "tst-listening-2026/announcement-010",
+          "sha256": "sha256:65e2bbd8eb5a085e883e996b111ad8e50962ab9325509c0c6e9abf3cbbd3cae7"
+        },
+        {
+          "bytes": 5250,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-011.json",
+          "seedId": "tst-listening-2026/announcement-011",
+          "sha256": "sha256:74e876818ecb6334576de4e825ab5473a1d2f2ffbdb0dc779834860aa81f147d"
+        },
+        {
+          "bytes": 5425,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/announcement-012.json",
+          "seedId": "tst-listening-2026/announcement-012",
+          "sha256": "sha256:f994f66954ff1d25024138574cd31ad1da8c511bdaa12acbd1bb4f48d338ff3d"
+        },
+        {
+          "bytes": 9620,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/choose-001.json",
+          "seedId": "tst-listening-2026/choose-001",
+          "sha256": "sha256:fc5c75177c989290b1fd70fb033ba3e9ec74e2f2a4f75b5080eb7c9cd53ce537"
+        },
+        {
+          "bytes": 9231,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/choose-002.json",
+          "seedId": "tst-listening-2026/choose-002",
+          "sha256": "sha256:edab68b2f4348989c632e419b5d934b5f9b4d21f8071ccaea5ff2f2c2a962bef"
+        },
+        {
+          "bytes": 9221,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/choose-003.json",
+          "seedId": "tst-listening-2026/choose-003",
+          "sha256": "sha256:2891abd4f80aa8394afd15bb15cfd3f9b158d6fc624474461540def56cd543d2"
+        },
+        {
+          "bytes": 9438,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/choose-004.json",
+          "seedId": "tst-listening-2026/choose-004",
+          "sha256": "sha256:caa18ff7b44c70b4d44f9bd6d9a4016f2673ff1a5016d9723e1e1d2f8420f955"
+        },
+        {
+          "bytes": 9222,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/choose-005.json",
+          "seedId": "tst-listening-2026/choose-005",
+          "sha256": "sha256:ea0387130d117564ef087873b936f568bdc410891fb3f3684a1590d7e4255920"
+        },
+        {
+          "bytes": 9160,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/choose-006.json",
+          "seedId": "tst-listening-2026/choose-006",
+          "sha256": "sha256:210648953f2875b9286baabcd9146cce633c239063c00a167aee7afd8bf95c3e"
+        },
+        {
+          "bytes": 5490,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-001.json",
+          "seedId": "tst-listening-2026/conversation-001",
+          "sha256": "sha256:02179249f991bbf2699cc2cddb8f7a0b024f46b64f971090c774adf0d9dcd6fa"
+        },
+        {
+          "bytes": 5435,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-002.json",
+          "seedId": "tst-listening-2026/conversation-002",
+          "sha256": "sha256:c8ab66d4dd9c64c7040e606390dd0f2dff074594305deabea8ebda7eef983399"
+        },
+        {
+          "bytes": 5208,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-003.json",
+          "seedId": "tst-listening-2026/conversation-003",
+          "sha256": "sha256:29d46bc6b5124e2e06d07a6fbd1155c9103335b6477df4e49e9f17b66141dcd6"
+        },
+        {
+          "bytes": 4657,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-004.json",
+          "seedId": "tst-listening-2026/conversation-004",
+          "sha256": "sha256:1cd0d6fdd61960cf41c1983d67451545fddf21b3c09ac129d749fb51cd426f6b"
+        },
+        {
+          "bytes": 5435,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-005.json",
+          "seedId": "tst-listening-2026/conversation-005",
+          "sha256": "sha256:d34f969ba031ef349078138ae0b3029c03aa7204dee7b1e3c9c507ffbf1d0ef4"
+        },
+        {
+          "bytes": 5253,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-006.json",
+          "seedId": "tst-listening-2026/conversation-006",
+          "sha256": "sha256:97285d551ba9b4ca88ff0683b71018cbd95c6c1c0c81263824440f07a3748555"
+        },
+        {
+          "bytes": 5161,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-007.json",
+          "seedId": "tst-listening-2026/conversation-007",
+          "sha256": "sha256:f55703f9d0219ebee1a412405b47e7c99d11b512c88a16877d00919af6a5e6e4"
+        },
+        {
+          "bytes": 5208,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-008.json",
+          "seedId": "tst-listening-2026/conversation-008",
+          "sha256": "sha256:26bbba14f3b3c650259df05f5de98fa2429ef42daa92839716648377c5ebc9e2"
+        },
+        {
+          "bytes": 5467,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-009.json",
+          "seedId": "tst-listening-2026/conversation-009",
+          "sha256": "sha256:5693f97a47a628e8bee43b0c6a3f776c11745da2be9f54f81fce95f34978190d"
+        },
+        {
+          "bytes": 5422,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-010.json",
+          "seedId": "tst-listening-2026/conversation-010",
+          "sha256": "sha256:49a19a5df0b4ce5658ba123d2c2fb5c900aa7a03bdc3bc8571a81b3c3fbb6008"
+        },
+        {
+          "bytes": 5521,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-011.json",
+          "seedId": "tst-listening-2026/conversation-011",
+          "sha256": "sha256:eef9f4c241703c13cc4821242fbf8d91e6911dc232f887e522aff630f0dd122a"
+        },
+        {
+          "bytes": 5371,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-012.json",
+          "seedId": "tst-listening-2026/conversation-012",
+          "sha256": "sha256:597bfa2de36e9a8ce14658a8ce5f65e90a393454591d2c80eb38ec4e805e25e1"
+        },
+        {
+          "bytes": 5436,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-013.json",
+          "seedId": "tst-listening-2026/conversation-013",
+          "sha256": "sha256:06fa804195f11be681ef6cab41b913d28927b955f2ca85be2be35083536408a8"
+        },
+        {
+          "bytes": 5487,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-014.json",
+          "seedId": "tst-listening-2026/conversation-014",
+          "sha256": "sha256:4633f82ab95dfd539ef39f96bb474527d1798ae07eab2405bd5c0ffcf1d709b0"
+        },
+        {
+          "bytes": 5247,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-2026/item-sets/conversation-015.json",
+          "seedId": "tst-listening-2026/conversation-015",
+          "sha256": "sha256:26170bb47dd38f0bc64ac5b10cf4726c46d4670275632201eb67002f07f516d5"
+        }
+      ],
+      "sourceCode": "tst-listening-2026"
+    },
+    {
+      "bundleSha256": "sha256:1c481f22336d89500a7062ecf08fb8acd967b97974393082dcc244f7bcd3edbe",
+      "counts": {
+        "COMPLETE_THE_WORDS": 10,
+        "READ_ACADEMIC_PASSAGE": 5,
+        "READ_DAILY_LIFE": 13
+      },
+      "files": [
+        {
+          "bytes": 11574,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/academic-001.json",
+          "seedId": "tst-reading-2026/academic-001",
+          "sha256": "sha256:ef581e47bdbdd3b1894cb984a787ecb4638bcaa731e12a719e92dc96668626c2"
+        },
+        {
+          "bytes": 11424,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/academic-002.json",
+          "seedId": "tst-reading-2026/academic-002",
+          "sha256": "sha256:d268692a118e545696156738584bdc665b7f40c25e3b7cfa8e2da796b5868e55"
+        },
+        {
+          "bytes": 11200,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/academic-003.json",
+          "seedId": "tst-reading-2026/academic-003",
+          "sha256": "sha256:2a578265932dc9d7d1be6b102e521005c817b2fec66b24b3f35a81edfafcb981"
+        },
+        {
+          "bytes": 11071,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/academic-004.json",
+          "seedId": "tst-reading-2026/academic-004",
+          "sha256": "sha256:d23124362ba9d64627b3a1f7a0398d3b94b663f63eeef66c5a31967e094e0215"
+        },
+        {
+          "bytes": 11981,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/academic-005.json",
+          "seedId": "tst-reading-2026/academic-005",
+          "sha256": "sha256:28a6f3b3b9278abaf82830a81d3feb9a52b8690074146992535df06c95fe45af"
+        },
+        {
+          "bytes": 3635,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-001.json",
+          "seedId": "tst-reading-2026/complete-the-words-001",
+          "sha256": "sha256:1f7a049772c04d4a17dd873a31e5f2a20f63f59ae736896ac49e5a2d5aae3a3e"
+        },
+        {
+          "bytes": 3667,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-002.json",
+          "seedId": "tst-reading-2026/complete-the-words-002",
+          "sha256": "sha256:2672154cbe286060a3dcf9c0d6e7fd2ac74fe0d88c300a74075c1c1838a08ada"
+        },
+        {
+          "bytes": 3675,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-003.json",
+          "seedId": "tst-reading-2026/complete-the-words-003",
+          "sha256": "sha256:48a706a06f5aecc2e7aa334e3b934a9ac9e4629ef4fdb732021e13f9f243f391"
+        },
+        {
+          "bytes": 3743,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-004.json",
+          "seedId": "tst-reading-2026/complete-the-words-004",
+          "sha256": "sha256:435b999d80ea6aa6d6fd385202310af88cbe23faea5264fc139c5335554ceb97"
+        },
+        {
+          "bytes": 3592,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-005.json",
+          "seedId": "tst-reading-2026/complete-the-words-005",
+          "sha256": "sha256:046941f270f2fa18c8618cd5853bb789f8d18f2560f9cc85b5d3bfa41092ff8b"
+        },
+        {
+          "bytes": 3678,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-006.json",
+          "seedId": "tst-reading-2026/complete-the-words-006",
+          "sha256": "sha256:af3ee22802e01906a7bf5a9b0abe2b521cbe4b4c4fee3c962a03a92b5edea99b"
+        },
+        {
+          "bytes": 3665,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-007.json",
+          "seedId": "tst-reading-2026/complete-the-words-007",
+          "sha256": "sha256:9988ba06655d3b943d0b5eb8464f02c1275f37b6bd3be6f015c8f3ac5e41ff4c"
+        },
+        {
+          "bytes": 3681,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-008.json",
+          "seedId": "tst-reading-2026/complete-the-words-008",
+          "sha256": "sha256:16ce5a47246a4c390c8bb4ca5b3f303e4b3282d40bdb1d3c1beab812935617e1"
+        },
+        {
+          "bytes": 3697,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-009.json",
+          "seedId": "tst-reading-2026/complete-the-words-009",
+          "sha256": "sha256:c7d67aaf0d334ed63daeebbeb5cecfd3aa06f3457dd07677e4fdb821777ed2e8"
+        },
+        {
+          "bytes": 3753,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/complete-the-words-010.json",
+          "seedId": "tst-reading-2026/complete-the-words-010",
+          "sha256": "sha256:6c45582f1f4241553865578007c773e7b94b7c80aa8f4ec35f8a29aa5bae3010"
+        },
+        {
+          "bytes": 4505,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-001.json",
+          "seedId": "tst-reading-2026/daily-life-001",
+          "sha256": "sha256:145a10a69f2b34fd114ada1d2d6a567bea0dee58c05f0627e65f62adb3356106"
+        },
+        {
+          "bytes": 4564,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-002.json",
+          "seedId": "tst-reading-2026/daily-life-002",
+          "sha256": "sha256:03dcacc76b97447fd63ab782007b7a436775bbf703c22132b0835ff3b1f69024"
+        },
+        {
+          "bytes": 4333,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-003.json",
+          "seedId": "tst-reading-2026/daily-life-003",
+          "sha256": "sha256:b8386457b0629db528f79857da6d5ba3edf651a3b12b7b74ccd1a0861d8a292e"
+        },
+        {
+          "bytes": 4218,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-004.json",
+          "seedId": "tst-reading-2026/daily-life-004",
+          "sha256": "sha256:a0c88d79dfeb43d0ca95d8e95aab8e2827e61ad61f6c3bb8cfbc32a10bf69cb1"
+        },
+        {
+          "bytes": 4217,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-005.json",
+          "seedId": "tst-reading-2026/daily-life-005",
+          "sha256": "sha256:20483dff0320b9706aa86ad359d0cdb6c937cccf0ff7e6942617be078a947c6e"
+        },
+        {
+          "bytes": 6573,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-006.json",
+          "seedId": "tst-reading-2026/daily-life-006",
+          "sha256": "sha256:6f0148007a8a089c0aff86276de4aad7ce61ab0001523b59ddb9425159ff974d"
+        },
+        {
+          "bytes": 6781,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-007.json",
+          "seedId": "tst-reading-2026/daily-life-007",
+          "sha256": "sha256:a1b0d74a8e8b9a6c29ef6af7c933fe0757c8c18e5f01a68037ade0d3100e9b9a"
+        },
+        {
+          "bytes": 6723,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-008.json",
+          "seedId": "tst-reading-2026/daily-life-008",
+          "sha256": "sha256:7b55283a769806af634d9fb65df36271160129122c352e952d6f8b2848187619"
+        },
+        {
+          "bytes": 6674,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-009.json",
+          "seedId": "tst-reading-2026/daily-life-009",
+          "sha256": "sha256:a21f817ea148cd61a2112e3677b3e4092e83e261d958016e0198da941a995781"
+        },
+        {
+          "bytes": 6568,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-010.json",
+          "seedId": "tst-reading-2026/daily-life-010",
+          "sha256": "sha256:056c764f1ba0b2beb305f3857d67abd69137fc9491e1e8522bcfa6fc129cd8c2"
+        },
+        {
+          "bytes": 6389,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-011.json",
+          "seedId": "tst-reading-2026/daily-life-011",
+          "sha256": "sha256:918cc11a0561048a3ba3134b59d365b9b33cfd6fee47a0a4fbb2d294de2fc6f4"
+        },
+        {
+          "bytes": 6405,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-012.json",
+          "seedId": "tst-reading-2026/daily-life-012",
+          "sha256": "sha256:1b6faca87d47781ccc7cec26f499ffb06aad54887224075484c9b665d80db3a4"
+        },
+        {
+          "bytes": 6799,
+          "kind": "ITEM_SET",
+          "path": "tst-reading-2026/item-sets/daily-life-013.json",
+          "seedId": "tst-reading-2026/daily-life-013",
+          "sha256": "sha256:865c94ad68508c01d17146f79eac960f149d685a97bfb6fdf60687c4787d0ccc"
+        }
+      ],
+      "sourceCode": "tst-reading-2026"
     }
   ]
 }

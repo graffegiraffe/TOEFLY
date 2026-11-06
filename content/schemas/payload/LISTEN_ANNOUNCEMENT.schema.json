@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/payload/LISTEN_ANNOUNCEMENT/v1",
+  "title": "LISTEN_ANNOUNCEMENT (docs/03-domain-model.md section 4.6; EXTRACTED: no image, estimated audio length)",
+  "type": "object",
+  "required": [
+    "stimulus",
+    "items"
+  ],
+  "properties": {
+    "stimulus": {
+      "type": "object",
+      "required": [
+        "contextLine",
+        "audio",
+        "speakers",
+        "transcript",
+        "wordCount"
+      ],
+      "properties": {
+        "contextLine": {
+          "type": "string",
+          "minLength": 1
+        },
+        "audio": {
+          "type": "object",
+          "required": [
+            "url",
+            "durationSeconds",
+            "origin",
+            "accent"
+          ],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "durationSeconds": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 300
+            },
+            "durationEstimated": {
+              "type": "boolean"
+            },
+            "origin": {
+              "enum": [
+                "HOSTED_MP3",
+                "TTS"
+              ]
+            },
+            "accent": {
+              "enum": [
+                "US",
+                "CA",
+                "UK",
+                "AU"
+              ]
+            },
+            "voiceId": {
+              "type": "string"
+            },
+            "ttsFallbackKey": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "speakers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "role"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Z]$"
+              },
+              "role": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "accent": {
+                "enum": [
+                  "US",
+                  "CA",
+                  "UK",
+                  "AU"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "transcript": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "speaker",
+              "text"
+            ],
+            "properties": {
+              "speaker": {
+                "type": "string",
+                "pattern": "^[A-Z]$"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "wordCount": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 600
+        }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "ordinal",
+          "prompt",
+          "options",
+          "answerKey",
+          "explanation",
+          "subskill"
+        ],
+        "properties": {
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "options": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "text",
+                "rationale"
+              ],
+              "properties": {
+                "key": {
+                  "enum": [
+                    "A",
+                    "B",
+                    "C",
+                    "D"
+                  ]
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 10
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "answerKey": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "explanation": {
+            "type": "object",
+            "required": [
+              "summary"
+            ],
+            "properties": {
+              "summary": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "subskill": {
+            "enum": [
+              "MAIN_IDEA",
+              "DETAIL",
+              "INFERENCE",
+              "ATTITUDE",
+              "FUNCTION",
+              "PURPOSE"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

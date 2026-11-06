@@ -9,15 +9,16 @@ from . import SCRIPT_VERSION
 from .common import schema
 from .common.hashing import sha256_hex
 from .common.envelope import Report
-from .sources import secret_toefl_html, tst_reading_2026
+from .sources import secret_toefl_html, tst_listening_2026, tst_reading_2026
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTENT = ROOT
-EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_reading_2026)}
+EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026)}
 RAW = Path("/Users/katusarublevsk/Documents/English")
 SOURCE_FILES = {
     "secret-toefl-society-reading": "TOEFL Reading Sets - The Secret TOEFL Society.html",
     "tst-reading-2026": "toefl-reading-100-questions-freebie-2026.pdf",
+    "tst-listening-2026": "2026 toefl-listening-100-questions-freebie-2026.pdf",
 }
 
 
