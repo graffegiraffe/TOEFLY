@@ -37,6 +37,13 @@ toefly:
   events:
     registry-url: http://localhost:8380/apis/registry/v3
     auto-register: false
+  content:
+    seed:
+      enabled: false
+      location: dir:./content/seed
+    embeddings:
+      url: http://localhost:11434
+      model: nomic-embed-text
 
 management:
   opentelemetry:

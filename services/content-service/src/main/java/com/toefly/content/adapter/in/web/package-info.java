@@ -1,3 +1,4 @@
+/** REST controllers. */
 @NullMarked
 package com.toefly.content.adapter.in.web;
 

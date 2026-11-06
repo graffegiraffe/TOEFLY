@@ -1,3 +1,4 @@
+/** Outbox event publishers. */
 @NullMarked
 package com.toefly.content.adapter.out.messaging;
 

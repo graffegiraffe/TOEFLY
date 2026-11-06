@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "ItemSetHiddenV1",
+  "namespace": "com.toefly.events.content",
+  "doc": "An APPROVED ItemSet was hidden (toefly.content.item-set-hidden.v1).",
+  "fields": [
+    {"name": "eventId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "CloudEvents id; the idempotency key of consumers."},
+    {"name": "occurredAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."},
+    {"name": "userId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "Always null: the event is not about a learner."},
+    {"name": "correlationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "End-to-end chain identifier; equals ce_correlationid."},
+    {"name": "causationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "ce_id of the event that caused this one; equals ce_causationid."},
+    {"name": "itemSetId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "Hidden ItemSet; equals the partition key."},
+    {"name": "reason", "type": "string", "doc": "Why the set was hidden: ADMIN, REPORT, SEED_REMOVED, SOURCE_TAKEDOWN or QUALITY."}
+  ]
+}
