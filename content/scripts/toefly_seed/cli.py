@@ -9,11 +9,11 @@ from . import SCRIPT_VERSION
 from .common import schema
 from .common.hashing import sha256_hex
 from .common.envelope import Report
-from .sources import secret_toefl_html, tst_listening_2026, tst_complete_test_2026, tst_listening_legacy, tst_reading_2026, tst_reading_legacy
+from .sources import secret_toefl_html, tst_listening_2026, tst_complete_test_2026, tst_listening_legacy, tst_speaking_guide_2026, tst_reading_2026, tst_reading_legacy
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTENT = ROOT
-EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026, tst_reading_legacy, tst_listening_legacy, tst_complete_test_2026)}
+EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026, tst_reading_legacy, tst_listening_legacy, tst_complete_test_2026, tst_speaking_guide_2026)}
 RAW = Path("/Users/katusarublevsk/Documents/English")
 SOURCE_FILES = {
     "secret-toefl-society-reading": "TOEFL Reading Sets - The Secret TOEFL Society.html",
@@ -21,6 +21,7 @@ SOURCE_FILES = {
     "tst-reading-legacy-2020": "TG__TST Prep - 100 TOEFL Reading Practice Questions.pdf",
     "tst-listening-legacy-2020": "TST Prep - 100 TOEFL Listening Practice Questions.pdf",
     "tst-complete-test-1-2026": "toefl-complete-test-1-2026.pdf",
+    "tst-speaking-guide-2026": "your-guide-to-the-toefl-speaking.pdf",
     "tst-listening-2026": "2026 toefl-listening-100-questions-freebie-2026.pdf",
 }
 

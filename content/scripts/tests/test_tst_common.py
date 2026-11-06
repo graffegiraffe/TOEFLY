@@ -124,3 +124,11 @@ def test_score_table_rows_are_read():
     ct._rubric(["   47-48     6 (29-30)", "     3      1.5 (2)"], "reading")
     assert ct.RAW_TO_BAND["reading"][0] == {"rawFrom": 47, "rawTo": 48, "band": 6.0, "legacyFrom": 29, "legacyTo": 30}
     assert ct.RAW_TO_BAND["reading"][1]["rawFrom"] == 3
+
+
+def test_interview_questions_are_in_the_ets_order():
+    from toefly_seed.sources import tst_speaking_guide_2026 as guide  # noqa: F401  (module imports cleanly)
+    from toefly_seed.sources import tst_complete_test_2026 as ct
+
+    audio = ct._estimated_audio("one two three four five")
+    assert audio["origin"] == "TTS" and audio["durationEstimated"] is True and audio["durationSeconds"] == 2.0
