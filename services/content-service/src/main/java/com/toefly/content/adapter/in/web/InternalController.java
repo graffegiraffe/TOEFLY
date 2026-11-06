@@ -2,8 +2,8 @@ package com.toefly.content.adapter.in.web;
 
 import com.toefly.content.adapter.in.web.api.InternalApi;
 import com.toefly.content.adapter.in.web.dto.ItemSet;
-import com.toefly.content.application.service.CatalogQueryService;
-import com.toefly.content.application.service.ModerationService;
+import com.toefly.content.application.port.in.BrowseCatalogUseCase;
+import com.toefly.content.domain.catalog.ItemSetNotFoundException;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class InternalController implements InternalApi {
 
-    private final CatalogQueryService catalog;
+    private final BrowseCatalogUseCase catalog;
 
-    public InternalController(CatalogQueryService catalog) {
+    public InternalController(BrowseCatalogUseCase catalog) {
         this.catalog = catalog;
     }
 
     @Override
     public ResponseEntity<ItemSet> internalGetItemSet(UUID itemSetId) {
-        var set = catalog.any(itemSetId).orElseThrow(() -> new ModerationService.ItemSetNotFoundException(itemSetId));
+        var set = catalog.any(itemSetId).orElseThrow(() -> new ItemSetNotFoundException(itemSetId));
         return ResponseEntity.ok(CatalogMapper.full(set, catalog.source(set.sourceId()), true));
     }
 }

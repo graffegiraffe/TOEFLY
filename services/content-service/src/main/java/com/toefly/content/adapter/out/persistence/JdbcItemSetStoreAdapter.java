@@ -45,12 +45,18 @@ public class JdbcItemSetStoreAdapter implements ItemSetStorePort {
 
     @Override
     public List<ItemRow> items(UUID itemSetId) {
-        return jdbc.sql("SELECT id, ordinal, subskill, max_score, b, b_basis FROM item WHERE item_set_id = :id ORDER BY ordinal")
+        return jdbc.sql(
+                        "SELECT id, ordinal, subskill, max_score, b, b_basis FROM item WHERE item_set_id = :id ORDER BY ordinal")
                 .param("id", itemSetId)
                 .query((rs, n) -> {
                     double b = rs.getDouble("b");
-                    return new ItemRow(rs.getObject("id", UUID.class), rs.getInt("ordinal"), rs.getString("subskill"),
-                            rs.getInt("max_score"), rs.wasNull() ? null : b, rs.getString("b_basis"));
+                    return new ItemRow(
+                            rs.getObject("id", UUID.class),
+                            rs.getInt("ordinal"),
+                            rs.getString("subskill"),
+                            rs.getInt("max_score"),
+                            rs.wasNull() ? null : b,
+                            rs.getString("b_basis"));
                 })
                 .list();
     }
@@ -66,9 +72,7 @@ public class JdbcItemSetStoreAdapter implements ItemSetStorePort {
                             :skills, :sourceId, :sourcePage, :sourceItemNo, :provenance, :status, :hiddenReason,
                             :ownerTutorId, :bMean, :bBasis, :norm, :minutes, :itemCount, CAST(:payload AS jsonb),
                             :audioState, :hash, :searchText, :publishedAt, :createdAt, :updatedAt)
-                        """)
-                .params(bind(s))
-                .update();
+                        """).params(bind(s)).update();
         insertItems(s.id(), items);
     }
 
@@ -94,9 +98,7 @@ public class JdbcItemSetStoreAdapter implements ItemSetStorePort {
                             item_count = :itemCount, payload = CAST(:payload AS jsonb), content_hash = :hash,
                             search_text = :searchText, updated_at = :updatedAt
                         WHERE id = :id
-                        """)
-                .params(bind(s))
-                .update();
+                        """).params(bind(s)).update();
         jdbc.sql("DELETE FROM item WHERE item_set_id = :id").param("id", s.id()).update();
         insertItems(s.id(), items);
     }
@@ -110,7 +112,9 @@ public class JdbcItemSetStoreAdapter implements ItemSetStorePort {
                         """)
                 .param("id", s.id())
                 .param("status", s.status().name())
-                .param("hiddenReason", s.hiddenReason() == null ? null : s.hiddenReason().name())
+                .param(
+                        "hiddenReason",
+                        s.hiddenReason() == null ? null : s.hiddenReason().name())
                 .param("publishedAt", s.publishedAt() == null ? null : Timestamp.from(s.publishedAt()))
                 .param("updatedAt", Timestamp.from(s.updatedAt()))
                 .update();
@@ -126,7 +130,10 @@ public class JdbcItemSetStoreAdapter implements ItemSetStorePort {
 
     @Override
     public List<UUID> idsOfSource(UUID sourceId) {
-        return jdbc.sql("SELECT id FROM item_set WHERE source_id = :s").param("s", sourceId).query(UUID.class).list();
+        return jdbc.sql("SELECT id FROM item_set WHERE source_id = :s")
+                .param("s", sourceId)
+                .query(UUID.class)
+                .list();
     }
 
     private void insertItems(UUID itemSetId, List<ItemRow> items) {
@@ -187,17 +194,34 @@ public class JdbcItemSetStoreAdapter implements ItemSetStorePort {
         int page = rs.getInt("source_page");
         boolean noPage = rs.wasNull();
         return new ItemSet(
-                rs.getObject("id", UUID.class), rs.getString("seed_id"), rs.getInt("version"),
-                section == null ? null : Section.valueOf(section), TaskType.valueOf(rs.getString("task_type")),
-                ExamFormat.valueOf(rs.getString("exam_format")), rs.getString("cefr"), rs.getString("topic"),
-                rs.getString("domain"), Arrays.asList((String[]) rs.getArray("skills").getArray()),
-                rs.getObject("source_id", UUID.class), noPage ? null : page, rs.getString("source_item_no"),
-                Provenance.valueOf(rs.getString("provenance")), ItemStatus.valueOf(rs.getString("status")),
-                hidden == null ? null : HideReason.valueOf(hidden), rs.getObject("owner_tutor_id", UUID.class),
-                rs.getDouble("b_mean"), rs.getString("b_basis"), rs.getInt("ets_norm_seconds"),
-                rs.getDouble("estimated_minutes"), rs.getInt("item_count"), rs.getString("payload"),
-                rs.getString("audio_state"), rs.getString("content_hash").strip(), rs.getString("search_text"),
-                published == null ? null : published.toInstant(), rs.getTimestamp("created_at").toInstant(),
+                rs.getObject("id", UUID.class),
+                rs.getString("seed_id"),
+                rs.getInt("version"),
+                section == null ? null : Section.valueOf(section),
+                TaskType.valueOf(rs.getString("task_type")),
+                ExamFormat.valueOf(rs.getString("exam_format")),
+                rs.getString("cefr"),
+                rs.getString("topic"),
+                rs.getString("domain"),
+                Arrays.asList((String[]) rs.getArray("skills").getArray()),
+                rs.getObject("source_id", UUID.class),
+                noPage ? null : page,
+                rs.getString("source_item_no"),
+                Provenance.valueOf(rs.getString("provenance")),
+                ItemStatus.valueOf(rs.getString("status")),
+                hidden == null ? null : HideReason.valueOf(hidden),
+                rs.getObject("owner_tutor_id", UUID.class),
+                rs.getDouble("b_mean"),
+                rs.getString("b_basis"),
+                rs.getInt("ets_norm_seconds"),
+                rs.getDouble("estimated_minutes"),
+                rs.getInt("item_count"),
+                rs.getString("payload"),
+                rs.getString("audio_state"),
+                rs.getString("content_hash").strip(),
+                rs.getString("search_text"),
+                published == null ? null : published.toInstant(),
+                rs.getTimestamp("created_at").toInstant(),
                 rs.getTimestamp("updated_at").toInstant());
     }
 }

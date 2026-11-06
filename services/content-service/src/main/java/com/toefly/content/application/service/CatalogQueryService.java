@@ -1,9 +1,7 @@
 package com.toefly.content.application.service;
 
+import com.toefly.content.application.port.in.BrowseCatalogUseCase;
 import com.toefly.content.application.port.out.CatalogQueryPort;
-import com.toefly.content.application.port.out.CatalogQueryPort.Filter;
-import com.toefly.content.application.port.out.CatalogQueryPort.Hit;
-import com.toefly.content.application.port.out.CatalogQueryPort.Row;
 import com.toefly.content.application.port.out.EmbeddingPort;
 import com.toefly.content.application.port.out.ItemSetStorePort;
 import com.toefly.content.application.port.out.SourceStorePort;
@@ -23,52 +21,49 @@ import org.springframework.stereotype.Service;
 
 /** Browsing and search for learners (approved sets only) and for administrators (every status). */
 @Service
-public class CatalogQueryService {
+public class CatalogQueryService implements BrowseCatalogUseCase {
 
     /** Reciprocal rank fusion constant (docs/08-content-pipeline.md §4.1). */
     private static final int RRF_K = 60;
-
-    public record Page(List<Row> rows, boolean hasMore) {}
-
-    public record SearchResult(boolean hybrid, List<Hit> hits) {}
 
     private final CatalogQueryPort query;
     private final ItemSetStorePort itemSets;
     private final SourceStorePort sources;
     private final EmbeddingPort embeddings;
 
-    public CatalogQueryService(CatalogQueryPort query, ItemSetStorePort itemSets, SourceStorePort sources,
-            EmbeddingPort embeddings) {
+    public CatalogQueryService(
+            CatalogQueryPort query, ItemSetStorePort itemSets, SourceStorePort sources, EmbeddingPort embeddings) {
         this.query = query;
         this.itemSets = itemSets;
         this.sources = sources;
         this.embeddings = embeddings;
     }
 
-    public Page list(Filter filter, boolean admin, @Nullable Instant afterCreatedAt, @Nullable UUID afterId, int limit) {
+    @Override
+    public Page list(
+            Filter filter, boolean admin, @Nullable Instant afterCreatedAt, @Nullable UUID afterId, int limit) {
         Filter effective = admin ? filter : filter.withStatus(ItemStatus.APPROVED);
         List<Row> rows = new ArrayList<>(query.list(effective, afterCreatedAt, afterId, limit + 1));
         boolean more = rows.size() > limit;
         return new Page(more ? rows.subList(0, limit) : rows, more);
     }
 
-    /** Learner view: only approved sets exist. */
-    public Optional<ItemSet> approved(UUID id) {
-        return itemSets.findById(id).filter(ItemSet::available);
-    }
-
+    @Override
     public Optional<ItemSet> any(UUID id) {
         return itemSets.findById(id);
     }
 
+    @Override
     public Source source(UUID id) {
         return sources.findById(id).orElseThrow();
     }
 
+    @Override
     public List<Source> sources() {
         return sources.findAll();
     }
 
+    @Override
     public SearchResult search(String q, Filter filter, int limit) {
         Filter effective = filter.withStatus(ItemStatus.APPROVED);
         int pool = Math.max(limit * 3, 30);

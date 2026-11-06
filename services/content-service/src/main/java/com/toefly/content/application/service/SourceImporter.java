@@ -1,5 +1,6 @@
 package com.toefly.content.application.service;
 
+import com.toefly.content.application.port.in.ImportReport;
 import com.toefly.content.application.port.out.ContentEventPublisherPort;
 import com.toefly.content.application.port.out.ItemSetStorePort;
 import com.toefly.content.application.port.out.ItemSetStorePort.ItemRow;
@@ -37,8 +38,13 @@ public class SourceImporter {
     private final ContentEventPublisherPort events;
     private final Clock clock;
 
-    public SourceImporter(SeedLocationPort seed, SourceStorePort sources, ItemSetStorePort itemSets,
-            SeedImportStorePort imports, ContentEventPublisherPort events, Clock clock) {
+    public SourceImporter(
+            SeedLocationPort seed,
+            SourceStorePort sources,
+            ItemSetStorePort itemSets,
+            SeedImportStorePort imports,
+            ContentEventPublisherPort events,
+            Clock clock) {
         this.seed = seed;
         this.sources = sources;
         this.itemSets = itemSets;
@@ -88,9 +94,14 @@ public class SourceImporter {
         int hidden = dryRun ? 0 : hideRemoved(source, present);
         Instant finished = clock.instant();
         if (!dryRun) {
-            imports.record(code, bundle.bundleSha256(), "DONE",
+            imports.record(
+                    code,
+                    bundle.bundleSha256(),
+                    "DONE",
                     Map.of("created", created, "updated", updated, "unchanged", unchanged, "hidden", hidden),
-                    "{}", started, finished);
+                    "{}",
+                    started,
+                    finished);
         }
         return new ImportReport.SourceResult(code, "DONE", created, updated, unchanged, hidden, null);
     }
@@ -143,7 +154,8 @@ public class SourceImporter {
         return hidden;
     }
 
-    private ItemSet build(Source source, SeedItemSet s, ItemStatus status, int version, Instant createdAt, Instant now) {
+    private ItemSet build(
+            Source source, SeedItemSet s, ItemStatus status, int version, Instant createdAt, Instant now) {
         TaskType type = s.taskType();
         int count = s.items().size();
         int norm = type.etsNormSeconds(count, s.audioSeconds());
@@ -151,33 +163,94 @@ public class SourceImporter {
                 .mapToDouble(i -> Difficulty.initialB(s.cefr(), i.subskill(), type.legacy()))
                 .average()
                 .orElse(0);
-        return new ItemSet(s.id(), s.seedId(), version, type.section(), type, type.examFormat(), s.cefr(), s.topic(),
-                s.domain(), s.skills(), source.id(), s.sourcePage(), s.sourceItemNo(), s.provenance(), status, null,
-                null, Math.round(b * 100) / 100.0, Difficulty.SEED_LABEL, norm, TaskType.estimatedMinutes(norm), count,
-                s.payloadJson(), "UNCHECKED", s.contentHash(), s.searchText(),
-                status == ItemStatus.APPROVED ? now : null, createdAt, now);
+        return new ItemSet(
+                s.id(),
+                s.seedId(),
+                version,
+                type.section(),
+                type,
+                type.examFormat(),
+                s.cefr(),
+                s.topic(),
+                s.domain(),
+                s.skills(),
+                source.id(),
+                s.sourcePage(),
+                s.sourceItemNo(),
+                s.provenance(),
+                status,
+                null,
+                null,
+                Math.round(b * 100) / 100.0,
+                Difficulty.SEED_LABEL,
+                norm,
+                TaskType.estimatedMinutes(norm),
+                count,
+                s.payloadJson(),
+                "UNCHECKED",
+                s.contentHash(),
+                s.searchText(),
+                status == ItemStatus.APPROVED ? now : null,
+                createdAt,
+                now);
     }
 
     private static ItemSet withAdminFields(ItemSet changed, ItemSet existing) {
-        return new ItemSet(changed.id(), changed.seedId(), changed.version(), changed.section(), changed.taskType(),
-                changed.examFormat(), changed.cefr(), changed.topic(), changed.domain(), changed.skills(),
-                changed.sourceId(), changed.sourcePage(), changed.sourceItemNo(), changed.provenance(),
-                existing.status(), existing.hiddenReason(), existing.ownerTutorId(), existing.bMean(), existing.bBasis(),
-                changed.etsNormSeconds(), changed.estimatedMinutes(), changed.itemCount(), changed.payload(),
-                existing.audioState(), changed.contentHash(), changed.searchText(), existing.publishedAt(),
-                existing.createdAt(), changed.updatedAt());
+        return new ItemSet(
+                changed.id(),
+                changed.seedId(),
+                changed.version(),
+                changed.section(),
+                changed.taskType(),
+                changed.examFormat(),
+                changed.cefr(),
+                changed.topic(),
+                changed.domain(),
+                changed.skills(),
+                changed.sourceId(),
+                changed.sourcePage(),
+                changed.sourceItemNo(),
+                changed.provenance(),
+                existing.status(),
+                existing.hiddenReason(),
+                existing.ownerTutorId(),
+                existing.bMean(),
+                existing.bBasis(),
+                changed.etsNormSeconds(),
+                changed.estimatedMinutes(),
+                changed.itemCount(),
+                changed.payload(),
+                existing.audioState(),
+                changed.contentHash(),
+                changed.searchText(),
+                existing.publishedAt(),
+                existing.createdAt(),
+                changed.updatedAt());
     }
 
     private static List<ItemRow> rows(Source source, SeedItemSet s) {
         return s.items().stream()
-                .map(i -> new ItemRow(i.id(), i.ordinal(), i.subskill(), i.maxScore(),
-                        Difficulty.initialB(s.cefr(), i.subskill(), source.legacy()), Difficulty.SEED_LABEL))
+                .map(i -> new ItemRow(
+                        i.id(),
+                        i.ordinal(),
+                        i.subskill(),
+                        i.maxScore(),
+                        Difficulty.initialB(s.cefr(), i.subskill(), source.legacy()),
+                        Difficulty.SEED_LABEL))
                 .toList();
     }
 
     private static Source toSource(SeedSourceInfo i) {
-        return new Source(UUID.nameUUIDFromBytes(("source:" + i.sourceCode()).getBytes()), i.sourceCode(), i.title(),
-                i.publisher(), i.year(), i.url(), i.examFormat(), i.attributionText(), i.extraJson());
+        return new Source(
+                UUID.nameUUIDFromBytes(("source:" + i.sourceCode()).getBytes()),
+                i.sourceCode(),
+                i.title(),
+                i.publisher(),
+                i.year(),
+                i.url(),
+                i.examFormat(),
+                i.attributionText(),
+                i.extraJson());
     }
 
     private static Source stub(SeedSourceInfo i) {

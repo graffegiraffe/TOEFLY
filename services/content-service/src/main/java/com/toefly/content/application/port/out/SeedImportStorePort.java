@@ -11,6 +11,12 @@ public interface SeedImportStorePort {
 
     Optional<String> bundleSha(String sourceCode);
 
-    void record(String sourceCode, String bundleSha, String status, Map<String, Integer> counts, String reportJson,
-            Instant startedAt, Instant finishedAt);
+    void record(
+            String sourceCode,
+            String bundleSha,
+            String status,
+            Map<String, Integer> counts,
+            String reportJson,
+            Instant startedAt,
+            Instant finishedAt);
 }

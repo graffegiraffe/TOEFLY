@@ -34,7 +34,8 @@ public class OllamaEmbeddingAdapter implements EmbeddingPort {
                     .body(Map.of("model", model, "prompt", text))
                     .retrieve()
                     .body(Map.class);
-            if (response == null || !(response.get("embedding") instanceof List<?> numbers)
+            if (response == null
+                    || !(response.get("embedding") instanceof List<?> numbers)
                     || numbers.size() != DIMENSIONS) {
                 return Optional.empty();
             }

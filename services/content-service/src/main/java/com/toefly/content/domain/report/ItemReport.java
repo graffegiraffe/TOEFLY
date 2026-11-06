@@ -25,8 +25,13 @@ public record ItemReport(
     }
 
     public static ItemReport open(
-            UUID id, UUID itemSetId, @Nullable Integer ordinal, UUID reporter, ReportReason reason,
-            @Nullable String comment, Instant now) {
+            UUID id,
+            UUID itemSetId,
+            @Nullable Integer ordinal,
+            UUID reporter,
+            ReportReason reason,
+            @Nullable String comment,
+            Instant now) {
         return new ItemReport(id, itemSetId, ordinal, reporter, reason, comment, ReportStatus.OPEN, null, now, null);
     }
 

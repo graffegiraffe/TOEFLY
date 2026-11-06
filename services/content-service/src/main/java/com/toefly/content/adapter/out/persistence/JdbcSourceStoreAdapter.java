@@ -75,9 +75,14 @@ public class JdbcSourceStoreAdapter implements SourceStorePort {
     private static Source map(ResultSet rs, int row) throws SQLException {
         int year = rs.getInt("year");
         return new Source(
-                rs.getObject("id", UUID.class), rs.getString("code"), rs.getString("title"),
-                rs.getString("publisher"), rs.wasNull() ? null : year, rs.getString("url"),
-                ExamFormat.valueOf(rs.getString("exam_format")), rs.getString("attribution_text"),
+                rs.getObject("id", UUID.class),
+                rs.getString("code"),
+                rs.getString("title"),
+                rs.getString("publisher"),
+                rs.wasNull() ? null : year,
+                rs.getString("url"),
+                ExamFormat.valueOf(rs.getString("exam_format")),
+                rs.getString("attribution_text"),
                 rs.getString("extra"));
     }
 }

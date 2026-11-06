@@ -1,5 +1,6 @@
 package com.toefly.content.application.service;
 
+import com.toefly.content.application.port.in.ImportReport;
 import com.toefly.content.application.port.in.ImportSeedUseCase;
 import com.toefly.content.application.port.out.SeedImportStorePort;
 import com.toefly.content.application.port.out.SeedLocationPort;
@@ -57,8 +58,14 @@ public class SeedImportService implements ImportSeedUseCase {
         } catch (RuntimeException e) {
             log.error("Seed source {} failed", bundle.sourceCode(), e);
             if (!dryRun) {
-                imports.record(bundle.sourceCode(), bundle.bundleSha256(), "FAILED", Map.of(),
-                        "{\"error\":" + quote(String.valueOf(e.getMessage())) + "}", started, clock.instant());
+                imports.record(
+                        bundle.sourceCode(),
+                        bundle.bundleSha256(),
+                        "FAILED",
+                        Map.of(),
+                        "{\"error\":" + quote(String.valueOf(e.getMessage())) + "}",
+                        started,
+                        clock.instant());
             }
             return ImportReport.SourceResult.failed(bundle.sourceCode(), String.valueOf(e.getMessage()));
         }
