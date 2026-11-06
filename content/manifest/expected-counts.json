@@ -14,5 +14,9 @@
   "tst-reading-legacy-2020": {
     "sets": 98,
     "items": 98
+  },
+  "tst-listening-legacy-2020": {
+    "sets": 50,
+    "items": 96
   }
 }

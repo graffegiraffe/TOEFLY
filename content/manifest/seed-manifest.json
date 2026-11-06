@@ -439,6 +439,365 @@
       "sourceCode": "tst-listening-2026"
     },
     {
+      "bundleSha256": "sha256:ac698c5e2789ddf6655f3a1bbadd91c026b12d8675aa8a78e5abe965e7ceabe8",
+      "counts": {
+        "LEGACY_LISTENING": 50
+      },
+      "files": [
+        {
+          "bytes": 7008,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/anatomy-and-physiology-001.json",
+          "seedId": "tst-listening-legacy-2020/anatomy-and-physiology-001",
+          "sha256": "sha256:907f0622e53273893c05e8e7fa349cbf872353ca9697fb59cb0c170b63a36242"
+        },
+        {
+          "bytes": 7579,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/anatomy-and-physiology-002.json",
+          "seedId": "tst-listening-legacy-2020/anatomy-and-physiology-002",
+          "sha256": "sha256:cd0d15d2d4871dacdcdf9e06839319d04a37514501f5a73b492c142d992a7530"
+        },
+        {
+          "bytes": 6291,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/anatomy-and-physiology-003.json",
+          "seedId": "tst-listening-legacy-2020/anatomy-and-physiology-003",
+          "sha256": "sha256:7697d0856e93cf8e63432bcfa49b3a399c76ac8c84ff8361cfcde99f68deb76a"
+        },
+        {
+          "bytes": 8219,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/anatomy-and-physiology-004.json",
+          "seedId": "tst-listening-legacy-2020/anatomy-and-physiology-004",
+          "sha256": "sha256:57b26cf83f91e468972be71d7d3f3fa68d362c5a1cc6a0297679a1d10b4797fd"
+        },
+        {
+          "bytes": 7562,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/anatomy-and-physiology-005.json",
+          "seedId": "tst-listening-legacy-2020/anatomy-and-physiology-005",
+          "sha256": "sha256:7c010dd081280859ed09e0138142de2977a780831ea99a083e98dd4a01e3fbf2"
+        },
+        {
+          "bytes": 7122,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/astronomy-001.json",
+          "seedId": "tst-listening-legacy-2020/astronomy-001",
+          "sha256": "sha256:65254d268892eb02f6d756d748df1015b29f97df0483df530446c5ff98d16595"
+        },
+        {
+          "bytes": 6900,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/astronomy-002.json",
+          "seedId": "tst-listening-legacy-2020/astronomy-002",
+          "sha256": "sha256:c5232f015d221588406a2831213ce6e0e49ee42ce9274204ab2f1dcb3b00ee17"
+        },
+        {
+          "bytes": 7989,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/astronomy-003.json",
+          "seedId": "tst-listening-legacy-2020/astronomy-003",
+          "sha256": "sha256:87a2e51e9398273fb5462ee0871565bfd3be3b39a2ed4b2de0ad39fd4a668157"
+        },
+        {
+          "bytes": 7045,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/astronomy-004.json",
+          "seedId": "tst-listening-legacy-2020/astronomy-004",
+          "sha256": "sha256:286e11117cd9d342cc343324a595355c26e9ce0d0684dae907661fcbec89ba48"
+        },
+        {
+          "bytes": 8130,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/astronomy-005.json",
+          "seedId": "tst-listening-legacy-2020/astronomy-005",
+          "sha256": "sha256:5477265f5c4e63d19203f9e3770843757a9247170d52752bf7d035d7c157dd51"
+        },
+        {
+          "bytes": 5909,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/biology-001.json",
+          "seedId": "tst-listening-legacy-2020/biology-001",
+          "sha256": "sha256:89697cb30d098f602eacf178b5c797cc1197c7e2c2dff2e8ee5bdf0cf118f8e2"
+        },
+        {
+          "bytes": 8864,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/biology-002.json",
+          "seedId": "tst-listening-legacy-2020/biology-002",
+          "sha256": "sha256:ff37f040b5b4a50cc0d84cd2bf57da85598886eab9d042d636b4b1f12c09dad9"
+        },
+        {
+          "bytes": 7471,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/biology-003.json",
+          "seedId": "tst-listening-legacy-2020/biology-003",
+          "sha256": "sha256:b28fbb3c9ace703161181b1a40ac97b687369ea5ef86108c5e1080a087e75e35"
+        },
+        {
+          "bytes": 6205,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/biology-004.json",
+          "seedId": "tst-listening-legacy-2020/biology-004",
+          "sha256": "sha256:ec8ed2aed690327b14e3d72aaf4d39be026d5e5a6c99d938c273c77b7a8f252d"
+        },
+        {
+          "bytes": 6940,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/biology-005.json",
+          "seedId": "tst-listening-legacy-2020/biology-005",
+          "sha256": "sha256:acef369b91999644cdca5492c939f584a9fdb7d5fe5581cea57d3cc805e81e7a"
+        },
+        {
+          "bytes": 6967,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/chemistry-001.json",
+          "seedId": "tst-listening-legacy-2020/chemistry-001",
+          "sha256": "sha256:627eba35d7791cd8140b7ed32d8dec7ba9747350b8b18fe94b3775af5e436647"
+        },
+        {
+          "bytes": 7336,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/chemistry-002.json",
+          "seedId": "tst-listening-legacy-2020/chemistry-002",
+          "sha256": "sha256:3cf5f05d7fc0c6584facc14b59062e566b3636acff2b8bfb308e349b74ab2e3e"
+        },
+        {
+          "bytes": 9272,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/chemistry-003.json",
+          "seedId": "tst-listening-legacy-2020/chemistry-003",
+          "sha256": "sha256:76cf10b74394adf9a1f6aee373b3790874cd14226c1e2d2fb5d5044f5d8751e7"
+        },
+        {
+          "bytes": 6134,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/chemistry-004.json",
+          "seedId": "tst-listening-legacy-2020/chemistry-004",
+          "sha256": "sha256:e1b69522e1af2301fc47b88427d475a37b64c6a18f446c13c59c1e455a8a6b06"
+        },
+        {
+          "bytes": 7872,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/chemistry-005.json",
+          "seedId": "tst-listening-legacy-2020/chemistry-005",
+          "sha256": "sha256:3e732c1f4210c6fefc9763cb24503315e6b7a49992f565a461b5e7642a53ef3d"
+        },
+        {
+          "bytes": 7471,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/economics-001.json",
+          "seedId": "tst-listening-legacy-2020/economics-001",
+          "sha256": "sha256:686742252d502ed4e7394ca503a53ffdcf8002fee024b72785c8ddb7c0de36e3"
+        },
+        {
+          "bytes": 6739,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/economics-002.json",
+          "seedId": "tst-listening-legacy-2020/economics-002",
+          "sha256": "sha256:ab6179074269b26bf95dd272a75e25b51e61229022fe61967900ce37259ec83a"
+        },
+        {
+          "bytes": 5786,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/economics-003.json",
+          "seedId": "tst-listening-legacy-2020/economics-003",
+          "sha256": "sha256:31e46b61af5c4b45714142d88ebb098ff06a347c63547d8a7ea6664cd225f3d2"
+        },
+        {
+          "bytes": 6205,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/economics-004.json",
+          "seedId": "tst-listening-legacy-2020/economics-004",
+          "sha256": "sha256:8b051244fd5281a604fdecff0b40a1fc488c37c0d8848f29d290c1ca6a74dd6e"
+        },
+        {
+          "bytes": 7819,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/economics-005.json",
+          "seedId": "tst-listening-legacy-2020/economics-005",
+          "sha256": "sha256:c44cb4b2a9dc10b7b2bcd7293d26cf9a16612fa63f5368bc05e6feb9cceccee7"
+        },
+        {
+          "bytes": 7585,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/physics-001.json",
+          "seedId": "tst-listening-legacy-2020/physics-001",
+          "sha256": "sha256:19043620e45b3d62e22477abef379439a7cd5e4d7827b93e967091f774242170"
+        },
+        {
+          "bytes": 6788,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/physics-002.json",
+          "seedId": "tst-listening-legacy-2020/physics-002",
+          "sha256": "sha256:623579bcef1777748fad980aeb7417d8c735e6359f59055f3f2e90dfc6aae0cd"
+        },
+        {
+          "bytes": 8298,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/physics-003.json",
+          "seedId": "tst-listening-legacy-2020/physics-003",
+          "sha256": "sha256:cd63655fa0e8bb74cc06744f0abf5b9656eb8e467de241a15e2b5d11cdb7cb03"
+        },
+        {
+          "bytes": 7363,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/physics-004.json",
+          "seedId": "tst-listening-legacy-2020/physics-004",
+          "sha256": "sha256:471d891d73eba146a2d85f5eb8d1e99f10f6e6ad3f43aa01ab6f210167158009"
+        },
+        {
+          "bytes": 13135,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/physics-005.json",
+          "seedId": "tst-listening-legacy-2020/physics-005",
+          "sha256": "sha256:22de974603b99eddd20ae64f3aeaf2e49d42298d6581efbb2f07c029d9eb2d15"
+        },
+        {
+          "bytes": 8040,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/psychology-001.json",
+          "seedId": "tst-listening-legacy-2020/psychology-001",
+          "sha256": "sha256:01aa3513ce413ec6d38e5166faafa2cbda07d729724156cab5905472dcfddace"
+        },
+        {
+          "bytes": 7809,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/psychology-002.json",
+          "seedId": "tst-listening-legacy-2020/psychology-002",
+          "sha256": "sha256:a9f87862cf5c1e080cc9886566255df08860d80b283e2f9a6f6717619b7654a0"
+        },
+        {
+          "bytes": 6737,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/psychology-003.json",
+          "seedId": "tst-listening-legacy-2020/psychology-003",
+          "sha256": "sha256:18c6f6aacf7294d3295cd2ff4c109b8b45de2cbece65944e25ee16f9eaffb6d2"
+        },
+        {
+          "bytes": 5057,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/psychology-004.json",
+          "seedId": "tst-listening-legacy-2020/psychology-004",
+          "sha256": "sha256:ac371e2a83193f799be2d7f8339a40c73eb6ed6e9d9a703f680625f8a70b37df"
+        },
+        {
+          "bytes": 7697,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/psychology-005.json",
+          "seedId": "tst-listening-legacy-2020/psychology-005",
+          "sha256": "sha256:4d40671a879985076b65ae4d4625748812e99a78ccd0603bd8162ec7d429db49"
+        },
+        {
+          "bytes": 9724,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/sociology-001.json",
+          "seedId": "tst-listening-legacy-2020/sociology-001",
+          "sha256": "sha256:ba3ae86f530e7a855c01e0126257f0fe458d9524609c45e5466efb2403792a60"
+        },
+        {
+          "bytes": 7444,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/sociology-002.json",
+          "seedId": "tst-listening-legacy-2020/sociology-002",
+          "sha256": "sha256:5e8625f9aee73d63517a6fb194ddfb6df8a036cf9077a85a452b75d87a233196"
+        },
+        {
+          "bytes": 7512,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/sociology-003.json",
+          "seedId": "tst-listening-legacy-2020/sociology-003",
+          "sha256": "sha256:2ca1b777493f77d8b25e838c0dee738eacb52c4826bbff27561a26d59dee0342"
+        },
+        {
+          "bytes": 6110,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/sociology-004.json",
+          "seedId": "tst-listening-legacy-2020/sociology-004",
+          "sha256": "sha256:f93dc68e79b614f8ba58bdd378b545fb1658b4204641926417d2f5d1c645f008"
+        },
+        {
+          "bytes": 8719,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/sociology-005.json",
+          "seedId": "tst-listening-legacy-2020/sociology-005",
+          "sha256": "sha256:f90577646f9fedb692627f019a82491e596b31feecc9ad25c64b63f3cecb0de2"
+        },
+        {
+          "bytes": 7792,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/us-history-001.json",
+          "seedId": "tst-listening-legacy-2020/us-history-001",
+          "sha256": "sha256:cf62eb85b90ea9f82b5dbb38be15d554ae60e8372799e60cf7ba16c0dc9388e1"
+        },
+        {
+          "bytes": 6924,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/us-history-002.json",
+          "seedId": "tst-listening-legacy-2020/us-history-002",
+          "sha256": "sha256:f0c600f3d33b0742ec0df2c6fd7dbccf3e1d6c747d14a3192b44f77c42e3ad5f"
+        },
+        {
+          "bytes": 7151,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/us-history-003.json",
+          "seedId": "tst-listening-legacy-2020/us-history-003",
+          "sha256": "sha256:d9a62c773e24b6ddc688f8a61ab62f67f1427cc8eb01cdbc48209163384b50b9"
+        },
+        {
+          "bytes": 6020,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/us-history-004.json",
+          "seedId": "tst-listening-legacy-2020/us-history-004",
+          "sha256": "sha256:f54b0e760bacc4760fdb3480e2ca120a3d7fffd6ecf11fa9dc4ae58fbc477899"
+        },
+        {
+          "bytes": 9269,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/us-history-005.json",
+          "seedId": "tst-listening-legacy-2020/us-history-005",
+          "sha256": "sha256:204253218590990584df2825294abc022d0bbc1abbd6a802d3787fabd02d3aee"
+        },
+        {
+          "bytes": 8143,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/world-history-001.json",
+          "seedId": "tst-listening-legacy-2020/world-history-001",
+          "sha256": "sha256:eb44cac5b75963994b8db876fb533f33a16600a554400126f15e1f9ac31d9ccf"
+        },
+        {
+          "bytes": 8084,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/world-history-002.json",
+          "seedId": "tst-listening-legacy-2020/world-history-002",
+          "sha256": "sha256:348ebf06c8d4b82e725ffea218019257eb851d076fe0c54b097a1865e2655021"
+        },
+        {
+          "bytes": 6605,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/world-history-003.json",
+          "seedId": "tst-listening-legacy-2020/world-history-003",
+          "sha256": "sha256:9935964bd510501148a9490eb31921288f05a89678b5e55c15603d1253d0ac4c"
+        },
+        {
+          "bytes": 7028,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/world-history-004.json",
+          "seedId": "tst-listening-legacy-2020/world-history-004",
+          "sha256": "sha256:dfbc2dd5e979864eadf50905a35de3e4ff2b26ec402a1002f41eac9bd1eecd93"
+        },
+        {
+          "bytes": 8129,
+          "kind": "ITEM_SET",
+          "path": "tst-listening-legacy-2020/item-sets/world-history-005.json",
+          "seedId": "tst-listening-legacy-2020/world-history-005",
+          "sha256": "sha256:8e4e299c89baddbfb9effe9ab2e5fc6ad9ee06734c1c105879522a3ad785e637"
+        }
+      ],
+      "sourceCode": "tst-listening-legacy-2020"
+    },
+    {
       "bundleSha256": "sha256:1c481f22336d89500a7062ecf08fb8acd967b97974393082dcc244f7bcd3edbe",
       "counts": {
         "COMPLETE_THE_WORDS": 10,
