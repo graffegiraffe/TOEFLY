@@ -23,6 +23,7 @@
         <module>libs/toefly-common-test</module>
         <module>services/profile-service</module>
         <module>services/api-gateway</module>
+        <module>services/content-service</module>
         <module>tools/service-archetype</module>
         <module>infra/keycloak/extensions</module>
     </modules>
