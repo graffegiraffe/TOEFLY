@@ -1,0 +1,12 @@
+# Values of content-service for the shared chart infra/helm/toefly-service-lib (phase 13 fills in the rest).
+image:
+  repository: ghcr.io/OWNER/toefly-content-service
+  digest: ""
+service:
+  port: 8082
+database:
+  name: content_db
+  role: content_app
+resources:
+  requests: { cpu: 50m, memory: 320Mi }
+  limits: { memory: 448Mi }
