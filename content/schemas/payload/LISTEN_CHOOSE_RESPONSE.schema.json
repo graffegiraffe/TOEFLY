@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/payload/LISTEN_CHOOSE_RESPONSE/v1",
+  "title": "LISTEN_CHOOSE_RESPONSE (docs/03-domain-model.md section 4.4; the audio length of EXTRACTED sets is estimated from the transcript)",
+  "type": "object",
+  "required": [
+    "stimulus",
+    "items"
+  ],
+  "properties": {
+    "stimulus": {
+      "type": "object",
+      "required": [
+        "contextLine"
+      ],
+      "properties": {
+        "contextLine": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": [
+          "ordinal",
+          "prompt",
+          "options",
+          "answerKey",
+          "explanation",
+          "audio",
+          "transcript"
+        ],
+        "properties": {
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "options": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "text",
+                "rationale"
+              ],
+              "properties": {
+                "key": {
+                  "enum": [
+                    "A",
+                    "B",
+                    "C",
+                    "D"
+                  ]
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 10
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "answerKey": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "explanation": {
+            "type": "object",
+            "required": [
+              "summary"
+            ],
+            "properties": {
+              "summary": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "audio": {
+            "type": "object",
+            "required": [
+              "url",
+              "durationSeconds",
+              "origin",
+              "accent"
+            ],
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "durationSeconds": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 300
+              },
+              "durationEstimated": {
+                "type": "boolean"
+              },
+              "origin": {
+                "enum": [
+                  "HOSTED_MP3",
+                  "TTS"
+                ]
+              },
+              "accent": {
+                "enum": [
+                  "US",
+                  "CA",
+                  "UK",
+                  "AU"
+                ]
+              },
+              "voiceId": {
+                "type": "string"
+              },
+              "ttsFallbackKey": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "transcript": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subskill": {
+            "enum": [
+              "MAIN_IDEA",
+              "DETAIL",
+              "INFERENCE",
+              "ATTITUDE",
+              "FUNCTION",
+              "PURPOSE"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

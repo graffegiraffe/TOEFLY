@@ -19,14 +19,17 @@ class Question:
     extra: list[str] = field(default_factory=list)  # lines between the stem and the options (quotes, excerpts)
 
 
-def parse_questions(lines: list[str]) -> list[Question]:
+def parse_questions(lines: list[str], number: re.Pattern = QUESTION, stop: re.Pattern | None = None) -> list[Question]:
     """Questions ``101. stem`` followed by options ``a. ...`` (continuation lines are joined)."""
     questions: list[Question] = []
     current: Question | None = None
     target: list[str] | None = None
     for line in lines:
-        question = QUESTION.match(line.strip())
+        question = number.match(line.strip())
         option = OPTION.match(line)
+        if stop and stop.match(line) and not question:
+            current, target = None, None
+            continue
         if question:
             current = Question(int(question.group(1)), question.group(2).strip())
             questions.append(current)
@@ -53,12 +56,12 @@ def parse_questions(lines: list[str]) -> list[Question]:
 _KEY = re.compile(r"^(\d{3})\.\s*([A-D])\b\s*(.*)$")
 
 
-def parse_key(lines: list[str]) -> dict[int, tuple[str, str]]:
+def parse_key(lines: list[str], pattern: re.Pattern = _KEY) -> dict[int, tuple[str, str]]:
     """``101. D`` followed by the explanation paragraph until the next number."""
     key: dict[int, tuple[str, str]] = {}
     number, letter, body = None, None, []
     for line in lines:
-        match = _KEY.match(line.strip())
+        match = pattern.match(line.strip())
         if match:
             if number is not None:
                 key[number] = (letter, normalise(" ".join(body)))

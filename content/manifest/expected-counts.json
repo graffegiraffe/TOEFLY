@@ -6,5 +6,9 @@
   "tst-reading-2026": {
     "sets": 28,
     "items": 159
+  },
+  "tst-listening-2026": {
+    "sets": 43,
+    "items": 124
   }
 }

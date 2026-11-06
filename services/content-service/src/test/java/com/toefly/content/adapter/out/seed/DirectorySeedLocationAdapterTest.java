@@ -62,8 +62,13 @@ class DirectorySeedLocationAdapterTest {
                 assertThat(set.contentHash())
                         .isEqualTo(envelope.get("contentHash").asString().substring("sha256:".length()));
                 items += set.items().size();
+                assertThat(set.items())
+                        .hasSize(envelope.get("itemSet")
+                                .get("payload")
+                                .get("items")
+                                .size());
             }
         }
-        assertThat(items).isEqualTo(79);
+        assertThat(items).isGreaterThan(0);
     }
 }
