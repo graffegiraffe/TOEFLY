@@ -80,3 +80,18 @@ def test_questions_stop_at_page_furniture():
     lines = ["31. Why?", "   a. One", "   b. Two", "   c. Three", "   d. Four", "2.", "Listen to a conversation."]
     q = tst.parse_questions(lines, re.compile(r"^(\d{2,3})\.\s+(.*)$"), re.compile(r"^\s*(?:\d{1,2}\.\s*$|Listen to )"))
     assert q[0].options[3] == "Four"
+
+
+def test_legacy_title_matching_ignores_articles_plurals_and_ampersands():
+    from toefly_seed.sources import tst_reading_legacy as legacy
+
+    assert legacy._norm("Tissues and Aging") == legacy._norm("Tissue & Aging")
+    assert legacy._norm("The Periodic Table") == legacy._norm("Periodic Table")
+
+
+def test_legacy_marks_and_squares_are_read_before_zero_width_marks_are_dropped():
+    from toefly_seed.sources import tst_reading_legacy as legacy
+
+    lines = legacy._prepare("A ​ B ​ text ​key word​ here\n\nstray​ end")
+    assert "[[B]]" in lines[0] and "{{mark:key word}}" in lines[0]
+    assert legacy.STRAY in lines[-1]
