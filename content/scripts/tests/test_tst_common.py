@@ -95,3 +95,32 @@ def test_legacy_marks_and_squares_are_read_before_zero_width_marks_are_dropped()
     lines = legacy._prepare("A ​ B ​ text ​key word​ here\n\nstray​ end")
     assert "[[B]]" in lines[0] and "{{mark:key word}}" in lines[0]
     assert legacy.STRAY in lines[-1]
+
+
+def test_build_a_sentence_is_assembled_from_template_chunks_and_key():
+    from toefly_seed.sources import tst_complete_test_2026 as ct
+
+    template, chunks, order = ct.build_sentence(
+        "I’d love to hear _____ _____ _____ _____ _____ _____ _____.",
+        "speaker / the / articulate / on / someday / present / topic / another",
+        "I’d love to hear the speaker present on another topic someday.",
+    )
+    assert [chunks[i] for i in order] == ["the", "speaker", "present", "on", "another", "topic", "someday"]
+    assert chunks[2] == "articulate" and 2 not in order  # the unused chunk is the distractor
+    assert template[-1] == ("FIXED", ".")
+
+
+def test_build_a_sentence_reports_an_unassemblable_key():
+    from toefly_seed.sources import tst_complete_test_2026 as ct
+
+    _, _, order = ct.build_sentence("_____ a _____", "x / y", "x b y")
+    assert order is None
+
+
+def test_score_table_rows_are_read():
+    from toefly_seed.sources import tst_complete_test_2026 as ct
+
+    ct.RAW_TO_BAND.clear()
+    ct._rubric(["   47-48     6 (29-30)", "     3      1.5 (2)"], "reading")
+    assert ct.RAW_TO_BAND["reading"][0] == {"rawFrom": 47, "rawTo": 48, "band": 6.0, "legacyFrom": 29, "legacyTo": 30}
+    assert ct.RAW_TO_BAND["reading"][1]["rawFrom"] == 3

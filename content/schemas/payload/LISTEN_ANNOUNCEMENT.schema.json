@@ -25,7 +25,6 @@
         "audio": {
           "type": "object",
           "required": [
-            "url",
             "durationSeconds",
             "origin",
             "accent"

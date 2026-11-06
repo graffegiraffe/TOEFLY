@@ -18,5 +18,9 @@
   "tst-listening-legacy-2020": {
     "sets": 50,
     "items": 96
+  },
+  "tst-complete-test-1-2026": {
+    "sets": 24,
+    "items": 105
   }
 }

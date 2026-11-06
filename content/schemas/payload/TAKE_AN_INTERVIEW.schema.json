@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/payload/TAKE_AN_INTERVIEW/v1",
+  "title": "TAKE_AN_INTERVIEW (docs/03-domain-model.md section 4.12; EXTRACTED: no picture, TTS audio, one sample answer)",
+  "type": "object",
+  "required": [
+    "stimulus",
+    "items"
+  ],
+  "properties": {
+    "stimulus": {
+      "type": "object",
+      "required": [
+        "scenario"
+      ],
+      "properties": {
+        "scenario": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image": {
+          "type": "object"
+        },
+        "scenarioAudio": {
+          "type": "object",
+          "required": [
+            "origin",
+            "accent",
+            "durationSeconds"
+          ],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "origin": {
+              "enum": [
+                "HOSTED_MP3",
+                "TTS"
+              ]
+            },
+            "accent": {
+              "enum": [
+                "US",
+                "CA",
+                "UK",
+                "AU"
+              ]
+            },
+            "durationSeconds": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 300
+            },
+            "durationEstimated": {
+              "type": "boolean"
+            },
+            "voiceId": {
+              "type": "string"
+            },
+            "ttsFallbackKey": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "interviewer": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "ordinal",
+          "questionType",
+          "text",
+          "audio",
+          "responseSeconds",
+          "modelAnswer"
+        ],
+        "properties": {
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "questionType": {
+            "enum": [
+              "PERSONAL_EXPERIENCE",
+              "PREFERENCE",
+              "FUTURE_OPINION",
+              "ABSTRACT_OPINION"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "audio": {
+            "type": "object",
+            "required": [
+              "origin",
+              "accent",
+              "durationSeconds"
+            ],
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "origin": {
+                "enum": [
+                  "HOSTED_MP3",
+                  "TTS"
+                ]
+              },
+              "accent": {
+                "enum": [
+                  "US",
+                  "CA",
+                  "UK",
+                  "AU"
+                ]
+              },
+              "durationSeconds": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 300
+              },
+              "durationEstimated": {
+                "type": "boolean"
+              },
+              "voiceId": {
+                "type": "string"
+              },
+              "ttsFallbackKey": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "responseSeconds": {
+            "const": 45
+          },
+          "modelAnswer": {
+            "type": "object",
+            "required": [
+              "text",
+              "source"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source": {
+                "enum": [
+                  "BOOK",
+                  "TUTOR",
+                  "AI"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -22,8 +22,8 @@
     },
     "items": {
       "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
+      "minItems": 3,
+      "maxItems": 8,
       "items": {
         "type": "object",
         "required": [
@@ -99,7 +99,6 @@
           "audio": {
             "type": "object",
             "required": [
-              "url",
               "durationSeconds",
               "origin",
               "accent"

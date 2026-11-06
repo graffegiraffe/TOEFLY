@@ -11,6 +11,7 @@ from ..common.text import normalise, word_count
 SOURCE_CODE = "tst-reading-2026"
 HEADER = ("100 Practice Questions for the TOEFL",)
 _READ = re.compile(r"^\s*Read (an? [a-z ]+)\.\s*$")
+NUMBER = tst.QUESTION
 _GAP = re.compile(r"([A-Za-z'’-]*)\{([^}]+)\}")
 _SENT_END = re.compile(r"[.!?][\"”’)]*(?=\s|$)")
 
@@ -87,15 +88,22 @@ def _sentence_index(paragraph: str, end: int) -> int:
 def _insertion(question: tst.Question, paragraphs: list[str], report: Report, where: str):
     text = " ".join(question.extra)
     quote = re.search(r"“(.+?)”\s*Where would", text)
-    excerpt = text.split("Where would the sentence best fit?")[-1].strip()
-    if not quote or "(A)" not in excerpt:
+    if quote:
+        sentence = quote.group(1)
+        excerpt = text.split("Where would the sentence best fit?")[-1].strip()
+    else:
+        # the Complete Test prints the sentence without quotes, then the excerpt that starts at (A)
+        at = text.find("(A)")
+        sentence = text[:at].strip().strip("“”\" ") if at > 0 else ""
+        excerpt = text[at:] if at >= 0 else ""
+    if not sentence or "(A)" not in excerpt:
         report.warn(where, f"Q{question.number}: insert-sentence question not understood")
         return None
     pieces = re.split(r"\(([A-D])\)", excerpt)
     markers = []
     before = pieces[0]
     for key, after in zip(pieces[1::2], pieces[2::2], strict=False):
-        sentences = [s for s in re.split(r"(?<=[.!?])\s+", before.strip()) if s]
+        sentences = [x for x in re.split(r"(?<=[.!?])\s+", before.strip()) if x]
         located = None
         if sentences:
             last = sentences[-1]
@@ -104,12 +112,20 @@ def _insertion(question: tst.Question, paragraphs: list[str], report: Report, wh
                 if at >= 0:
                     located = (index, _sentence_index(paragraph, at + len(last)))
                     break
+        else:
+            following = [x for x in re.split(r"(?<=[.!?])\s+", after.strip()) if x]
+            if following:
+                for index, paragraph in enumerate(paragraphs):
+                    at = paragraph.find(following[0][:60])
+                    if at >= 0:
+                        located = (index, _sentence_index(paragraph, at))
+                        break
         if not located:
             report.warn(where, f"Q{question.number}: marker {key} not found in the passage")
             return None
         markers.append({"key": key, "paragraph": located[0], "afterSentence": located[1]})
         before = after
-    return {"sentence": normalise(quote.group(1)), "markers": markers}
+    return {"sentence": normalise(sentence), "markers": markers}
 
 
 def _stimulus_daily(kind: str, lines: list[str]) -> dict:
@@ -142,9 +158,9 @@ def _stimulus_daily(kind: str, lines: list[str]) -> dict:
     return {"genre": "NOTICE", "title": title, "body": "\n\n".join(body), "wordCount": word_count(" ".join(body))}
 
 
-def _split_questions(block: list[str]) -> tuple[list[str], list[str]]:
+def _split_questions(block: list[str], number=tst.QUESTION) -> tuple[list[str], list[str]]:
     for index, line in enumerate(block):
-        if tst.QUESTION.match(line.strip()):
+        if number.match(line.strip()):
             return block[:index], block[index:]
     return block, []
 
@@ -211,21 +227,64 @@ def _mcq_items(questions, key, report, where, subskill_of, extra=None):
     return items
 
 
+def daily_set(source_code: str, slug: str, kind: str, stimulus_lines: list[str], question_lines: list[str], key,
+              report: Report, locator_extra: dict | None = None, number=NUMBER) -> dict:
+    questions = tst.parse_questions(question_lines, number)
+    stimulus = _stimulus_daily(kind, stimulus_lines)
+    items = _mcq_items(questions, key, report, slug, _daily_subskill)
+    payload = {"stimulus": stimulus, "items": items}
+    return envelope(source_code=source_code, slug=slug, task_type="READ_DAILY_LIFE", payload=payload,
+                    topic=stimulus["title"], cefr="B2",
+                    skills=sorted({f"reading.{i['subskill'].lower()}" for i in items}),
+                    locator={"questionNumbers": [q.number for q in questions], **(locator_extra or {})},
+                    report=report, where=slug)
+
+
 def _daily_life(body: list[str], key, report: Report) -> Iterator[dict]:
     starts = [i for i, l in enumerate(body) if _READ.match(l)]
     for number, start in enumerate(starts, start=1):
         end = starts[number] if number < len(starts) else len(body)
         kind = _READ.match(body[start]).group(1)
         stimulus_lines, question_lines = _split_questions(body[start + 1 : end])
-        questions = tst.parse_questions(question_lines)
-        slug = f"daily-life-{number:03d}"
-        stimulus = _stimulus_daily(kind, stimulus_lines)
-        items = _mcq_items(questions, key, report, slug, _daily_subskill)
-        payload = {"stimulus": stimulus, "items": items}
-        yield envelope(source_code=SOURCE_CODE, slug=slug, task_type="READ_DAILY_LIFE", payload=payload,
-                       topic=stimulus["title"], cefr="B2",
-                       skills=sorted({f"reading.{i['subskill'].lower()}" for i in items}),
-                       locator={"questionNumbers": [q.number for q in questions]}, report=report, where=slug)
+        yield daily_set(SOURCE_CODE, f"daily-life-{number:03d}", kind, stimulus_lines, question_lines, key, report)
+
+
+def academic_set(source_code: str, slug: str, title: str, stimulus_lines: list[str], question_lines: list[str], key,
+                 report: Report, locator_extra: dict | None = None, number=NUMBER) -> dict:
+    paragraphs = _paragraphs(stimulus_lines)
+    questions = tst.parse_questions(question_lines, number)
+
+    def extra(item, q):
+        if item["subskill"] == "INSERT_SENTENCE":
+            item["options"] = [dict(o, text=f"Position {n}") for n, o in enumerate(item["options"], start=1)]
+            insertion = _insertion(q, paragraphs, report, slug)
+            if insertion:
+                item["insertion"] = insertion
+        if item["subskill"] == "VOCABULARY":
+            word = re.search(r"“([^”]+)”", q.stem)
+            found = None
+            for index, paragraph in enumerate(paragraphs):
+                at = paragraph.find(word.group(1)) if word else -1
+                if at >= 0:
+                    found = {"text": word.group(1), "paragraph": index, "charStart": at,
+                             "charEnd": at + len(word.group(1))}
+                    break
+            if found:
+                item["targetWord"] = found
+            else:
+                report.warn(slug, f"Q{q.number}: target word not found in the passage")
+
+    # insert-sentence questions have no a-d options: positions are the markers
+    for q in questions:
+        if ("four locations" in q.stem) and not q.options:
+            q.options = ["Position 1", "Position 2", "Position 3", "Position 4"]
+    items = _mcq_items(questions, key, report, slug, _academic_subskill, extra)
+    payload = {"stimulus": {"title": title, "domain": "GENERAL", "paragraphs": paragraphs,
+                            "wordCount": word_count(" ".join(paragraphs))}, "items": items}
+    return envelope(source_code=source_code, slug=slug, task_type="READ_ACADEMIC_PASSAGE", payload=payload,
+                    topic=title, cefr="B2", skills=sorted({f"reading.{i['subskill'].lower()}" for i in items}),
+                    locator={"questionNumbers": [q.number for q in questions], **(locator_extra or {})},
+                    report=report, where=slug, domain="GENERAL")
 
 
 def _academic(body: list[str], key, report: Report) -> Iterator[dict]:
@@ -244,43 +303,9 @@ def _academic(body: list[str], key, report: Report) -> Iterator[dict]:
                 seen_question = True
     passages = [b for b in passages if any(tst.QUESTION.match(l.strip()) for l in b)]
     for number, block in enumerate(passages, start=1):
-        title = block[0].strip()
         stimulus_lines, question_lines = _split_questions(block[1:])
-        paragraphs = _paragraphs(stimulus_lines)
-        questions = tst.parse_questions(question_lines)
-        slug = f"academic-{number:03d}"
-
-        def extra(item, q, paragraphs=paragraphs, slug=slug):
-            if item["subskill"] == "INSERT_SENTENCE":
-                item["options"] = [dict(o, text=f"Position {n}") for n, o in enumerate(item["options"], start=1)]
-                insertion = _insertion(q, paragraphs, report, slug)
-                if insertion:
-                    item["insertion"] = insertion
-            if item["subskill"] == "VOCABULARY":
-                word = re.search(r"“([^”]+)”", q.stem)
-                found = None
-                for index, paragraph in enumerate(paragraphs):
-                    at = paragraph.find(word.group(1)) if word else -1
-                    if at >= 0:
-                        found = {"text": word.group(1), "paragraph": index, "charStart": at,
-                                 "charEnd": at + len(word.group(1))}
-                        break
-                if found:
-                    item["targetWord"] = found
-                else:
-                    report.warn(slug, f"Q{q.number}: target word not found in the passage")
-
-        # insert-sentence questions have no a-d options: positions are the markers
-        for q in questions:
-            if "four locations" in q.stem and not q.options:
-                q.options = ["Position 1", "Position 2", "Position 3", "Position 4"]
-        items = _mcq_items(questions, key, report, slug, _academic_subskill, extra)
-        payload = {"stimulus": {"title": title, "domain": "GENERAL", "paragraphs": paragraphs,
-                                "wordCount": word_count(" ".join(paragraphs))}, "items": items}
-        yield envelope(source_code=SOURCE_CODE, slug=slug, task_type="READ_ACADEMIC_PASSAGE", payload=payload,
-                       topic=title, cefr="B2", skills=sorted({f"reading.{i['subskill'].lower()}" for i in items}),
-                       locator={"questionNumbers": [q.number for q in questions]}, report=report, where=slug,
-                       domain="GENERAL")
+        yield academic_set(SOURCE_CODE, f"academic-{number:03d}", block[0].strip(), stimulus_lines, question_lines,
+                           key, report)
 
 
 def extract_file(path: Path, report: Report) -> Iterator[dict]:
