@@ -12,6 +12,9 @@ import com.toefly.common.test.JwtFixtures;
 import com.toefly.common.test.KafkaTestcontainersConfiguration;
 import com.toefly.common.test.OutboxAssertions;
 import com.toefly.common.test.PostgresTestcontainersConfiguration;
+import com.toefly.common.test.contract.ContractCoverage;
+import com.toefly.common.test.contract.ContractTests;
+import com.toefly.common.test.contract.OutboxMessageReceiver;
 import com.toefly.content.application.port.in.ImportReport;
 import com.toefly.content.application.port.in.ImportSeedUseCase;
 import java.io.IOException;
@@ -20,14 +23,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
@@ -80,10 +88,18 @@ class ContentComponentIT {
     void firstImport() {
         ImportReport report = importer.run(Optional.empty(), false);
 
-        assertThat(report.sources()).singleElement().satisfies(s -> {
-            assertThat(s.status()).isEqualTo("DONE");
-            assertThat(s.created()).isEqualTo(2);
-        });
+        assertThat(report.sources())
+                .filteredOn(s -> s.sourceCode().equals("demo-reading"))
+                .singleElement()
+                .satisfies(s -> {
+                    assertThat(s.status()).isEqualTo("DONE");
+                    assertThat(s.created()).isEqualTo(2);
+                });
+        // a source whose file does not match its manifest hash fails alone and does not block the others
+        assertThat(report.sources())
+                .filteredOn(s -> s.sourceCode().equals("broken-source"))
+                .singleElement()
+                .satisfies(s -> assertThat(s.status()).isEqualTo("FAILED"));
         assertThat(OutboxAssertions.published(jdbc, "toefly.content.item-set-published.v1"))
                 .hasSize(2);
         itemSetId = jdbc.sql("SELECT id::text FROM item_set WHERE seed_id = 'demo-reading/climate-001'")
@@ -98,6 +114,7 @@ class ContentComponentIT {
         ImportReport report = importer.run(Optional.empty(), false);
 
         assertThat(report.sources())
+                .filteredOn(s -> s.sourceCode().equals("demo-reading"))
                 .singleElement()
                 .satisfies(s -> assertThat(s.status()).isEqualTo("SKIPPED"));
         assertThat(jdbc.sql("SELECT count(*) FROM item_set")
@@ -236,12 +253,90 @@ class ContentComponentIT {
     }
 
     @Test
+    @Order(9)
+    @DisplayName("unknown ids answer 404 Problem Details")
+    void notFound() throws Exception {
+        UUID unknown = UUID.randomUUID();
+        mvc.perform(get("/api/v1/item-sets/" + unknown).with(JwtFixtures.student(UUID.randomUUID())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        mvc.perform(post("/api/v1/item-reports")
+                        .with(JwtFixtures.student(UUID.randomUUID()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"itemSetId\":\"" + unknown + "\",\"reason\":\"TYPO\"}"))
+                .andExpect(status().isNotFound());
+        mvc.perform(post("/api/v1/admin/sources/nope/hide").with(JwtFixtures.admin(UUID.randomUUID())))
+                .andExpect(status().isNotFound());
+        mvc.perform(patch("/api/v1/admin/item-reports/" + unknown)
+                        .with(JwtFixtures.admin(UUID.randomUUID()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"outcome\":\"RESOLVED\"}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     @Order(10)
     @DisplayName("US-28.01: hiding a source hides all of its approved sets")
     void takedown() throws Exception {
         mvc.perform(post("/api/v1/admin/sources/demo-reading/hide").with(JwtFixtures.admin(UUID.randomUUID())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.hidden").value(1));
+    }
+
+    // Contracts of the consumers of content events (ADR-0031, docs/11-quality-testing.md section 8.4).
+
+    static final Path CONTRACTS = Path.of("src/test/resources/contracts");
+
+    @Value("${toefly.events.registry-url}")
+    String registryUrl;
+
+    @TestFactory
+    @Order(20)
+    @DisplayName("ADR-0031 content events fulfil the contracts of their consumers")
+    Stream<DynamicTest> eventContracts() {
+        OutboxMessageReceiver receiver = new OutboxMessageReceiver(jdbc, registryUrl);
+        return ContractTests.messages(CONTRACTS, this, receiver).onClose(receiver::close);
+    }
+
+    @Test
+    @Order(21)
+    @DisplayName("docs/11 section 8.5: every published content topic has a message contract")
+    void contractsCoverTopics() {
+        ContractCoverage.assertMessagesCover(
+                CONTRACTS, List.of("toefly.content.item-set-published.v1", "toefly.content.item-set-hidden.v1"));
+    }
+
+    void itemSetPublished() throws Exception {
+        String id = librarySetId();
+        setStatus(id, "HIDDEN");
+        setStatus(id, "APPROVED");
+    }
+
+    void itemSetHidden() throws Exception {
+        String id = librarySetId();
+        setStatus(id, "APPROVED");
+        setStatus(id, "HIDDEN");
+    }
+
+    private String librarySetId() {
+        return jdbc.sql("SELECT id::text FROM item_set WHERE seed_id = 'demo-reading/library-002'")
+                .query(String.class)
+                .single();
+    }
+
+    /** Moves the set to the status; a set that is already there stays unchanged. */
+    private void setStatus(String id, String status) throws Exception {
+        String current = jdbc.sql("SELECT status FROM item_set WHERE id = CAST(:id AS uuid)")
+                .param("id", id)
+                .query(String.class)
+                .single();
+        if (!current.equals(status)) {
+            mvc.perform(patch("/api/v1/admin/item-sets/" + id)
+                            .with(JwtFixtures.admin(UUID.randomUUID()))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"status\":\"" + status + "\"}"))
+                    .andExpect(status().isOk());
+        }
     }
 
     // ---- synthetic bundle ----
@@ -257,6 +352,12 @@ class ContentComponentIT {
                     """);
             Files.writeString(dir.resolve("climate-001.json"), climate("Climate and plants"));
             Files.writeString(dir.resolve("library-002.json"), library());
+            Files.createDirectories(root.resolve("broken-source/item-sets"));
+            Files.writeString(root.resolve("broken-source/source.json"), """
+                    {"sourceCode":"broken-source","title":"Broken","publisher":"TOEFLY tests","year":2026,
+                     "examFormat":"TOEFL_2026","attributionText":"Synthetic fixture","extra":{}}
+                    """);
+            Files.writeString(root.resolve("broken-source/item-sets/x-001.json"), "{}");
             writeManifest(root);
             return root;
         } catch (IOException e) {
@@ -292,7 +393,10 @@ class ContentComponentIT {
                 root.resolve("manifest.json"),
                 "{\"manifestVersion\":1,\"sources\":[{\"sourceCode\":\"demo-reading\",\"bundleSha256\":\"sha256:"
                         + sha256(bundle.toString().getBytes(StandardCharsets.UTF_8)) + "\",\"files\":[" + files
-                        + "]}]}");
+                        + "]},"
+                        + "{\"sourceCode\":\"broken-source\",\"bundleSha256\":\"sha256:0\",\"files\":["
+                        + "{\"path\":\"broken-source/item-sets/x-001.json\",\"seedId\":\"broken-source/x-001\","
+                        + "\"kind\":\"ITEM_SET\",\"sha256\":\"sha256:wrong\"}]}]}");
     }
 
     private static String climate(String topic) {

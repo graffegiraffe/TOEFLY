@@ -1,0 +1,38 @@
+name: item_set_published
+description: practice-service learns the items and their difficulty of a newly approved item set
+input:
+  triggeredBy: itemSetPublished()
+outputMessage:
+  sentTo: toefly.content.item-set-published.v1
+  headers:
+    ce_type: toefly.content.item-set-published.v1
+    ce_specversion: "1.0"
+    ce_source: /toefly/content-service
+    content-type: application/avro
+  body:
+    version: 1
+    taskType: READ_DAILY_LIFE
+    section: READING
+    examFormat: TOEFL_2026
+    cefr: B1
+    difficultyB: -0.5
+    itemCount: 1
+    estimatedMinutes: 1.0
+    topic: campus library
+    skills:
+      - reading.detail
+    ownerTutorId: null
+    items:
+      - ordinal: 1
+        b: -0.5
+  matchers:
+    body:
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid
+      - path: $.itemSetId
+        type: by_regex
+        predefined: uuid
+      - path: $.items[0].itemId
+        type: by_regex
+        predefined: uuid
