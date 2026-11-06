@@ -1886,6 +1886,44 @@
         }
       ],
       "sourceCode": "tst-reading-legacy-2020"
+    },
+    {
+      "bundleSha256": "sha256:f6eb4ed541cecc1624337b0cd629293149c9d96b5c3af0c266b973db3f55c852",
+      "counts": {
+        "LISTEN_AND_REPEAT": 3,
+        "TAKE_AN_INTERVIEW": 1
+      },
+      "files": [
+        {
+          "bytes": 3325,
+          "kind": "ITEM_SET",
+          "path": "tst-speaking-guide-2026/item-sets/listen-and-repeat-001.json",
+          "seedId": "tst-speaking-guide-2026/listen-and-repeat-001",
+          "sha256": "sha256:882a951120314ecd3b513e0bedfe34f55d3782894513fa1754f9d2df6cd5db53"
+        },
+        {
+          "bytes": 3368,
+          "kind": "ITEM_SET",
+          "path": "tst-speaking-guide-2026/item-sets/listen-and-repeat-002.json",
+          "seedId": "tst-speaking-guide-2026/listen-and-repeat-002",
+          "sha256": "sha256:a300ba3a39603174de269c5dc38abe121ab8b20807fa707833b0c95ab22ba62c"
+        },
+        {
+          "bytes": 3194,
+          "kind": "ITEM_SET",
+          "path": "tst-speaking-guide-2026/item-sets/listen-and-repeat-003.json",
+          "seedId": "tst-speaking-guide-2026/listen-and-repeat-003",
+          "sha256": "sha256:86cb0611c5ac846732b65dfb9c003e61bc92106e7e02b33f7c2163ac24892dd0"
+        },
+        {
+          "bytes": 6287,
+          "kind": "ITEM_SET",
+          "path": "tst-speaking-guide-2026/item-sets/take-an-interview-001.json",
+          "seedId": "tst-speaking-guide-2026/take-an-interview-001",
+          "sha256": "sha256:1dd80eb2452539456f5bd45d597567d940fd2180816bf52b1af65e190d0803ed"
+        }
+      ],
+      "sourceCode": "tst-speaking-guide-2026"
     }
   ]
 }

@@ -22,5 +22,9 @@
   "tst-complete-test-1-2026": {
     "sets": 24,
     "items": 105
+  },
+  "tst-speaking-guide-2026": {
+    "sets": 4,
+    "items": 25
   }
 }
