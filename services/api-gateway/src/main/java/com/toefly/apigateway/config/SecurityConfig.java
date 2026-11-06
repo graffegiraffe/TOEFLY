@@ -8,6 +8,10 @@ import java.time.Clock;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientPropertiesMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,6 +24,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
@@ -44,7 +50,25 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebFluxSecurity
+@EnableConfigurationProperties(OAuth2ClientProperties.class)
 public class SecurityConfig {
+
+    /**
+     * The Keycloak client of the BFF from the explicit endpoints in the properties. Spring Boot resolves an
+     * {@code issuer-uri} of a client provider through OIDC discovery at startup, so the gateway would not start
+     * while Keycloak is down; the issuer is set here instead and still checked in every ID token.
+     */
+    @Bean
+    ReactiveClientRegistrationRepository clientRegistrationRepository(
+            OAuth2ClientProperties properties, @Value("${toefly.gateway.keycloak.issuer}") String issuer) {
+        List<ClientRegistration> registrations = new OAuth2ClientPropertiesMapper(properties)
+                .asClientRegistrations().values().stream()
+                        .map(registration -> ClientRegistration.withClientRegistration(registration)
+                                .issuerUri(issuer)
+                                .build())
+                        .toList();
+        return new InMemoryReactiveClientRegistrationRepository(registrations);
+    }
 
     @Bean
     SecurityWebFilterChain securityWebFilterChain(

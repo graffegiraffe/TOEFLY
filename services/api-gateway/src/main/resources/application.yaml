@@ -18,8 +18,8 @@ spring:
             scope: openid,profile,email,offline_access
         provider:
           keycloak:
-            # Explicit endpoints: no discovery request at startup.
-            issuer-uri: ${toefly.gateway.keycloak.issuer}
+            # Explicit endpoints and no issuer-uri: an issuer-uri makes Spring Boot run OIDC discovery at startup.
+            # SecurityConfig sets the issuer on the registration, so ID tokens are still checked against it.
             authorization-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/auth
             token-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/token
             jwk-set-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/certs
