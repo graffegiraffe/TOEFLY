@@ -1,3 +1,4 @@
+/** Kafka listeners. */
 @NullMarked
 package com.toefly.content.adapter.in.kafka;
 

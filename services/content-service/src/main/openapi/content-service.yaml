@@ -2,55 +2,459 @@ openapi: 3.1.0
 info:
   title: content-service
   version: 0.1.0
-  description: Sample endpoint of the service template; replace it with the service contract from docs/05-api-contracts.md.
+  description: Item bank, sources, search, reports and moderation (docs/05-api-contracts.md section 6.2).
 servers:
   - url: http://localhost:8082
 security:
   - bearerAuth: []
 paths:
-  /api/v1/items:
-    post:
-      tags: [Items]
-      operationId: createItem
-      summary: Create an item and publish ItemCreated through the outbox
+  /api/v1/item-sets:
+    get:
+      tags: [ItemSets]
+      operationId: listItemSets
+      summary: Catalog of approved item sets without answer keys
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
       parameters:
-        - name: Idempotency-Key
-          in: header
-          required: true
-          schema: { type: string, maxLength: 100 }
+        - { $ref: '#/components/parameters/Section' }
+        - { $ref: '#/components/parameters/TaskType' }
+        - { $ref: '#/components/parameters/ExamFormat' }
+        - { $ref: '#/components/parameters/Provenance' }
+        - { $ref: '#/components/parameters/Cefr' }
+        - { $ref: '#/components/parameters/Legacy' }
+        - { $ref: '#/components/parameters/SourceCode' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: A page of summaries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemSetSummaryPage' }
+        '400': { $ref: '#/components/responses/Problem' }
+  /api/v1/item-sets/search:
+    get:
+      tags: [ItemSets]
+      operationId: searchItemSets
+      summary: Hybrid search (full text plus vectors); degrades to full text when embeddings are unavailable
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 200 } }
+        - { $ref: '#/components/parameters/Section' }
+        - { $ref: '#/components/parameters/TaskType' }
+        - { $ref: '#/components/parameters/ExamFormat' }
+        - { $ref: '#/components/parameters/Provenance' }
+        - { $ref: '#/components/parameters/Cefr' }
+        - { $ref: '#/components/parameters/Legacy' }
+        - { $ref: '#/components/parameters/SourceCode' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Ranked hits
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemSetSearchResult' }
+  /api/v1/item-sets/{itemSetId}:
+    get:
+      tags: [ItemSets]
+      operationId: getItemSet
+      summary: An item set for display, without answer keys, explanations and transcripts
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/ItemSetId' }
+      responses:
+        '200':
+          description: The item set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemSet' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /api/v1/sources:
+    get:
+      tags: [Sources]
+      operationId: listSources
+      summary: Books and sites the items come from
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      responses:
+        '200':
+          description: All sources
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SourceList' }
+  /api/v1/item-reports:
+    post:
+      tags: [Reports]
+      operationId: createItemReport
+      summary: Report an item set or one of its items
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 100 } }
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/CreateItemRequest' }
+            schema: { $ref: '#/components/schemas/CreateItemReportRequest' }
       responses:
         '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ItemResponse' }
-        '400':
-          description: Invalid request
+              schema: { $ref: '#/components/schemas/ItemReport' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /api/v1/admin/item-sets:
+    get:
+      tags: [Admin]
+      operationId: adminListItemSets
+      summary: Moderation list
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/Section' }
+        - { $ref: '#/components/parameters/TaskType' }
+        - { $ref: '#/components/parameters/ExamFormat' }
+        - { $ref: '#/components/parameters/Provenance' }
+        - { $ref: '#/components/parameters/Cefr' }
+        - { $ref: '#/components/parameters/Legacy' }
+        - { $ref: '#/components/parameters/SourceCode' }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/ItemStatus' } }
+        - { name: reported, in: query, required: false, schema: { type: boolean } }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: A page of moderation rows
           content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Problem' }
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminItemSetPage' }
+  /api/v1/admin/item-sets/{itemSetId}:
+    get:
+      tags: [Admin]
+      operationId: adminGetItemSet
+      summary: The full item set with keys, for moderation
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/ItemSetId' }
+      responses:
+        '200':
+          description: The item set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemSet' }
+        '404': { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [Admin]
+      operationId: adminPatchItemSet
+      summary: Change the status of an item set (HIDDEN, APPROVED, REJECTED)
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/ItemSetId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminItemSetPatch' }
+      responses:
+        '200':
+          description: The updated row
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminItemSetRow' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /api/v1/admin/sources/{sourceCode}/hide:
+    post:
+      tags: [Admin]
+      operationId: adminHideSource
+      summary: Hide every item set of a source (takedown on request of a rights holder)
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: sourceCode, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: How many sets were hidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HideSourceResult' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/admin/item-reports:
+    get:
+      tags: [Admin]
+      operationId: adminListItemReports
+      summary: Complaints
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/ReportStatus' } }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Reports, oldest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemReportPage' }
+  /api/v1/admin/item-reports/{reportId}:
+    patch:
+      tags: [Admin]
+      operationId: adminResolveItemReport
+      summary: Decide on a complaint
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: reportId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveItemReportRequest' }
+      responses:
+        '200':
+          description: The closed report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemReport' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /api/v1/admin/imports:
+    post:
+      tags: [Admin]
+      operationId: adminStartImport
+      summary: Import the seed bundle (idempotent)
+      x-toefly-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartImportRequest' }
+      responses:
+        '202':
+          description: The report of the run
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ImportReport' }
+  /internal/v1/item-sets/{itemSetId}:
+    get:
+      tags: [Internal]
+      operationId: internalGetItemSet
+      summary: The item set with answer keys, for practice-service
+      x-toefly-roles: [SERVICE]
+      parameters:
+        - { $ref: '#/components/parameters/ItemSetId' }
+      responses:
+        '200':
+          description: The item set with keys
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemSet' }
+        '404': { $ref: '#/components/responses/Problem' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    ItemSetId: { name: itemSetId, in: path, required: true, schema: { type: string, format: uuid } }
+    Section: { name: section, in: query, required: false, schema: { $ref: '#/components/schemas/Section' } }
+    TaskType: { name: taskType, in: query, required: false, schema: { $ref: '#/components/schemas/TaskType' } }
+    ExamFormat: { name: examFormat, in: query, required: false, schema: { $ref: '#/components/schemas/ExamFormat' } }
+    Provenance: { name: provenance, in: query, required: false, schema: { $ref: '#/components/schemas/Provenance' } }
+    Cefr: { name: cefr, in: query, required: false, schema: { type: string, enum: [A1, A2, B1, B2, C1, C2] } }
+    Legacy: { name: legacy, in: query, required: false, schema: { type: boolean } }
+    SourceCode: { name: sourceCode, in: query, required: false, schema: { type: string } }
+    Cursor: { name: cursor, in: query, required: false, schema: { type: string } }
+    Limit: { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+  responses:
+    Problem:
+      description: Error
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
   schemas:
-    CreateItemRequest:
+    Section: { type: string, enum: [READING, LISTENING, WRITING, SPEAKING] }
+    ExamFormat: { type: string, enum: [TOEFL_2026, LEGACY] }
+    Provenance: { type: string, enum: [EXTRACTED, GENERATED, TUTOR_CREATED] }
+    ItemStatus: { type: string, enum: [DRAFT, IN_REVIEW, APPROVED, HIDDEN, REJECTED] }
+    ReportStatus: { type: string, enum: [OPEN, RESOLVED, DISMISSED] }
+    ReportReason: { type: string, enum: [WRONG_KEY, TYPO, UNCLEAR, AUDIO_PROBLEM, INAPPROPRIATE, COPYRIGHT, OTHER] }
+    TaskType:
+      type: string
+      enum: [COMPLETE_THE_WORDS, READ_DAILY_LIFE, READ_ACADEMIC_PASSAGE, LISTEN_CHOOSE_RESPONSE, LISTEN_CONVERSATION,
+             LISTEN_ANNOUNCEMENT, LISTEN_ACADEMIC_TALK, BUILD_A_SENTENCE, WRITE_EMAIL, WRITE_ACADEMIC_DISCUSSION,
+             LISTEN_AND_REPEAT, TAKE_AN_INTERVIEW, GRAMMAR_EXERCISE, VOCAB_EXERCISE, LEGACY_READING, LEGACY_LISTENING]
+    PageInfo:
       type: object
-      required: [title]
+      required: [hasMore]
       properties:
-        title: { type: string, minLength: 1, maxLength: 200 }
-    ItemResponse:
+        nextCursor: { type: string }
+        hasMore: { type: boolean }
+    SourceRef:
       type: object
-      required: [id, title, createdAt, announced]
+      required: [code, title, attribution, legacy]
+      properties:
+        code: { type: string }
+        title: { type: string }
+        publisher: { type: string }
+        year: { type: integer }
+        url: { type: string }
+        attribution: { type: string }
+        legacy: { type: boolean }
+    ItemSetSummary:
+      type: object
+      required: [id, taskType, examFormat, topic, itemCount, estimatedMinutes, version, source]
       properties:
         id: { type: string, format: uuid }
-        title: { type: string }
+        version: { type: integer }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        section: { $ref: '#/components/schemas/Section' }
+        examFormat: { $ref: '#/components/schemas/ExamFormat' }
+        cefr: { type: string }
+        topic: { type: string }
+        itemCount: { type: integer }
+        estimatedMinutes: { type: number }
+        source: { $ref: '#/components/schemas/SourceRef' }
+    ItemSetSummaryPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ItemSetSummary' }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    SearchHit:
+      type: object
+      required: [itemSet, score]
+      properties:
+        itemSet: { $ref: '#/components/schemas/ItemSetSummary' }
+        score: { type: number }
+    ItemSetSearchResult:
+      type: object
+      required: [mode, hits]
+      properties:
+        mode:
+          type: string
+          enum: [HYBRID, FULL_TEXT]
+        hits:
+          type: array
+          items: { $ref: '#/components/schemas/SearchHit' }
+    ItemSet:
+      type: object
+      required: [id, version, taskType, examFormat, topic, itemCount, estimatedMinutes, status, source, payload]
+      properties:
+        id: { type: string, format: uuid }
+        version: { type: integer }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        section: { $ref: '#/components/schemas/Section' }
+        examFormat: { $ref: '#/components/schemas/ExamFormat' }
+        cefr: { type: string }
+        topic: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        itemCount: { type: integer }
+        estimatedMinutes: { type: number }
+        etsNormSeconds: { type: integer }
+        status: { $ref: '#/components/schemas/ItemStatus' }
+        source: { $ref: '#/components/schemas/SourceRef' }
+        payload:
+          type: object
+          additionalProperties: true
+    SourceList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/SourceRef' }
+    CreateItemReportRequest:
+      type: object
+      required: [itemSetId, reason]
+      properties:
+        itemSetId: { type: string, format: uuid }
+        itemOrdinal: { type: integer, minimum: 1 }
+        reason: { $ref: '#/components/schemas/ReportReason' }
+        comment: { type: string, maxLength: 1000 }
+    ItemReport:
+      type: object
+      required: [id, itemSetId, reason, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        itemOrdinal: { type: integer }
+        reason: { $ref: '#/components/schemas/ReportReason' }
+        comment: { type: string }
+        status: { $ref: '#/components/schemas/ReportStatus' }
         createdAt: { type: string, format: date-time }
-        announced: { type: boolean }
+        resolvedAt: { type: string, format: date-time }
+    ItemReportPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ItemReport' }
+    ResolveItemReportRequest:
+      type: object
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [RESOLVED, DISMISSED]
+        hideItemSet: { type: boolean, default: false }
+    AdminItemSetRow:
+      type: object
+      required: [id, taskType, examFormat, topic, status, provenance, sourceCode, openReports, version]
+      properties:
+        id: { type: string, format: uuid }
+        version: { type: integer }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        examFormat: { $ref: '#/components/schemas/ExamFormat' }
+        cefr: { type: string }
+        topic: { type: string }
+        status: { $ref: '#/components/schemas/ItemStatus' }
+        hiddenReason: { type: string }
+        provenance: { $ref: '#/components/schemas/Provenance' }
+        sourceCode: { type: string }
+        itemCount: { type: integer }
+        openReports: { type: integer }
+    AdminItemSetPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AdminItemSetRow' }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    AdminItemSetPatch:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [HIDDEN, APPROVED, REJECTED]
+    HideSourceResult:
+      type: object
+      required: [sourceCode, hidden]
+      properties:
+        sourceCode: { type: string }
+        hidden: { type: integer }
+    StartImportRequest:
+      type: object
+      properties:
+        sourceCode: { type: string }
+        dryRun: { type: boolean, default: false }
+    ImportReport:
+      type: object
+      required: [dryRun, sources]
+      properties:
+        dryRun: { type: boolean }
+        sources:
+          type: array
+          items:
+            type: object
+            required: [sourceCode, status, created, updated, unchanged, hidden]
+            properties:
+              sourceCode: { type: string }
+              status: { type: string }
+              created: { type: integer }
+              updated: { type: integer }
+              unchanged: { type: integer }
+              hidden: { type: integer }
+              error: { type: string }
     Problem:
       type: object
       properties:

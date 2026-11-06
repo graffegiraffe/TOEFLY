@@ -1,0 +1,32 @@
+{
+  "type": "record",
+  "name": "ItemSetPublishedV1",
+  "namespace": "com.toefly.events.content",
+  "doc": "An ItemSet became APPROVED (toefly.content.item-set-published.v1).",
+  "fields": [
+    {"name": "eventId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "CloudEvents id; the idempotency key of consumers."},
+    {"name": "occurredAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."},
+    {"name": "userId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "Always null: the event is not about a learner."},
+    {"name": "correlationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "End-to-end chain identifier; equals ce_correlationid."},
+    {"name": "causationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "ce_id of the event that caused this one; equals ce_causationid."},
+    {"name": "itemSetId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "Published ItemSet; equals the partition key."},
+    {"name": "version", "type": "int", "doc": "ItemSet version, at least 1."},
+    {"name": "taskType", "type": "string", "doc": "TaskType name (docs/00-README.md section 5)."},
+    {"name": "section", "type": ["null", "string"], "default": null, "doc": "Section name; null for grammar and vocabulary exercises."},
+    {"name": "examFormat", "type": "string", "doc": "TOEFL_2026 or LEGACY."},
+    {"name": "cefr", "type": ["null", "string"], "default": null, "doc": "Target CEFR level; null for legacy sets."},
+    {"name": "difficultyB", "type": "double", "doc": "Mean Rasch difficulty of the set, logits in [-4, 4]."},
+    {"name": "itemCount", "type": "int", "doc": "Number of items."},
+    {"name": "estimatedMinutes", "type": "double", "doc": "ceil(etsNormSeconds / 30) / 2."},
+    {"name": "topic", "type": "string", "doc": "Topic of the set."},
+    {"name": "skills", "type": {"type": "array", "items": "string"}, "doc": "Skill tags such as reading.inference."},
+    {"name": "ownerTutorId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "Private tutor owner, if any."},
+    {"name": "items", "type": {"type": "array", "items": {
+        "type": "record", "name": "PublishedItem", "doc": "One item of the set.",
+        "fields": [
+          {"name": "itemId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "Item identifier."},
+          {"name": "ordinal", "type": "int", "doc": "Position in the set, from 1."},
+          {"name": "b", "type": ["null", "double"], "default": null, "doc": "Item difficulty; null for AI-scored items."}
+        ]}}, "doc": "Items with their difficulty."}
+  ]
+}
