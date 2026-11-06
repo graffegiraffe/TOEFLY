@@ -33,14 +33,15 @@ public class JdbcReportStoreAdapter implements ReportStorePort {
                         VALUES (:id, :set, :ordinal, :reporter, :reason, :comment, 'OPEN', :at)
                         ON CONFLICT DO NOTHING
                         """)
-                .param("id", r.id())
-                .param("set", r.itemSetId())
-                .param("ordinal", r.itemOrdinal())
-                .param("reporter", r.reporterId())
-                .param("reason", r.reason().name())
-                .param("comment", r.comment())
-                .param("at", Timestamp.from(r.createdAt()))
-                .update() == 1;
+                        .param("id", r.id())
+                        .param("set", r.itemSetId())
+                        .param("ordinal", r.itemOrdinal())
+                        .param("reporter", r.reporterId())
+                        .param("reason", r.reason().name())
+                        .param("comment", r.comment())
+                        .param("at", Timestamp.from(r.createdAt()))
+                        .update()
+                == 1;
     }
 
     @Override
@@ -75,10 +76,16 @@ public class JdbcReportStoreAdapter implements ReportStorePort {
         int ordinal = rs.getInt("item_ordinal");
         boolean noOrdinal = rs.wasNull();
         Timestamp resolved = rs.getTimestamp("resolved_at");
-        return new ItemReport(rs.getObject("id", UUID.class), rs.getObject("item_set_id", UUID.class),
-                noOrdinal ? null : ordinal, rs.getObject("reporter_id", UUID.class),
-                ReportReason.valueOf(rs.getString("reason")), rs.getString("comment"),
-                ReportStatus.valueOf(rs.getString("status")), rs.getObject("resolved_by", UUID.class),
-                rs.getTimestamp("created_at").toInstant(), resolved == null ? null : resolved.toInstant());
+        return new ItemReport(
+                rs.getObject("id", UUID.class),
+                rs.getObject("item_set_id", UUID.class),
+                noOrdinal ? null : ordinal,
+                rs.getObject("reporter_id", UUID.class),
+                ReportReason.valueOf(rs.getString("reason")),
+                rs.getString("comment"),
+                ReportStatus.valueOf(rs.getString("status")),
+                rs.getObject("resolved_by", UUID.class),
+                rs.getTimestamp("created_at").toInstant(),
+                resolved == null ? null : resolved.toInstant());
     }
 }

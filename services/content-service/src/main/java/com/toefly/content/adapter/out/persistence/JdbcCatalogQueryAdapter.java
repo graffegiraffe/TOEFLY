@@ -1,5 +1,8 @@
 package com.toefly.content.adapter.out.persistence;
 
+import com.toefly.content.application.port.in.BrowseCatalogUseCase.Filter;
+import com.toefly.content.application.port.in.BrowseCatalogUseCase.Hit;
+import com.toefly.content.application.port.in.BrowseCatalogUseCase.Row;
 import com.toefly.content.application.port.out.CatalogQueryPort;
 import com.toefly.content.domain.catalog.ExamFormat;
 import com.toefly.content.domain.catalog.Source;
@@ -59,8 +62,9 @@ public class JdbcCatalogQueryAdapter implements CatalogQueryPort {
         where.add("i.search_tsv @@ websearch_to_tsquery('english', :q)");
         params.put("q", query);
         params.put("limit", limit);
-        return jdbc.sql(SELECT.replace(" FROM item_set i",
-                        ", ts_rank(i.search_tsv, websearch_to_tsquery('english', :q)) AS score FROM item_set i")
+        return jdbc.sql(SELECT.replace(
+                                " FROM item_set i",
+                                ", ts_rank(i.search_tsv, websearch_to_tsquery('english', :q)) AS score FROM item_set i")
                         + clause(where) + " ORDER BY score DESC, i.id LIMIT :limit")
                 .params(params)
                 .query((rs, n) -> new Hit(row(rs, n), rs.getDouble("score")))
@@ -73,13 +77,17 @@ public class JdbcCatalogQueryAdapter implements CatalogQueryPort {
         List<String> where = where(f, params);
         params.put("v", vector(embedding));
         params.put("limit", limit);
-        String sql = SELECT.replace(" FROM item_set i",
+        String sql = SELECT.replace(
+                        " FROM item_set i",
                         ", 1 - (SELECT min(e.embedding <=> CAST(:v AS vector)) FROM item_set_embedding e"
                                 + " WHERE e.item_set_id = i.id) AS score FROM item_set i")
                 + clause(where) + (where.isEmpty() ? " WHERE" : " AND")
                 + " EXISTS (SELECT 1 FROM item_set_embedding e WHERE e.item_set_id = i.id)"
                 + " ORDER BY score DESC, i.id LIMIT :limit";
-        return jdbc.sql(sql).params(params).query((rs, n) -> new Hit(row(rs, n), rs.getDouble("score"))).list();
+        return jdbc.sql(sql)
+                .params(params)
+                .query((rs, n) -> new Hit(row(rs, n), rs.getDouble("score")))
+                .list();
     }
 
     static String vector(float[] v) {
@@ -92,10 +100,30 @@ public class JdbcCatalogQueryAdapter implements CatalogQueryPort {
 
     private static List<String> where(Filter f, Map<String, Object> p) {
         List<String> w = new ArrayList<>();
-        eq(w, p, "i.section", "section", f.section() == null ? null : f.section().name());
-        eq(w, p, "i.task_type", "taskType", f.taskType() == null ? null : f.taskType().name());
-        eq(w, p, "i.exam_format", "examFormat", f.examFormat() == null ? null : f.examFormat().name());
-        eq(w, p, "i.provenance", "provenance", f.provenance() == null ? null : f.provenance().name());
+        eq(
+                w,
+                p,
+                "i.section",
+                "section",
+                f.section() == null ? null : f.section().name());
+        eq(
+                w,
+                p,
+                "i.task_type",
+                "taskType",
+                f.taskType() == null ? null : f.taskType().name());
+        eq(
+                w,
+                p,
+                "i.exam_format",
+                "examFormat",
+                f.examFormat() == null ? null : f.examFormat().name());
+        eq(
+                w,
+                p,
+                "i.provenance",
+                "provenance",
+                f.provenance() == null ? null : f.provenance().name());
         eq(w, p, "i.cefr", "cefr", f.cefr());
         eq(w, p, "s.code", "sourceCode", f.sourceCode());
         eq(w, p, "i.status", "status", f.status() == null ? null : f.status().name());
@@ -122,9 +150,16 @@ public class JdbcCatalogQueryAdapter implements CatalogQueryPort {
     private static Row row(ResultSet rs, int n) throws SQLException {
         int year = rs.getInt("s_year");
         boolean noYear = rs.wasNull();
-        Source source = new Source(rs.getObject("source_id", UUID.class), rs.getString("s_code"),
-                rs.getString("s_title"), rs.getString("s_publisher"), noYear ? null : year, rs.getString("s_url"),
-                ExamFormat.valueOf(rs.getString("s_format")), rs.getString("s_attr"), rs.getString("s_extra"));
+        Source source = new Source(
+                rs.getObject("source_id", UUID.class),
+                rs.getString("s_code"),
+                rs.getString("s_title"),
+                rs.getString("s_publisher"),
+                noYear ? null : year,
+                rs.getString("s_url"),
+                ExamFormat.valueOf(rs.getString("s_format")),
+                rs.getString("s_attr"),
+                rs.getString("s_extra"));
         return new Row(JdbcItemSetStoreAdapter.map(rs, n), source, rs.getInt("open_reports"));
     }
 }

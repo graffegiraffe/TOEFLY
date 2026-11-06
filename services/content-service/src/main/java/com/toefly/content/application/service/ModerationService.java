@@ -1,14 +1,17 @@
 package com.toefly.content.application.service;
 
-import com.toefly.common.web.ProblemType;
-import com.toefly.content.application.port.out.CatalogQueryPort;
+import com.toefly.content.application.port.in.ModerateCatalogUseCase;
 import com.toefly.content.application.port.out.ContentEventPublisherPort;
 import com.toefly.content.application.port.out.ItemSetStorePort;
 import com.toefly.content.application.port.out.ReportStorePort;
 import com.toefly.content.domain.catalog.HideReason;
 import com.toefly.content.domain.catalog.ItemSet;
+import com.toefly.content.domain.catalog.ItemSetNotFoundException;
 import com.toefly.content.domain.catalog.ItemStatus;
+import com.toefly.content.domain.catalog.SourceNotFoundException;
+import com.toefly.content.domain.report.DuplicateReportException;
 import com.toefly.content.domain.report.ItemReport;
+import com.toefly.content.domain.report.ReportNotFoundException;
 import com.toefly.content.domain.report.ReportReason;
 import com.toefly.content.domain.report.ReportStatus;
 import java.time.Clock;
@@ -22,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Status changes by administrators, takedown of a whole source and the complaint queue. */
 @Service
-public class ModerationService {
+public class ModerationService implements ModerateCatalogUseCase {
 
     private final ItemSetStorePort itemSets;
     private final ReportStorePort reports;
@@ -30,8 +33,12 @@ public class ModerationService {
     private final com.toefly.content.application.port.out.SourceStorePort sources;
     private final Clock clock;
 
-    public ModerationService(ItemSetStorePort itemSets, ReportStorePort reports, ContentEventPublisherPort events,
-            com.toefly.content.application.port.out.SourceStorePort sources, Clock clock) {
+    public ModerationService(
+            ItemSetStorePort itemSets,
+            ReportStorePort reports,
+            ContentEventPublisherPort events,
+            com.toefly.content.application.port.out.SourceStorePort sources,
+            Clock clock) {
         this.itemSets = itemSets;
         this.reports = reports;
         this.events = events;
@@ -40,6 +47,7 @@ public class ModerationService {
     }
 
     /** Moves a set to HIDDEN, APPROVED or REJECTED and publishes the matching event (INV-ITM-02). */
+    @Override
     @Transactional
     public ItemSet changeStatus(UUID id, ItemStatus target, HideReason reasonIfHidden) {
         ItemSet current = itemSets.findById(id).orElseThrow(() -> new ItemSetNotFoundException(id));
@@ -61,6 +69,7 @@ public class ModerationService {
     }
 
     /** Takedown on request of a rights holder (docs/08-content-pipeline.md §3.2). */
+    @Override
     @Transactional
     public int hideSource(String sourceCode) {
         var source = sources.findByCode(sourceCode).orElseThrow(() -> new SourceNotFoundException(sourceCode));
@@ -75,20 +84,23 @@ public class ModerationService {
         return hidden;
     }
 
+    @Override
     @Transactional
-    public ItemReport report(UUID reporter, UUID itemSetId, @Nullable Integer ordinal, ReportReason reason,
-            @Nullable String comment) {
+    public ItemReport report(
+            UUID reporter, UUID itemSetId, @Nullable Integer ordinal, ReportReason reason, @Nullable String comment) {
         ItemSet set = itemSets.findById(itemSetId).orElseThrow(() -> new ItemSetNotFoundException(itemSetId));
         if (ordinal != null && ordinal > set.itemCount()) {
             throw new IllegalArgumentException("item " + ordinal + " does not exist");
         }
-        ItemReport report = ItemReport.open(UUID.randomUUID(), itemSetId, ordinal, reporter, reason, comment, clock.instant());
+        ItemReport report =
+                ItemReport.open(UUID.randomUUID(), itemSetId, ordinal, reporter, reason, comment, clock.instant());
         if (!reports.insert(report)) {
             throw new DuplicateReportException();
         }
         return report;
     }
 
+    @Override
     @Transactional
     public ItemReport resolve(UUID reportId, UUID admin, ReportStatus outcome, boolean hideItemSet) {
         ItemReport report = reports.findById(reportId).orElseThrow(() -> new ReportNotFoundException(reportId));
@@ -103,35 +115,8 @@ public class ModerationService {
         return closed;
     }
 
+    @Override
     public List<ItemReport> reports(@Nullable ReportStatus status, int limit) {
         return new ArrayList<>(reports.list(status, limit));
-    }
-
-    @ProblemType(value = "not-found", status = 404)
-    public static class ItemSetNotFoundException extends RuntimeException {
-        public ItemSetNotFoundException(UUID id) {
-            super("item set " + id + " not found");
-        }
-    }
-
-    @ProblemType(value = "not-found", status = 404)
-    public static class SourceNotFoundException extends RuntimeException {
-        public SourceNotFoundException(String code) {
-            super("source " + code + " not found");
-        }
-    }
-
-    @ProblemType(value = "not-found", status = 404)
-    public static class ReportNotFoundException extends RuntimeException {
-        public ReportNotFoundException(UUID id) {
-            super("report " + id + " not found");
-        }
-    }
-
-    @ProblemType(value = "conflict", status = 409)
-    public static class DuplicateReportException extends RuntimeException {
-        public DuplicateReportException() {
-            super("you already have an open report for this item");
-        }
     }
 }

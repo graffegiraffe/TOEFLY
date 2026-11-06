@@ -9,7 +9,13 @@ import org.jspecify.annotations.Nullable;
 public interface ItemSetStorePort {
 
     /** One row of {@code item}. */
-    record ItemRow(UUID id, int ordinal, @Nullable String subskill, int maxScore, @Nullable Double b, String bBasis) {}
+    record ItemRow(
+            UUID id,
+            int ordinal,
+            @Nullable String subskill,
+            int maxScore,
+            @Nullable Double b,
+            String bBasis) {}
 
     Optional<ItemSet> findById(UUID id);
 

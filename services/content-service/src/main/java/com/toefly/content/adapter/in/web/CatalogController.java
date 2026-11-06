@@ -16,9 +16,10 @@ import com.toefly.content.adapter.in.web.dto.SearchHit;
 import com.toefly.content.adapter.in.web.dto.Section;
 import com.toefly.content.adapter.in.web.dto.SourceList;
 import com.toefly.content.adapter.in.web.dto.TaskType;
-import com.toefly.content.application.port.out.CatalogQueryPort.Filter;
-import com.toefly.content.application.service.CatalogQueryService;
-import com.toefly.content.application.service.ModerationService;
+import com.toefly.content.application.port.in.BrowseCatalogUseCase;
+import com.toefly.content.application.port.in.BrowseCatalogUseCase.Filter;
+import com.toefly.content.application.port.in.ModerateCatalogUseCase;
+import com.toefly.content.domain.catalog.ItemSetNotFoundException;
 import com.toefly.content.domain.report.ReportReason;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -32,19 +33,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CatalogController implements ItemSetsApi, SourcesApi, ReportsApi {
 
-    private final CatalogQueryService catalog;
-    private final ModerationService moderation;
+    private final BrowseCatalogUseCase catalog;
+    private final ModerateCatalogUseCase moderation;
 
-    public CatalogController(CatalogQueryService catalog, ModerationService moderation) {
+    public CatalogController(BrowseCatalogUseCase catalog, ModerateCatalogUseCase moderation) {
         this.catalog = catalog;
         this.moderation = moderation;
     }
 
     @Override
     public ResponseEntity<ItemSetSummaryPage> listItemSets(
-            @Nullable Section section, @Nullable TaskType taskType, @Nullable ExamFormat examFormat,
-            @Nullable Provenance provenance, @Nullable String cefr, @Nullable Boolean legacy,
-            @Nullable String sourceCode, @Nullable String cursor, Integer limit) {
+            @Nullable Section section,
+            @Nullable TaskType taskType,
+            @Nullable ExamFormat examFormat,
+            @Nullable Provenance provenance,
+            @Nullable String cefr,
+            @Nullable Boolean legacy,
+            @Nullable String sourceCode,
+            @Nullable String cursor,
+            Integer limit) {
         Filter filter = filter(section, taskType, examFormat, provenance, cefr, legacy, sourceCode);
         return ResponseEntity.ok(page(filter, false, cursor, limit));
     }
@@ -62,18 +69,29 @@ public class CatalogController implements ItemSetsApi, SourcesApi, ReportsApi {
         PageInfo info = new PageInfo().hasMore(page.hasMore());
         if (page.hasMore()) {
             var last = page.rows().getLast().itemSet();
-            info.nextCursor(CursorCodec.encode(fingerprint, List.of(last.createdAt().toString(), last.id().toString())));
+            info.nextCursor(CursorCodec.encode(
+                    fingerprint, List.of(last.createdAt().toString(), last.id().toString())));
         }
-        return new ItemSetSummaryPage().items(page.rows().stream().map(CatalogMapper::summary).toList()).page(info);
+        return new ItemSetSummaryPage()
+                .items(page.rows().stream().map(CatalogMapper::summary).toList())
+                .page(info);
     }
 
     @Override
     public ResponseEntity<ItemSetSearchResult> searchItemSets(
-            String q, @Nullable Section section, @Nullable TaskType taskType, @Nullable ExamFormat examFormat,
-            @Nullable Provenance provenance, @Nullable String cefr, @Nullable Boolean legacy,
-            @Nullable String sourceCode, Integer limit) {
+            String q,
+            @Nullable Section section,
+            @Nullable TaskType taskType,
+            @Nullable ExamFormat examFormat,
+            @Nullable Provenance provenance,
+            @Nullable String cefr,
+            @Nullable Boolean legacy,
+            @Nullable String sourceCode,
+            Integer limit) {
         var result = catalog.search(
-                q, filter(section, taskType, examFormat, provenance, cefr, legacy, sourceCode), CursorCodec.limit(limit));
+                q,
+                filter(section, taskType, examFormat, provenance, cefr, legacy, sourceCode),
+                CursorCodec.limit(limit));
         return ResponseEntity.ok(new ItemSetSearchResult()
                 .mode(result.hybrid() ? ItemSetSearchResult.ModeEnum.HYBRID : ItemSetSearchResult.ModeEnum.FULL_TEXT)
                 .hits(result.hits().stream()
@@ -85,7 +103,7 @@ public class CatalogController implements ItemSetsApi, SourcesApi, ReportsApi {
 
     @Override
     public ResponseEntity<ItemSet> getItemSet(UUID itemSetId) {
-        var set = catalog.any(itemSetId).orElseThrow(() -> new ModerationService.ItemSetNotFoundException(itemSetId));
+        var set = catalog.any(itemSetId).orElseThrow(() -> new ItemSetNotFoundException(itemSetId));
         if (!set.available()) {
             throw new ItemSetUnavailableException();
         }
@@ -99,20 +117,36 @@ public class CatalogController implements ItemSetsApi, SourcesApi, ReportsApi {
     }
 
     @Override
-    public ResponseEntity<ItemReport> createItemReport(CreateItemReportRequest request, @Nullable String idempotencyKey) {
-        UUID reporter = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
-        var report = moderation.report(reporter, request.getItemSetId(), request.getItemOrdinal(),
-                ReportReason.valueOf(request.getReason().getValue()), request.getComment());
+    public ResponseEntity<ItemReport> createItemReport(
+            CreateItemReportRequest request, @Nullable String idempotencyKey) {
+        UUID reporter = UUID.fromString(
+                SecurityContextHolder.getContext().getAuthentication().getName());
+        var report = moderation.report(
+                reporter,
+                request.getItemSetId(),
+                request.getItemOrdinal(),
+                ReportReason.valueOf(request.getReason().getValue()),
+                request.getComment());
         return ResponseEntity.status(201).body(AdminController.report(report));
     }
 
-    static Filter filter(@Nullable Section section, @Nullable TaskType taskType, @Nullable ExamFormat examFormat,
-            @Nullable Provenance provenance, @Nullable String cefr, @Nullable Boolean legacy, @Nullable String sourceCode) {
+    static Filter filter(
+            @Nullable Section section,
+            @Nullable TaskType taskType,
+            @Nullable ExamFormat examFormat,
+            @Nullable Provenance provenance,
+            @Nullable String cefr,
+            @Nullable Boolean legacy,
+            @Nullable String sourceCode) {
         return new Filter(
                 section == null ? null : com.toefly.content.domain.catalog.Section.valueOf(section.getValue()),
                 taskType == null ? null : com.toefly.content.domain.catalog.TaskType.valueOf(taskType.getValue()),
                 examFormat == null ? null : com.toefly.content.domain.catalog.ExamFormat.valueOf(examFormat.getValue()),
                 provenance == null ? null : com.toefly.content.domain.catalog.Provenance.valueOf(provenance.getValue()),
-                cefr, legacy, sourceCode, null, null);
+                cefr,
+                legacy,
+                sourceCode,
+                null,
+                null);
     }
 }

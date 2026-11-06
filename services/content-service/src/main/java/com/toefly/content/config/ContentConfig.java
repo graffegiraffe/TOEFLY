@@ -1,9 +1,9 @@
 package com.toefly.content.config;
 
-import com.toefly.content.adapter.out.seed.DirectorySeedLocationAdapter;
-import com.toefly.content.application.port.out.SeedLocationPort;
 import com.toefly.content.adapter.out.client.OllamaEmbeddingAdapter;
+import com.toefly.content.adapter.out.seed.DirectorySeedLocationAdapter;
 import com.toefly.content.application.port.out.EmbeddingPort;
+import com.toefly.content.application.port.out.SeedLocationPort;
 import java.nio.file.Path;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +40,7 @@ class ContentConfig {
         var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(java.time.Duration.ofSeconds(2));
         factory.setReadTimeout(java.time.Duration.ofSeconds(10));
-        return new OllamaEmbeddingAdapter(RestClient.builder().baseUrl(url).requestFactory(factory).build(), model);
+        return new OllamaEmbeddingAdapter(
+                RestClient.builder().baseUrl(url).requestFactory(factory).build(), model);
     }
 }

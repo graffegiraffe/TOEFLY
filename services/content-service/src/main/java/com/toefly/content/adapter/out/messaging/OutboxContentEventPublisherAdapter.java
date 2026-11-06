@@ -67,9 +67,19 @@ public class OutboxContentEventPublisherAdapter implements ContentEventPublisher
         publish(eventId, ITEM_SET_HIDDEN, s, now, payload);
     }
 
-    private void publish(UUID eventId, String topic, ItemSet s, Instant now,
-            org.apache.avro.specific.SpecificRecord payload) {
-        publisher.publish(new IntegrationEvent(eventId, topic, "ItemSet", s.id().toString(), s.id().toString(),
-                "item-sets/" + s.id(), now, null, null, null, payload));
+    private void publish(
+            UUID eventId, String topic, ItemSet s, Instant now, org.apache.avro.specific.SpecificRecord payload) {
+        publisher.publish(new IntegrationEvent(
+                eventId,
+                topic,
+                "ItemSet",
+                s.id().toString(),
+                s.id().toString(),
+                "item-sets/" + s.id(),
+                now,
+                null,
+                null,
+                null,
+                payload));
     }
 }

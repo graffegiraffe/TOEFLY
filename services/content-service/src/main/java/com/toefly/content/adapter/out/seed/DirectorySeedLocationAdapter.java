@@ -62,7 +62,9 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
         JsonNode n = read(root.resolve(sourceCode).resolve("source.json"));
         JsonNode extra = n.path("extra");
         return new SeedSourceInfo(
-                text(n, "sourceCode"), text(n, "title"), text(n, "publisher"),
+                text(n, "sourceCode"),
+                text(n, "title"),
+                text(n, "publisher"),
                 n.hasNonNull("year") ? n.get("year").asInt() : null,
                 n.hasNonNull("url") ? n.get("url").asString() : null,
                 ExamFormat.valueOf(text(n, "examFormat")),
@@ -95,7 +97,8 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
         for (JsonNode i : payload.path("items")) {
             int ordinal = i.path("ordinal").asInt(items.size() + 1);
             items.add(new SeedItem(
-                    UUID.nameUUIDFromBytes((NAMESPACE_TOEFLY_SEED + "|" + seedId + "#" + ordinal).getBytes(StandardCharsets.UTF_8)),
+                    UUID.nameUUIDFromBytes(
+                            (NAMESPACE_TOEFLY_SEED + "|" + seedId + "#" + ordinal).getBytes(StandardCharsets.UTF_8)),
                     ordinal,
                     i.hasNonNull("subskill") ? i.get("subskill").asString() : null,
                     i.path("maxScore").asInt(1)));
@@ -120,9 +123,12 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
                 text(set, "topic"),
                 set.hasNonNull("domain") ? set.get("domain").asString() : null,
                 skills,
-                locator.path("pages").path(0).isInt() ? locator.path("pages").path(0).asInt() : null,
+                locator.path("pages").path(0).isInt()
+                        ? locator.path("pages").path(0).asInt()
+                        : null,
                 locator.path("questionNumbers").path(0).isInt()
-                        ? String.valueOf(locator.path("questionNumbers").path(0).asInt()) : null,
+                        ? String.valueOf(locator.path("questionNumbers").path(0).asInt())
+                        : null,
                 env.path("extraction").path("reviewed").asBoolean(false),
                 "OCR_LLM".equals(method),
                 payload.path("stimulus").path("audio").path("durationSeconds").asDouble(0),

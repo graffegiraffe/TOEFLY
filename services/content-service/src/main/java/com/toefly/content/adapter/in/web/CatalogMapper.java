@@ -9,7 +9,7 @@ import com.toefly.content.adapter.in.web.dto.Provenance;
 import com.toefly.content.adapter.in.web.dto.Section;
 import com.toefly.content.adapter.in.web.dto.SourceRef;
 import com.toefly.content.adapter.in.web.dto.TaskType;
-import com.toefly.content.application.port.out.CatalogQueryPort.Row;
+import com.toefly.content.application.port.in.BrowseCatalogUseCase.Row;
 import com.toefly.content.domain.catalog.Source;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -40,7 +40,10 @@ final class CatalogMapper {
                 .id(s.id())
                 .version(s.version())
                 .taskType(TaskType.fromValue(s.taskType().name()))
-                .section(s.section() == null ? null : Section.fromValue(s.section().name()))
+                .section(
+                        s.section() == null
+                                ? null
+                                : Section.fromValue(s.section().name()))
                 .examFormat(ExamFormat.fromValue(s.examFormat().name()))
                 .cefr(s.cefr())
                 .topic(s.topic())
@@ -74,7 +77,10 @@ final class CatalogMapper {
                 .id(s.id())
                 .version(s.version())
                 .taskType(TaskType.fromValue(s.taskType().name()))
-                .section(s.section() == null ? null : Section.fromValue(s.section().name()))
+                .section(
+                        s.section() == null
+                                ? null
+                                : Section.fromValue(s.section().name()))
                 .examFormat(ExamFormat.fromValue(s.examFormat().name()))
                 .cefr(s.cefr())
                 .topic(s.topic())

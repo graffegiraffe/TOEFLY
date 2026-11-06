@@ -15,8 +15,18 @@ import tools.jackson.databind.node.ObjectNode;
 final class PayloadRedactor {
 
     private static final Set<String> SECRET_FIELDS = Set.of(
-            "answerKey", "acceptedAnswers", "explanation", "rationale", "transcript", "modelAnswer",
-            "modelAnswers", "sampleAnswer", "fullWord", "suffix", "answerOrder", "keyExplanation");
+            "answerKey",
+            "acceptedAnswers",
+            "explanation",
+            "rationale",
+            "transcript",
+            "modelAnswer",
+            "modelAnswers",
+            "sampleAnswer",
+            "fullWord",
+            "suffix",
+            "answerOrder",
+            "keyExplanation");
     private static final Pattern GAP = Pattern.compile("(\\w*)\\{[^}]*}");
 
     private PayloadRedactor() {}
@@ -34,7 +44,8 @@ final class PayloadRedactor {
                 if (SECRET_FIELDS.contains(field.getKey())) {
                     it.remove();
                 } else if ("markup".equals(field.getKey()) && field.getValue().isString()) {
-                    object.put("markup", GAP.matcher(field.getValue().asString()).replaceAll("$1{_}"));
+                    object.put(
+                            "markup", GAP.matcher(field.getValue().asString()).replaceAll("$1{_}"));
                 } else {
                     strip(field.getValue());
                 }

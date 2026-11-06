@@ -83,8 +83,34 @@ public record ItemSet(
             throw new IllegalStatusTransitionException(status, target);
         }
         return new ItemSet(
-                id, seedId, version, section, taskType, examFormat, cefr, topic, domain, skills, sourceId, sourcePage,
-                sourceItemNo, provenance, target, reason, ownerTutorId, bMean, bBasis, etsNormSeconds,
-                estimatedMinutes, itemCount, payload, audioState, contentHash, searchText, published, createdAt, now);
+                id,
+                seedId,
+                version,
+                section,
+                taskType,
+                examFormat,
+                cefr,
+                topic,
+                domain,
+                skills,
+                sourceId,
+                sourcePage,
+                sourceItemNo,
+                provenance,
+                target,
+                reason,
+                ownerTutorId,
+                bMean,
+                bBasis,
+                etsNormSeconds,
+                estimatedMinutes,
+                itemCount,
+                payload,
+                audioState,
+                contentHash,
+                searchText,
+                published,
+                createdAt,
+                now);
     }
 }

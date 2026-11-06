@@ -22,8 +22,10 @@ public class JdbcSeedImportStoreAdapter implements SeedImportStorePort {
 
     @Override
     public boolean tryLock() {
-        return Boolean.TRUE.equals(
-                jdbc.sql("SELECT pg_try_advisory_xact_lock(:k)").param("k", LOCK_KEY).query(Boolean.class).single());
+        return Boolean.TRUE.equals(jdbc.sql("SELECT pg_try_advisory_xact_lock(:k)")
+                .param("k", LOCK_KEY)
+                .query(Boolean.class)
+                .single());
     }
 
     @Override
@@ -35,8 +37,14 @@ public class JdbcSeedImportStoreAdapter implements SeedImportStorePort {
     }
 
     @Override
-    public void record(String sourceCode, String bundleSha, String status, Map<String, Integer> counts,
-            String reportJson, Instant startedAt, Instant finishedAt) {
+    public void record(
+            String sourceCode,
+            String bundleSha,
+            String status,
+            Map<String, Integer> counts,
+            String reportJson,
+            Instant startedAt,
+            Instant finishedAt) {
         String countsJson = counts.entrySet().stream()
                 .map(e -> "\"" + e.getKey() + "\":" + e.getValue())
                 .collect(Collectors.joining(",", "{", "}"));
