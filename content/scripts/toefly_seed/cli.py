@@ -8,11 +8,17 @@ from pathlib import Path
 from . import SCRIPT_VERSION
 from .common import schema
 from .common.hashing import sha256_hex
-from .sources import secret_toefl_html
+from .common.envelope import Report
+from .sources import secret_toefl_html, tst_reading_2026
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTENT = ROOT
-EXTRACTORS = {secret_toefl_html.SOURCE_CODE: secret_toefl_html}
+EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_reading_2026)}
+RAW = Path("/Users/katusarublevsk/Documents/English")
+SOURCE_FILES = {
+    "secret-toefl-society-reading": "TOEFL Reading Sets - The Secret TOEFL Society.html",
+    "tst-reading-2026": "toefl-reading-100-questions-freebie-2026.pdf",
+}
 
 
 def _write(path: Path, value) -> None:
@@ -22,16 +28,15 @@ def _write(path: Path, value) -> None:
 
 def extract(args) -> int:
     module = EXTRACTORS[args.source]
-    html = Path(args.input).read_text(encoding="utf-8")
-    report = secret_toefl_html.Report()
+    report = Report()
     out = Path(args.out) / args.source
     _write(out / "source.json", module.source_info())
-    for envelope in module.extract(html, report):
+    for envelope in module.extract_file(Path(args.input or RAW / SOURCE_FILES[args.source]), report):
         relative = envelope.pop("_file")
         _write(out / relative, envelope)
     _write(
         out / "_report" / "extraction-report.json",
-        {"scriptVersion": SCRIPT_VERSION, "sets": report.sets, "items": report.items,
+        {"scriptVersion": SCRIPT_VERSION, "sets": report.sets, "items": report.items, "byType": report.by_type,
          "bySubskill": report.by_subskill, "warnings": report.warnings},
     )
     print(f"{args.source}: {report.sets} sets, {report.items} items, {len(report.warnings)} warnings")
@@ -99,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("extract")
     p.add_argument("--source", required=True, choices=sorted(EXTRACTORS))
-    p.add_argument("--input", required=True)
+    p.add_argument("--input")
     p.add_argument("--out", default=str(CONTENT / "seed"))
     p.set_defaults(run=extract)
     for name, run in (("validate", validate), ("manifest", manifest)):

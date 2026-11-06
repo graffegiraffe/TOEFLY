@@ -7,7 +7,6 @@ read with ``json.loads`` (never ``eval``).
 import json
 import re
 from collections.abc import Iterator
-from dataclasses import dataclass, field
 
 from .. import SCRIPT_VERSION
 from ..common.hashing import content_hash
@@ -42,12 +41,7 @@ _MARKER = re.compile(r'<span class="sq">■ ([A-D])</span>')
 _SENTENCE_END = re.compile(r"[.!?][\"”’)]*\s")
 
 
-@dataclass
-class Report:
-    sets: int = 0
-    items: int = 0
-    by_subskill: dict[str, int] = field(default_factory=dict)
-    warnings: list[str] = field(default_factory=list)
+from ..common.envelope import Report  # noqa: E402
 
 
 def read_sets(html: str) -> list[dict]:
@@ -243,3 +237,9 @@ def extract(html: str, report: Report | None = None) -> Iterator[dict]:
             },
             "_file": f"item-sets/reading-set-{number:02d}-{slugify(title)}.json",
         }
+
+
+def extract_file(path, report: Report) -> Iterator[dict]:
+    from pathlib import Path
+
+    return extract(Path(path).read_text(encoding="utf-8"), report)

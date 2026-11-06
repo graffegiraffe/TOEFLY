@@ -1,3 +1,10 @@
 {
-  "secret-toefl-society-reading": {"sets": 16, "items": 79}
+  "secret-toefl-society-reading": {
+    "sets": 16,
+    "items": 79
+  },
+  "tst-reading-2026": {
+    "sets": 28,
+    "items": 159
+  }
 }
