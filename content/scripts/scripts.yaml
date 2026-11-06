@@ -1,0 +1,6 @@
+# Registry of the sources (docs/08-content-pipeline.md section 4.2). Paths are on the author's machine, outside Git.
+rawDir: /Users/katusarublevsk/Documents/English
+sources:
+  secret-toefl-society-reading:
+    file: "TOEFL Reading Sets - The Secret TOEFL Society.html"
+    extractor: secret_toefl_html

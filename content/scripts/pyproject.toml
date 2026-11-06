@@ -1,0 +1,22 @@
+[project]
+name = "toefly-seed"
+version = "0.1.0"
+description = "Offline extraction of the TOEFLY seed bundle (docs/08-content-pipeline.md section 4)"
+requires-python = ">=3.13"
+dependencies = ["jsonschema==4.26.0"]
+
+[dependency-groups]
+dev = ["pytest==9.0.2"]
+
+[project.scripts]
+toefly-seed = "toefly_seed.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["toefly_seed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

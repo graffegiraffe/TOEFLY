@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/source/v1",
+  "title": "Source of a seed bundle (docs/08-content-pipeline.md section 4.7)",
+  "type": "object",
+  "required": ["sourceCode", "title", "publisher", "examFormat", "license", "attributionText"],
+  "properties": {
+    "sourceCode": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "publisher": {"type": "string", "minLength": 1},
+    "year": {"type": ["integer", "null"]},
+    "url": {"type": ["string", "null"]},
+    "examFormat": {"enum": ["TOEFL_2026", "LEGACY"]},
+    "license": {"const": "THIRD_PARTY_ATTRIBUTION"},
+    "attributionText": {"type": "string", "minLength": 10},
+    "extra": {"type": "object"}
+  }
+}

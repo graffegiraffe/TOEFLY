@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/payload/LEGACY_READING/v1",
+  "title": "LEGACY_READING (docs/03-domain-model.md section 4.15; the EXTRACTED variant: one paragraph is enough, subskill may be unknown)",
+  "type": "object",
+  "required": ["stimulus", "items"],
+  "properties": {
+    "stimulus": {
+      "type": "object",
+      "required": ["title", "domain", "paragraphs", "wordCount"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "domain": {"enum": ["ARTS", "LIFE_SCIENCE", "SOCIAL_SCIENCE", "PHYSICAL_SCIENCE", "GENERAL"]},
+        "paragraphs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "maxItems": 10},
+        "wordCount": {"type": "integer", "minimum": 50, "maximum": 900}
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 14,
+      "items": {
+        "type": "object",
+        "required": ["ordinal", "selection", "prompt", "options", "answerKey", "explanation"],
+        "properties": {
+          "ordinal": {"type": "integer", "minimum": 1},
+          "selection": {"const": "SINGLE"},
+          "subskill": {"enum": ["FACTUAL", "NEGATIVE_FACTUAL", "INFERENCE", "RHETORICAL_PURPOSE", "VOCABULARY",
+                                 "REFERENCE", "SENTENCE_SIMPLIFICATION", "INSERT_TEXT"]},
+          "prompt": {"type": "string", "minLength": 1},
+          "options": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": ["key", "text", "rationale"],
+              "properties": {
+                "key": {"enum": ["A", "B", "C", "D"]},
+                "text": {"type": "string", "minLength": 1},
+                "rationale": {"type": "string", "minLength": 10}
+              },
+              "additionalProperties": false
+            }
+          },
+          "answerKey": {"enum": ["A", "B", "C", "D"]},
+          "explanation": {
+            "type": "object",
+            "required": ["summary"],
+            "properties": {"summary": {"type": "string", "minLength": 1}},
+            "additionalProperties": false
+          },
+          "anchor": {
+            "type": "object",
+            "required": ["text", "paragraph", "charStart", "charEnd"],
+            "properties": {
+              "text": {"type": "string", "minLength": 1},
+              "paragraph": {"type": "integer", "minimum": 0},
+              "charStart": {"type": "integer", "minimum": 0},
+              "charEnd": {"type": "integer", "minimum": 1}
+            },
+            "additionalProperties": false
+          },
+          "insertion": {
+            "type": "object",
+            "required": ["sentence", "markers"],
+            "properties": {
+              "sentence": {"type": "string", "minLength": 1},
+              "markers": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "required": ["key", "paragraph", "afterSentence"],
+                  "properties": {
+                    "key": {"enum": ["A", "B", "C", "D"]},
+                    "paragraph": {"type": "integer", "minimum": 0},
+                    "afterSentence": {"type": "integer", "minimum": 0}
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {"if": {"properties": {"subskill": {"enum": ["VOCABULARY", "REFERENCE", "SENTENCE_SIMPLIFICATION"]}}, "required": ["subskill"]}, "then": {"required": ["anchor"]}},
+          {"if": {"properties": {"subskill": {"const": "INSERT_TEXT"}}, "required": ["subskill"]}, "then": {"required": ["insertion"]}}
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}
