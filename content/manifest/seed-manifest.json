@@ -1,0 +1,129 @@
+{
+  "bucket": "toefly-seed",
+  "manifestVersion": 1,
+  "prefix": "seed/v1/",
+  "scriptVersion": "0.1.0",
+  "sources": [
+    {
+      "bundleSha256": "sha256:1a65e0e2c2ca03e7094cf569ed2b490d80c9afa95c2499054911ed70ed39e1af",
+      "counts": {
+        "LEGACY_READING": 16
+      },
+      "files": [
+        {
+          "bytes": 10583,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-01-the-domestication-of-maize.json",
+          "seedId": "secret-toefl-society-reading/reading-set-01",
+          "sha256": "sha256:3d4aa6a7902e8654e287bc15f4de5a10df19f04e94c5438e6c37d419d6c61f87"
+        },
+        {
+          "bytes": 10772,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-02-the-second-world-war-and-american-women-in-the-workforce.json",
+          "seedId": "secret-toefl-society-reading/reading-set-02",
+          "sha256": "sha256:5157635ac60400bd702361e3ab56478e88209582d3a743e6e87773cb39ba9807"
+        },
+        {
+          "bytes": 10880,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-03-optical-astronomy.json",
+          "seedId": "secret-toefl-society-reading/reading-set-03",
+          "sha256": "sha256:fcb3a37691160d79e737d8eec342b92fdada216e4e9dddd3e96fedac4677d379"
+        },
+        {
+          "bytes": 10963,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-04-thermodynamics-and-ecosystems.json",
+          "seedId": "secret-toefl-society-reading/reading-set-04",
+          "sha256": "sha256:1fd92983acc3e131e8ac40442aaf22aef6459d5e3efcf0eb9fdf0882978802ed"
+        },
+        {
+          "bytes": 9647,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-05-the-effects-of-urbanization-on-bird-populations.json",
+          "seedId": "secret-toefl-society-reading/reading-set-05",
+          "sha256": "sha256:945069b093e93e2c66dc24224f71cc7fbc9ad09e600abcdf980374d26f86c38f"
+        },
+        {
+          "bytes": 10466,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-06-mysterious-viking-sunstones.json",
+          "seedId": "secret-toefl-society-reading/reading-set-06",
+          "sha256": "sha256:a657b1fdf35601455b1956fbac10934afe88e4e8190df2cc030ba6e58e45a3e0"
+        },
+        {
+          "bytes": 11367,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-07-understanding-ecological-systems-theory.json",
+          "seedId": "secret-toefl-society-reading/reading-set-07",
+          "sha256": "sha256:fb4399605e121a5f4c13774eb80325bf7aa2e14df2d36546661b32b0d379d7d8"
+        },
+        {
+          "bytes": 10497,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-08-cybernetic-prosthetics.json",
+          "seedId": "secret-toefl-society-reading/reading-set-08",
+          "sha256": "sha256:bd251b7e1012c2acc3eea95f6fbf7fe28281eb567f100364f271dff5f6e65452"
+        },
+        {
+          "bytes": 9959,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-09-ancient-egyptian-medicine.json",
+          "seedId": "secret-toefl-society-reading/reading-set-09",
+          "sha256": "sha256:2122bce7ccbaf3045e95218488fe532161e2afe6cd4e09437c431fbffc77326f"
+        },
+        {
+          "bytes": 10579,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-10-wind-ensemble-conducting.json",
+          "seedId": "secret-toefl-society-reading/reading-set-10",
+          "sha256": "sha256:f28e5637c2d280ed2d99c3c03a5b85eb32f22cfa28f95686db96d7c3f9a71ca9"
+        },
+        {
+          "bytes": 10350,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-11-the-shifting-art-of-playwriting.json",
+          "seedId": "secret-toefl-society-reading/reading-set-11",
+          "sha256": "sha256:a5ce238882fedcc4aec91b8b4d00275c7ecca96839d47d1285f4332577dc5e47"
+        },
+        {
+          "bytes": 10262,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-12-smart-textiles.json",
+          "seedId": "secret-toefl-society-reading/reading-set-12",
+          "sha256": "sha256:0b44495645a3234ae0b881cb1244254c7b94cfa03ffcdab36a8873501d5b0ee7"
+        },
+        {
+          "bytes": 9632,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-13-the-mysteries-of-opal.json",
+          "seedId": "secret-toefl-society-reading/reading-set-13",
+          "sha256": "sha256:ba19a4e7675d844e2f3432ce4d03f21b569f59f1e53825c32b27b3214d731ac9"
+        },
+        {
+          "bytes": 9715,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-14-radio-astronomy-a-new-perspective.json",
+          "seedId": "secret-toefl-society-reading/reading-set-14",
+          "sha256": "sha256:21b1d46c069e16418ab59255ff588917fc4165b5a2066fee84cab25e5a8150b3"
+        },
+        {
+          "bytes": 10746,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-15-video-evidence-in-u-s-courts.json",
+          "seedId": "secret-toefl-society-reading/reading-set-15",
+          "sha256": "sha256:d88cdccc3291cb45831e7afab036e4e1cad6b0ee5400a05ee53fb461e6dbff7b"
+        },
+        {
+          "bytes": 8483,
+          "kind": "ITEM_SET",
+          "path": "secret-toefl-society-reading/item-sets/reading-set-16-twin-stars.json",
+          "seedId": "secret-toefl-society-reading/reading-set-16",
+          "sha256": "sha256:e759165924300b1786d30d771ad6d93759823b047bfd35ca66e9c6c81cbca7e5"
+        }
+      ],
+      "sourceCode": "secret-toefl-society-reading"
+    }
+  ]
+}

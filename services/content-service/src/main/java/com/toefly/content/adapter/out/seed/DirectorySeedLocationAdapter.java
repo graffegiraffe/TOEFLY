@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -28,8 +27,6 @@ import tools.jackson.databind.json.JsonMapper;
  * docs/08-content-pipeline.md §4.2 with {@code manifest.json} in the root.
  */
 public class DirectorySeedLocationAdapter implements SeedLocationPort {
-
-    private static final UUID NAMESPACE_TOEFLY_SEED = UUID.fromString("5b1c1c4e-6a8e-5a3b-9d5f-2f0c8d1a7e11");
 
     private final Path root;
     private final JsonMapper json = JsonMapper.builder().build();
@@ -97,8 +94,7 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
         for (JsonNode i : payload.path("items")) {
             int ordinal = i.path("ordinal").asInt(items.size() + 1);
             items.add(new SeedItem(
-                    UUID.nameUUIDFromBytes(
-                            (NAMESPACE_TOEFLY_SEED + "|" + seedId + "#" + ordinal).getBytes(StandardCharsets.UTF_8)),
+                    Uuids.item(seedId, ordinal),
                     ordinal,
                     i.hasNonNull("subskill") ? i.get("subskill").asString() : null,
                     i.path("maxScore").asInt(1)));
@@ -115,7 +111,7 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
         Canonical.collectStrings(payload, text);
         return new SeedItemSet(
                 seedId,
-                UUID.nameUUIDFromBytes((NAMESPACE_TOEFLY_SEED + "|" + seedId).getBytes(StandardCharsets.UTF_8)),
+                Uuids.itemSet(seedId),
                 text(env, "sourceCode"),
                 type,
                 Provenance.valueOf(set.path("provenance").asString("EXTRACTED")),

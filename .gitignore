@@ -15,3 +15,11 @@ target/
 
 # local infrastructure secrets
 infra/compose/.env
+
+# seed extraction (docs/08-content-pipeline.md section 3.1): texts of third parties stay out of Git
+content/seed/
+content/raw/
+content/scripts/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
