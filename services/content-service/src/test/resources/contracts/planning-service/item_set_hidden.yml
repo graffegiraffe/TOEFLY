@@ -1,0 +1,21 @@
+name: item_set_hidden
+description: planning-service stops assigning an item set that an administrator hid
+input:
+  triggeredBy: itemSetHidden()
+outputMessage:
+  sentTo: toefly.content.item-set-hidden.v1
+  headers:
+    ce_type: toefly.content.item-set-hidden.v1
+    ce_specversion: "1.0"
+    ce_source: /toefly/content-service
+    content-type: application/avro
+  body:
+    reason: ADMIN
+  matchers:
+    body:
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid
+      - path: $.itemSetId
+        type: by_regex
+        predefined: uuid
