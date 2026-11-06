@@ -29,6 +29,10 @@ public class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandl
 
     @ExceptionHandler
     ResponseEntity<Object> handleCatalogProblem(RuntimeException exception, WebRequest request) {
+        if (isSecurityException(exception)) {
+            // let Spring Security answer 401 or 403 (method security throws from inside the controller)
+            throw exception;
+        }
         ProblemType type = AnnotatedElementUtils.findMergedAnnotation(exception.getClass(), ProblemType.class);
         if (type == null) {
             return handleUnexpected(exception, request);
@@ -59,6 +63,17 @@ public class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandl
                 .map(field -> error(pointer(field), String.valueOf(field.getDefaultMessage())))
                 .toList();
         return validationFailed(errors, request);
+    }
+
+    private static boolean isSecurityException(RuntimeException exception) {
+        for (Class<?> type = exception.getClass(); type != null; type = type.getSuperclass()) {
+            String name = type.getName();
+            if (name.equals("org.springframework.security.access.AccessDeniedException")
+                    || name.equals("org.springframework.security.core.AuthenticationException")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ResponseEntity<Object> handleUnexpected(Exception exception, WebRequest request) {
