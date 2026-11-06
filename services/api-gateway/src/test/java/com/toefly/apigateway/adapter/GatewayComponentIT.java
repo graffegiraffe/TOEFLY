@@ -27,6 +27,7 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
@@ -244,6 +245,19 @@ class GatewayComponentIT {
                 .expectBody()
                 .jsonPath("$.reason")
                 .isEqualTo("EMAIL_NOT_VERIFIED");
+    }
+
+    @Autowired
+    ReactiveClientRegistrationRepository registrations;
+
+    @Test
+    @DisplayName("docs/10 §4.2 the gateway starts without Keycloak and still checks the issuer of ID tokens")
+    void registrationHasIssuerWithoutDiscovery() {
+        var keycloak = registrations.findByRegistrationId("keycloak").block();
+        assertThat(keycloak).isNotNull();
+        assertThat(keycloak.getProviderDetails().getIssuerUri()).isEqualTo("http://localhost:8180/realms/toefly");
+        assertThat(keycloak.getProviderDetails().getTokenUri())
+                .isEqualTo("http://localhost:8180/realms/toefly/protocol/openid-connect/token");
     }
 
     @TestFactory
