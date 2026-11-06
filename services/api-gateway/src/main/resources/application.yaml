@@ -45,6 +45,10 @@ spring:
               uri: ${toefly.gateway.services.profile-service}
               predicates:
                 - Path=/api/v1/me,/api/v1/me/**
+            - id: content-service
+              uri: ${toefly.gateway.services.content-service}
+              predicates:
+                - Path=/api/v1/item-sets,/api/v1/item-sets/**,/api/v1/sources,/api/v1/item-reports,/api/v1/admin/item-sets,/api/v1/admin/item-sets/**,/api/v1/admin/item-reports,/api/v1/admin/item-reports/**,/api/v1/admin/sources/**,/api/v1/admin/imports,/api/v1/admin/imports/**
 
 server:
   port: 8080
@@ -64,6 +68,7 @@ toefly:
       end-session-uri: ${toefly.gateway.keycloak.issuer}/protocol/openid-connect/logout
     services:
       profile-service: http://localhost:8081
+      content-service: http://localhost:8082
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
     rate-limits:
