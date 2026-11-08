@@ -47,7 +47,8 @@ def extract(args) -> int:
     module = EXTRACTORS[args.source]
     report = Report()
     out = Path(args.out) / args.source
-    for envelope in module.extract_file(Path(args.input or RAW / SOURCE_FILES[args.source]), report):
+    options = {"units": [int(u) for u in args.units.split(",")]} if args.units else {}
+    for envelope in module.extract_file(Path(args.input or RAW / SOURCE_FILES[args.source]), report, **options):
         relative = envelope.pop("_file")
         _write(out / relative, envelope)
     _write(out / "source.json", module.source_info())
@@ -155,6 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("extract")
     p.add_argument("--source", required=True, choices=sorted(EXTRACTORS))
     p.add_argument("--input")
+    p.add_argument("--units", help="new-roundup-5 only: read the exercises of these units, e.g. 1,2")
     p.add_argument("--out", default=str(CONTENT / "seed"))
     p.set_defaults(run=extract)
     for name, run in (("validate", validate), ("manifest", manifest)):
