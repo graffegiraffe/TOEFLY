@@ -93,7 +93,7 @@ class ContentComponentIT {
                 .singleElement()
                 .satisfies(s -> {
                     assertThat(s.status()).isEqualTo("DONE");
-                    assertThat(s.created()).isEqualTo(2);
+                    assertThat(s.created()).isEqualTo(4);
                 });
         // a source whose file does not match its manifest hash fails alone and does not block the others
         assertThat(report.sources())
@@ -283,6 +283,54 @@ class ContentComponentIT {
                 .andExpect(jsonPath("$.hidden").value(1));
     }
 
+    @Test
+    @Order(11)
+    @DisplayName("units: an unreviewed one waits for approval, a reviewed one is served at once")
+    void units() throws Exception {
+        UUID student = UUID.randomUUID();
+        mvc.perform(get("/api/v1/vocabulary-units").with(JwtFixtures.student(student)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].words[0].word").value("mural"));
+        mvc.perform(get("/api/v1/grammar-units").with(JwtFixtures.student(student)))
+                .andExpect(jsonPath("$.items.length()").value(0));
+        mvc.perform(get("/api/v1/admin/grammar-units").with(JwtFixtures.student(student)))
+                .andExpect(status().isForbidden());
+
+        String id = jdbc.sql("SELECT id::text FROM grammar_unit")
+                .query(String.class)
+                .single();
+        mvc.perform(get("/api/v1/grammar-units/" + id).with(JwtFixtures.student(student)))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/admin/grammar-units").with(JwtFixtures.admin(UUID.randomUUID())))
+                .andExpect(jsonPath("$.items[0].status").value("IN_REVIEW"));
+        mvc.perform(post("/api/v1/admin/grammar-units/" + id + "/approval").with(JwtFixtures.admin(UUID.randomUUID())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+        mvc.perform(get("/api/v1/grammar-units")
+                        .param("framework", "ROUND_UP_5")
+                        .with(JwtFixtures.student(student)))
+                .andExpect(jsonPath("$.items[0].title").value("Present forms"));
+        mvc.perform(post("/api/v1/admin/vocabulary-units/" + UUID.randomUUID() + "/approval")
+                        .with(JwtFixtures.admin(UUID.randomUUID())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(12)
+    @DisplayName("a repeated import keeps units unchanged")
+    void unitsAreIdempotent() {
+        importer.run(Optional.empty(), false);
+        assertThat(jdbc.sql("SELECT count(*) FROM grammar_unit")
+                        .query(Integer.class)
+                        .single())
+                .isEqualTo(1);
+        assertThat(jdbc.sql("SELECT count(*) FROM vocabulary_unit")
+                        .query(Integer.class)
+                        .single())
+                .isEqualTo(1);
+    }
+
     // Contracts of the consumers of content events (ADR-0031, docs/11-quality-testing.md section 8.4).
 
     static final Path CONTRACTS = Path.of("src/test/resources/contracts");
@@ -352,6 +400,21 @@ class ContentComponentIT {
                     """);
             Files.writeString(dir.resolve("climate-001.json"), climate("Climate and plants"));
             Files.writeString(dir.resolve("library-002.json"), library());
+            Files.createDirectories(root.resolve("demo-reading/grammar-units"));
+            Files.createDirectories(root.resolve("demo-reading/vocabulary-units"));
+            Files.writeString(root.resolve("demo-reading/grammar-units/grammar-u01.json"), """
+                    {"schemaVersion":"1.0","kind":"GRAMMAR_UNIT","seedId":"demo-reading/grammar-u01",
+                     "sourceCode":"demo-reading","extraction":{"method":"TEXT_LAYER","reviewed":false},
+                     "unit":{"framework":"ROUND_UP_5","unitNo":1,"title":"Present forms","topicCodes":["present-forms"],
+                             "ruleCard":null,"progressCheckNo":null,"exercises":[]}}
+                    """);
+            Files.writeString(root.resolve("demo-reading/vocabulary-units/vocab-u01.json"), """
+                    {"schemaVersion":"1.0","kind":"VOCABULARY_UNIT","seedId":"demo-reading/vocab-u01",
+                     "sourceCode":"demo-reading","extraction":{"method":"TEXT_LAYER","reviewed":true},
+                     "unit":{"unitNo":1,"theme":"ARTS","title":"Visual art","exercises":[],
+                             "words":[{"word":"mural","pos":"n","definition":"a painting on a wall",
+                                       "example":"The mural covers the whole library wall."}]}}
+                    """);
             Files.createDirectories(root.resolve("broken-source/item-sets"));
             Files.writeString(root.resolve("broken-source/source.json"), """
                     {"sourceCode":"broken-source","title":"Broken","publisher":"TOEFLY tests","year":2026,
@@ -376,16 +439,27 @@ class ContentComponentIT {
     private static void writeManifest(Path root) throws IOException {
         StringBuilder files = new StringBuilder();
         StringBuilder bundle = new StringBuilder();
-        for (String name : new String[] {"climate-001", "library-002"}) {
-            Path f = root.resolve("demo-reading/item-sets/" + name + ".json");
+        String[][] entries = {
+            {"item-sets", "climate-001", "ITEM_SET"},
+            {"item-sets", "library-002", "ITEM_SET"},
+            {"grammar-units", "grammar-u01", "GRAMMAR_UNIT"},
+            {"vocabulary-units", "vocab-u01", "VOCABULARY_UNIT"}
+        };
+        for (String[] entry : entries) {
+            String name = entry[1];
+            Path f = root.resolve("demo-reading/" + entry[0] + "/" + name + ".json");
             String sha = "sha256:" + sha256(Files.readAllBytes(f));
             bundle.append(name).append(sha);
             files.append(files.isEmpty() ? "" : ",")
-                    .append("{\"path\":\"demo-reading/item-sets/")
+                    .append("{\"path\":\"demo-reading/")
+                    .append(entry[0])
+                    .append("/")
                     .append(name)
                     .append(".json\",\"seedId\":\"demo-reading/")
                     .append(name)
-                    .append("\",\"kind\":\"ITEM_SET\",\"sha256\":\"")
+                    .append("\",\"kind\":\"")
+                    .append(entry[2])
+                    .append("\",\"sha256\":\"")
                     .append(sha)
                     .append("\"}");
         }

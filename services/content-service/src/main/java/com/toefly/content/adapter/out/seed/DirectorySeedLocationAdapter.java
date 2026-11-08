@@ -6,6 +6,7 @@ import com.toefly.content.application.seed.SeedItemSet;
 import com.toefly.content.application.seed.SeedItemSet.SeedItem;
 import com.toefly.content.application.seed.SeedManifest;
 import com.toefly.content.application.seed.SeedSourceInfo;
+import com.toefly.content.application.seed.SeedUnit;
 import com.toefly.content.domain.catalog.ExamFormat;
 import com.toefly.content.domain.catalog.Provenance;
 import com.toefly.content.domain.catalog.TaskType;
@@ -132,6 +133,41 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
                 sha256(canonical.getBytes(StandardCharsets.UTF_8)),
                 text.toString(),
                 items);
+    }
+
+    @Override
+    public SeedUnit unit(SeedManifest.FileRef ref) {
+        byte[] bytes;
+        try {
+            bytes = Files.readAllBytes(root.resolve(ref.path()));
+        } catch (IOException e) {
+            throw new SeedFileException("cannot read " + ref.path(), e);
+        }
+        if (!("sha256:" + sha256(bytes)).equals(ref.sha256())) {
+            throw new SeedFileException("hash of " + ref.path() + " differs from the manifest");
+        }
+        JsonNode env = json.readTree(new String(bytes, StandardCharsets.UTF_8));
+        JsonNode unit = env.path("unit");
+        SeedUnit.Kind kind = SeedUnit.Kind.valueOf(text(env, "kind"));
+        String seedId = text(env, "seedId");
+        List<String> topics = new ArrayList<>();
+        unit.path("topicCodes").forEach(t -> topics.add(t.asString()));
+        return new SeedUnit(
+                kind,
+                seedId,
+                Uuids.itemSet(seedId),
+                text(env, "sourceCode"),
+                env.path("extraction").path("reviewed").asBoolean(false),
+                sha256(Canonical.of(unit).getBytes(StandardCharsets.UTF_8)),
+                unit.path("unitNo").asInt(),
+                unit.hasNonNull("framework") ? unit.get("framework").asString() : null,
+                unit.hasNonNull("theme") ? unit.get("theme").asString() : null,
+                text(unit, "title"),
+                topics,
+                unit.hasNonNull("ruleCard") ? Canonical.of(unit.get("ruleCard")) : null,
+                unit.hasNonNull("progressCheckNo") ? unit.get("progressCheckNo").asInt() : null,
+                unit.has("words") ? Canonical.of(unit.get("words")) : "[]",
+                unit.has("exercises") ? Canonical.of(unit.get("exercises")) : "[]");
     }
 
     private JsonNode read(Path file) {

@@ -229,6 +229,116 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ImportReport' }
+  /api/v1/grammar-units:
+    get:
+      tags: [Units]
+      operationId: listGrammarUnits
+      summary: Approved grammar units (Round-Up 5, Collins grammar)
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      parameters:
+        - { name: framework, in: query, required: false, schema: { type: string, enum: [ROUND_UP_5, COLLINS_GRAMMAR] } }
+      responses:
+        '200':
+          description: Units in book order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrammarUnitList' }
+  /api/v1/grammar-units/{unitId}:
+    get:
+      tags: [Units]
+      operationId: getGrammarUnit
+      summary: A grammar unit with its rule card and exercises
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      parameters:
+        - { name: unitId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: The unit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrammarUnit' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/vocabulary-units:
+    get:
+      tags: [Units]
+      operationId: listVocabularyUnits
+      summary: Approved vocabulary units (Collins)
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      responses:
+        '200':
+          description: Units in book order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyUnitList' }
+  /api/v1/vocabulary-units/{unitId}:
+    get:
+      tags: [Units]
+      operationId: getVocabularyUnit
+      summary: A vocabulary unit with its words
+      x-toefly-roles: [STUDENT, TUTOR, ADMIN]
+      parameters:
+        - { name: unitId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: The unit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyUnit' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/admin/grammar-units:
+    get:
+      tags: [AdminUnits]
+      operationId: adminListGrammarUnits
+      summary: All grammar units including those waiting for review
+      x-toefly-roles: [ADMIN]
+      responses:
+        '200':
+          description: Units
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrammarUnitList' }
+  /api/v1/admin/vocabulary-units:
+    get:
+      tags: [AdminUnits]
+      operationId: adminListVocabularyUnits
+      summary: All vocabulary units including those waiting for review
+      x-toefly-roles: [ADMIN]
+      responses:
+        '200':
+          description: Units
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyUnitList' }
+  /api/v1/admin/grammar-units/{unitId}/approval:
+    post:
+      tags: [AdminUnits]
+      operationId: adminApproveGrammarUnit
+      summary: Approve a reviewed grammar unit
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: unitId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: The approved unit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrammarUnit' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/admin/vocabulary-units/{unitId}/approval:
+    post:
+      tags: [AdminUnits]
+      operationId: adminApproveVocabularyUnit
+      summary: Approve a reviewed vocabulary unit
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: unitId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: The approved unit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyUnit' }
+        '404': { $ref: '#/components/responses/Problem' }
   /internal/v1/item-sets/{itemSetId}:
     get:
       tags: [Internal]
@@ -455,6 +565,64 @@ components:
               unchanged: { type: integer }
               hidden: { type: integer }
               error: { type: string }
+    GrammarUnit:
+      type: object
+      required: [id, framework, unitNo, title, status, topicCodes, sourceCode, exercises]
+      properties:
+        id: { type: string, format: uuid }
+        framework: { type: string }
+        unitNo: { type: integer }
+        title: { type: string }
+        status: { $ref: '#/components/schemas/ItemStatus' }
+        sourceCode: { type: string }
+        topicCodes:
+          type: array
+          items: { type: string }
+        progressCheckNo: { type: integer }
+        ruleCard:
+          type: object
+          additionalProperties: true
+        exercises:
+          type: array
+          items: { type: object, additionalProperties: true }
+    GrammarUnitList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/GrammarUnit' }
+    VocabularyWord:
+      type: object
+      required: [word, pos, definition]
+      properties:
+        word: { type: string }
+        pos: { type: string }
+        definition: { type: string }
+        example: { type: string }
+    VocabularyUnit:
+      type: object
+      required: [id, unitNo, theme, title, status, sourceCode, words, exercises]
+      properties:
+        id: { type: string, format: uuid }
+        unitNo: { type: integer }
+        theme: { type: string }
+        title: { type: string }
+        status: { $ref: '#/components/schemas/ItemStatus' }
+        sourceCode: { type: string }
+        words:
+          type: array
+          items: { $ref: '#/components/schemas/VocabularyWord' }
+        exercises:
+          type: array
+          items: { type: object, additionalProperties: true }
+    VocabularyUnitList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/VocabularyUnit' }
     Problem:
       type: object
       properties:

@@ -7,9 +7,11 @@ import com.toefly.content.application.port.out.ItemSetStorePort.ItemRow;
 import com.toefly.content.application.port.out.SeedImportStorePort;
 import com.toefly.content.application.port.out.SeedLocationPort;
 import com.toefly.content.application.port.out.SourceStorePort;
+import com.toefly.content.application.port.out.UnitStorePort;
 import com.toefly.content.application.seed.SeedItemSet;
 import com.toefly.content.application.seed.SeedManifest;
 import com.toefly.content.application.seed.SeedSourceInfo;
+import com.toefly.content.application.seed.SeedUnit;
 import com.toefly.content.domain.catalog.Difficulty;
 import com.toefly.content.domain.catalog.HideReason;
 import com.toefly.content.domain.catalog.ItemSet;
@@ -36,6 +38,7 @@ public class SourceImporter {
     private final ItemSetStorePort itemSets;
     private final SeedImportStorePort imports;
     private final ContentEventPublisherPort events;
+    private final UnitStorePort units;
     private final Clock clock;
 
     public SourceImporter(
@@ -44,12 +47,14 @@ public class SourceImporter {
             ItemSetStorePort itemSets,
             SeedImportStorePort imports,
             ContentEventPublisherPort events,
+            UnitStorePort units,
             Clock clock) {
         this.seed = seed;
         this.sources = sources;
         this.itemSets = itemSets;
         this.imports = imports;
         this.events = events;
+        this.units = units;
         this.clock = clock;
     }
 
@@ -72,6 +77,22 @@ public class SourceImporter {
         Set<UUID> present = new HashSet<>();
         for (SeedManifest.FileRef file : bundle.files()) {
             if (!"ITEM_SET".equals(file.kind())) {
+                SeedUnit unit = seed.unit(file);
+                present.add(unit.id());
+                Optional<String> stored = units.contentHash(unit.kind(), unit.id());
+                if (stored.isEmpty()) {
+                    created++;
+                    if (!dryRun) {
+                        units.insert(unit, source.id(), unit.reviewed() ? "APPROVED" : "IN_REVIEW");
+                    }
+                } else if (stored.get().equals(unit.contentHash())) {
+                    unchanged++;
+                } else {
+                    updated++;
+                    if (!dryRun) {
+                        units.updateContent(unit);
+                    }
+                }
                 continue;
             }
             SeedItemSet item = seed.itemSet(file);

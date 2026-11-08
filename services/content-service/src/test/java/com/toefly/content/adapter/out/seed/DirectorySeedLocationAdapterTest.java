@@ -56,6 +56,10 @@ class DirectorySeedLocationAdapterTest {
         for (var bundle : manifest.sources()) {
             assertThat(adapter.source(bundle.sourceCode()).attributionText()).isNotBlank();
             for (var file : bundle.files()) {
+                if (!"ITEM_SET".equals(file.kind())) {
+                    assertThat(adapter.unit(file).title()).isNotBlank();
+                    continue;
+                }
                 var set = adapter.itemSet(file);
                 var envelope = json.readTree(java.nio.file.Files.readString(REAL.resolve(file.path())));
                 assertThat(set.id()).hasToString(envelope.get("id").asString());
