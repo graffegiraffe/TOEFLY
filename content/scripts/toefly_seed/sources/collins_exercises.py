@@ -53,17 +53,26 @@ def render(pdf: Path, page_index: int, dpi: int = 110) -> bytes:
 
 
 def read_keys(pdf: Path, first_page: int, last_page: int) -> dict[tuple[str, int, str], dict[int, str]]:
-    """(part, unit, letter) -> {item number: answer} merged over the key pages; the part carries over pages."""
+    """(part, unit, letter) -> {item number: answer} merged over the key pages; the part carries over pages.
+
+    The grammar key starts in the middle of a page, which the model does not label: a unit number lower than the one
+    before it in the vocabulary part starts the grammar part.
+    """
     keys: dict[tuple[str, int, str], dict[int, str]] = {}
     part = "VOCABULARY"
+    last = 0
     for page in range(first_page, last_page + 1):
         data = llm.ask_json(KEY_PROMPT, render(pdf, page))
-        part = data.get("part") or part
+        if data.get("part") and data["part"] != part:
+            part, last = data["part"], 0
         for unit in data.get("units", []):
             try:
                 number = int(unit["unit"])
             except (KeyError, TypeError, ValueError):
                 continue
+            if part == "VOCABULARY" and number < last:
+                part = "GRAMMAR"
+            last = number
             for letter, answers in (unit.get("exercises") or {}).items():
                 target = keys.setdefault((part, number, letter.upper()), {})
                 for a in answers if isinstance(answers, list) else []:
