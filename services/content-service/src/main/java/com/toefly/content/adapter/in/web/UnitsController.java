@@ -10,6 +10,7 @@ import com.toefly.content.adapter.in.web.dto.VocabularyUnitList;
 import com.toefly.content.adapter.in.web.dto.VocabularyWord;
 import com.toefly.content.application.port.in.BrowseUnitsUseCase;
 import com.toefly.content.application.port.in.BrowseUnitsUseCase.UnitView;
+import com.toefly.content.application.port.in.ReadExtractionUseCase;
 import com.toefly.content.application.seed.SeedUnit;
 import com.toefly.content.domain.catalog.UnitNotFoundException;
 import java.util.List;
@@ -32,9 +33,11 @@ public class UnitsController implements UnitsApi, AdminUnitsApi {
     private static final TypeReference<Map<String, Object>> MAP = new TypeReference<>() {};
 
     private final BrowseUnitsUseCase units;
+    private final ReadExtractionUseCase extractions;
 
-    public UnitsController(BrowseUnitsUseCase units) {
+    public UnitsController(BrowseUnitsUseCase units, ReadExtractionUseCase extractions) {
         this.units = units;
+        this.extractions = extractions;
     }
 
     @Override
@@ -60,13 +63,21 @@ public class UnitsController implements UnitsApi, AdminUnitsApi {
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GrammarUnitList> adminListGrammarUnits() {
-        return ResponseEntity.ok(grammarList(units.listAll(SeedUnit.Kind.GRAMMAR_UNIT)));
+        GrammarUnitList list = grammarList(units.listAll(SeedUnit.Kind.GRAMMAR_UNIT));
+        var notes = extractions.extractions(
+                list.getItems().stream().map(GrammarUnit::getId).toList());
+        list.getItems().forEach(u -> u.extraction(CatalogMapper.extraction(notes.get(u.getId()))));
+        return ResponseEntity.ok(list);
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<VocabularyUnitList> adminListVocabularyUnits() {
-        return ResponseEntity.ok(vocabularyList(units.listAll(SeedUnit.Kind.VOCABULARY_UNIT)));
+        VocabularyUnitList list = vocabularyList(units.listAll(SeedUnit.Kind.VOCABULARY_UNIT));
+        var notes = extractions.extractions(
+                list.getItems().stream().map(VocabularyUnit::getId).toList());
+        list.getItems().forEach(u -> u.extraction(CatalogMapper.extraction(notes.get(u.getId()))));
+        return ResponseEntity.ok(list);
     }
 
     @Override

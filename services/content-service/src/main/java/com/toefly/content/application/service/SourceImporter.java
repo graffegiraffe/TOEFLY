@@ -2,6 +2,7 @@ package com.toefly.content.application.service;
 
 import com.toefly.content.application.port.in.ImportReport;
 import com.toefly.content.application.port.out.ContentEventPublisherPort;
+import com.toefly.content.application.port.out.ExtractionStorePort;
 import com.toefly.content.application.port.out.ItemSetStorePort;
 import com.toefly.content.application.port.out.ItemSetStorePort.ItemRow;
 import com.toefly.content.application.port.out.SeedImportStorePort;
@@ -39,6 +40,7 @@ public class SourceImporter {
     private final SeedImportStorePort imports;
     private final ContentEventPublisherPort events;
     private final UnitStorePort units;
+    private final ExtractionStorePort extractions;
     private final Clock clock;
 
     public SourceImporter(
@@ -48,6 +50,7 @@ public class SourceImporter {
             SeedImportStorePort imports,
             ContentEventPublisherPort events,
             UnitStorePort units,
+            ExtractionStorePort extractions,
             Clock clock) {
         this.seed = seed;
         this.sources = sources;
@@ -55,6 +58,7 @@ public class SourceImporter {
         this.imports = imports;
         this.events = events;
         this.units = units;
+        this.extractions = extractions;
         this.clock = clock;
     }
 
@@ -79,6 +83,9 @@ public class SourceImporter {
             if (!"ITEM_SET".equals(file.kind())) {
                 SeedUnit unit = seed.unit(file);
                 present.add(unit.id());
+                if (!dryRun) {
+                    extractions.save(unit.id(), unit.seedId(), unit.extraction());
+                }
                 Optional<String> stored = units.contentHash(unit.kind(), unit.id());
                 if (stored.isEmpty()) {
                     created++;
@@ -97,6 +104,9 @@ public class SourceImporter {
             }
             SeedItemSet item = seed.itemSet(file);
             present.add(item.id());
+            if (!dryRun) {
+                extractions.save(item.id(), item.seedId(), item.extraction());
+            }
             Optional<ItemSet> existing = itemSets.findById(item.id());
             if (existing.isEmpty()) {
                 created++;

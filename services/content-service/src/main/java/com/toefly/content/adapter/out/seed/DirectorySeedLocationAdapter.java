@@ -2,6 +2,7 @@ package com.toefly.content.adapter.out.seed;
 
 import com.toefly.content.application.port.out.SeedFileException;
 import com.toefly.content.application.port.out.SeedLocationPort;
+import com.toefly.content.application.seed.Extraction;
 import com.toefly.content.application.seed.SeedItemSet;
 import com.toefly.content.application.seed.SeedItemSet.SeedItem;
 import com.toefly.content.application.seed.SeedManifest;
@@ -132,7 +133,8 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
                 canonical,
                 sha256(canonical.getBytes(StandardCharsets.UTF_8)),
                 text.toString(),
-                items);
+                items,
+                extraction(env));
     }
 
     @Override
@@ -167,7 +169,16 @@ public class DirectorySeedLocationAdapter implements SeedLocationPort {
                 unit.hasNonNull("ruleCard") ? Canonical.of(unit.get("ruleCard")) : null,
                 unit.hasNonNull("progressCheckNo") ? unit.get("progressCheckNo").asInt() : null,
                 unit.has("words") ? Canonical.of(unit.get("words")) : "[]",
-                unit.has("exercises") ? Canonical.of(unit.get("exercises")) : "[]");
+                unit.has("exercises") ? Canonical.of(unit.get("exercises")) : "[]",
+                extraction(env));
+    }
+
+    private static Extraction extraction(JsonNode env) {
+        JsonNode e = env.path("extraction");
+        List<String> warnings = new ArrayList<>();
+        e.path("warnings").forEach(w -> warnings.add(w.asString()));
+        return new Extraction(
+                e.path("method").asString("TEXT_LAYER"), e.path("reviewed").asBoolean(false), warnings);
     }
 
     private JsonNode read(Path file) {
