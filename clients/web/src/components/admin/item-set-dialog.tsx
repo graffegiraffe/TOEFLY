@@ -61,7 +61,12 @@ export function ItemSetDialog({ itemSetId, onClose }: Props) {
           <ExtractionNotes extraction={data.extraction} />
           <section aria-label={t('admin.detail.payload')}>
             <h3 className="mb-2 text-body font-semibold">{t('admin.detail.payload')}</h3>
-            <pre className="max-h-[40vh] overflow-auto whitespace-pre-wrap rounded-lg bg-surface-sunken p-3 text-micro">
+            {/* scrollable, so it takes keyboard focus (WCAG 2.1.1) */}
+            <pre
+              tabIndex={0}
+              aria-label={t('admin.detail.payload')}
+              className="max-h-[40vh] overflow-auto whitespace-pre-wrap rounded-lg bg-surface-sunken p-3 text-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
               {JSON.stringify(data.payload, null, 2)}
             </pre>
           </section>
