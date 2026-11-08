@@ -4,6 +4,7 @@ import {
   Dumbbell,
   FileText,
   Home,
+  Library,
   Languages,
   LineChart,
   ListChecks,
@@ -38,6 +39,8 @@ export const TUTOR_NAV: NavItem[] = [
   { to: '/tutor/materials', labelKey: 'nav.materials', icon: FileText },
 ];
 
+export const ADMIN_NAV: NavItem[] = [{ to: '/admin/content', labelKey: 'nav.adminContent', icon: Library }];
+
 export const SETTINGS_NAV: NavItem = { to: '/settings', labelKey: 'nav.settings', icon: Settings };
 
 export const PLACEHOLDER_SECTIONS = [
@@ -50,8 +53,9 @@ export const PLACEHOLDER_SECTIONS = [
   'ai-tutor',
 ] as const;
 
-export function navFor(roles: readonly string[]): { primary: NavItem[]; tutor: NavItem[] } {
+export function navFor(roles: readonly string[]): { primary: NavItem[]; tutor: NavItem[]; admin: NavItem[] } {
   return {
+    admin: roles.includes('ADMIN') ? ADMIN_NAV : [],
     primary: roles.includes('STUDENT') ? STUDENT_NAV : [],
     tutor: roles.includes('TUTOR') ? TUTOR_NAV : [],
   };

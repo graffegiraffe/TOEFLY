@@ -27,4 +27,9 @@ describe('navigation', () => {
       'nav.materials',
     ]);
   });
+
+  it('only an administrator sees the content administration', () => {
+    expect(navFor(['STUDENT']).admin).toEqual([]);
+    expect(navFor(['ADMIN']).admin.map((item) => item.to)).toEqual(['/admin/content']);
+  });
 });
