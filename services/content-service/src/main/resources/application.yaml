@@ -41,6 +41,12 @@ toefly:
     seed:
       enabled: false
       location: dir:./content/seed
+      # s3://toefly-seed/seed/v1/ reads the private bucket; empty keys mean anonymous access (local SeaweedFS)
+      s3:
+        endpoint: ${S3_ENDPOINT:http://localhost:9000}
+        region: ${S3_REGION:auto}
+        access-key: ${S3_ACCESS_KEY:}
+        secret-key: ${S3_SECRET_KEY:}
     embeddings:
       url: http://localhost:11434
       model: nomic-embed-text
