@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/vocabulary-unit/v1",
+  "title": "VOCABULARY_UNIT (docs/08-content-pipeline.md section 7.2; exercises are not extracted yet)",
+  "type": "object",
+  "required": [
+    "unitNo",
+    "theme",
+    "title",
+    "words",
+    "exercises"
+  ],
+  "properties": {
+    "unitNo": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "theme": {
+      "enum": [
+        "ARTS",
+        "LIFE_SCIENCE",
+        "SOCIAL_SCIENCE",
+        "PHYSICAL_SCIENCE",
+        "GENERAL"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "words": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "required": [
+          "word",
+          "pos",
+          "definition"
+        ],
+        "properties": {
+          "word": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pos": {
+            "type": "string",
+            "minLength": 1
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "example": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ipa": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "exercises": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": false
+}
