@@ -1,12 +1,13 @@
-"""Command line of the extraction scripts: extract | validate | manifest | report (docs/08 section 4.2)."""
+"""Command line of the extraction scripts: extract | validate | manifest | upload (docs/08 section 4.2)."""
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
 from . import SCRIPT_VERSION
-from .common import schema
+from .common import schema, upload as bundle_upload
 from .common.hashing import sha256_hex
 from .common.envelope import Report
 from .sources import secret_toefl_html, tst_listening_2026, tst_complete_test_2026, tst_listening_legacy, tst_speaking_guide_2026, tst_reading_2026, tst_reading_legacy, collins, roundup
@@ -115,6 +116,39 @@ def manifest(args) -> int:
     return 0
 
 
+def _env(name: str, default: str = "") -> str:
+    """A setting from the environment, else from infra/compose/.env (never printed)."""
+    if os.environ.get(name):
+        return os.environ[name]
+    env = ROOT.parent / "infra" / "compose" / ".env"
+    if env.exists():
+        for line in env.read_text().splitlines():
+            if line.startswith(f"{name}="):
+                return line.split("=", 1)[1].strip()
+    return default
+
+
+def upload(args) -> int:
+    seed = Path(args.out)
+    if not (seed / "manifest.json").exists():
+        print("no manifest.json: run `toefly-seed manifest` first")
+        return 1
+    client = None
+    if not args.dry_run:
+        import boto3
+        from botocore import UNSIGNED
+        from botocore.config import Config
+
+        key, secret = _env("S3_ACCESS_KEY"), _env("S3_SECRET_KEY")
+        config = Config(s3={"addressing_style": "path"}, signature_version=None if key else UNSIGNED)
+        client = boto3.client("s3", endpoint_url=args.endpoint, region_name=_env("S3_REGION", "us-east-1"),
+                              aws_access_key_id=key or None, aws_secret_access_key=secret or None, config=config)
+    keys = bundle_upload.upload(seed, client, args.bucket, args.prefix, dry_run=args.dry_run)
+    print(f"{'would upload' if args.dry_run else 'uploaded'} {len(keys)} objects to s3://{args.bucket}/{args.prefix}"
+          " (manifest last)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="toefly-seed")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -127,6 +161,13 @@ def main(argv: list[str] | None = None) -> int:
         p = sub.add_parser(name)
         p.add_argument("--out", default=str(CONTENT / "seed"))
         p.set_defaults(run=run)
+    p = sub.add_parser("upload")
+    p.add_argument("--out", default=str(CONTENT / "seed"))
+    p.add_argument("--endpoint", default=_env("S3_ENDPOINT", "http://localhost:9000"))
+    p.add_argument("--bucket", default="toefly-seed")
+    p.add_argument("--prefix", default="seed/v1/")
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(run=upload)
     args = parser.parse_args(argv)
     return args.run(args)
 

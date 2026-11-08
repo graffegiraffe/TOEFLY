@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Offline extraction of the TOEFLY seed bundle (docs/08-content-pipeline.md section 4)"
 requires-python = ">=3.13"
 dependencies = [
+    "boto3==1.40.70",
     "jsonschema==4.26.0",
     "pdfplumber>=0.11.10",
     "pypdf>=7.0.0",
