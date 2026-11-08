@@ -66,8 +66,41 @@ def _json_from(text: str):
     text = text.strip()
     if text.startswith("```"):
         text = text.split("\n", 1)[1].rsplit("```", 1)[0]
-    start, end = text.find("{"), text.rfind("}")
-    return json.loads(text[start : end + 1], strict=False)
+    start = text.find("{")
+    try:
+        return json.loads(text[start : text.rfind("}") + 1], strict=False)
+    except json.JSONDecodeError:
+        return json.loads(_balanced(text[start:]), strict=False)
+
+
+def _balanced(text: str) -> str:
+    """Drops closing brackets that close nothing open and closes what is left open; strings are kept as they are.
+
+    The vision model sometimes ends an answer with ``]}]`` for ``]}``; no value is changed by this repair.
+    """
+    out, stack, in_string, escaped = [], [], False, False
+    pairs = {"}": "{", "]": "["}
+    for ch in text:
+        if in_string:
+            out.append(ch)
+            in_string = not (ch == '"' and not escaped)
+            escaped = ch == "\\" and not escaped
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch in "{[":
+            stack.append(ch)
+        elif ch in "}]":
+            if not stack or stack[-1] != pairs[ch]:
+                continue
+            stack.pop()
+            out.append(ch)
+            if not stack:
+                break
+            continue
+        out.append(ch)
+    out.extend("}" if c == "{" else "]" for c in reversed(stack))
+    return "".join(out)
 
 
 def ask_json(prompt: str, image: bytes | None = None, **kwargs):
