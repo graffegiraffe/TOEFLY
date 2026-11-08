@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.toefly.app/content/payload/VOCAB_EXERCISE/v1",
+  "title": "VOCAB_EXERCISE (docs/03-domain-model.md section 4.14; options may carry the placeholder rationale of docs/08 section 4.5)",
+  "type": "object",
+  "required": [
+    "stimulus",
+    "items"
+  ],
+  "properties": {
+    "stimulus": {
+      "type": "object",
+      "required": [
+        "instructions",
+        "unitRef"
+      ],
+      "properties": {
+        "instructions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unitRef": {
+          "type": "object",
+          "required": [
+            "framework"
+          ],
+          "properties": {
+            "framework": {
+              "enum": [
+                "COLLINS_VOCAB",
+                "CUSTOM"
+              ]
+            },
+            "unitNo": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "theme": {
+              "enum": [
+                "ARTS",
+                "LIFE_SCIENCE",
+                "SOCIAL_SCIENCE",
+                "PHYSICAL_SCIENCE",
+                "GENERAL"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "wordBank": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "ordinal",
+              "exerciseType",
+              "word",
+              "options",
+              "answerKey",
+              "explanation"
+            ],
+            "properties": {
+              "ordinal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "exerciseType": {
+                "const": "DEFINITION_MATCHING"
+              },
+              "word": {
+                "type": "string",
+                "minLength": 1
+              },
+              "options": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "$ref": "#/$defs/option"
+                }
+              },
+              "answerKey": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ]
+              },
+              "explanation": {
+                "$ref": "#/$defs/explanation"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "ordinal",
+              "exerciseType",
+              "sentence",
+              "baseWord",
+              "answerKey",
+              "acceptedAnswers",
+              "explanation"
+            ],
+            "properties": {
+              "ordinal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "exerciseType": {
+                "const": "WORD_FORMATION"
+              },
+              "sentence": {
+                "type": "string",
+                "pattern": "___"
+              },
+              "baseWord": {
+                "type": "string",
+                "minLength": 1
+              },
+              "partOfSpeech": {
+                "enum": [
+                  "NOUN",
+                  "VERB",
+                  "ADJECTIVE",
+                  "ADVERB"
+                ]
+              },
+              "answerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "acceptedAnswers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "explanation": {
+                "$ref": "#/$defs/explanation"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "ordinal",
+              "exerciseType",
+              "sentence",
+              "options",
+              "answerKey",
+              "explanation"
+            ],
+            "properties": {
+              "ordinal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "exerciseType": {
+                "const": "COLLOCATION"
+              },
+              "sentence": {
+                "type": "string",
+                "pattern": "___"
+              },
+              "options": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "$ref": "#/$defs/option"
+                }
+              },
+              "answerKey": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ]
+              },
+              "explanation": {
+                "$ref": "#/$defs/explanation"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "ordinal",
+              "exerciseType",
+              "sentence",
+              "answerKey",
+              "acceptedAnswers",
+              "explanation"
+            ],
+            "properties": {
+              "ordinal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "exerciseType": {
+                "const": "GAP_FILL"
+              },
+              "sentence": {
+                "type": "string",
+                "pattern": "___"
+              },
+              "answerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "acceptedAnswers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "explanation": {
+                "$ref": "#/$defs/explanation"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "explanation": {
+      "type": "object",
+      "required": [
+        "summary"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 10
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "ruleRef": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "option": {
+      "type": "object",
+      "required": [
+        "key",
+        "text",
+        "rationale"
+      ],
+      "properties": {
+        "key": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 10
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
