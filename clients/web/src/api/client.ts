@@ -8,6 +8,12 @@ import {
   ProfileApi,
   type Middleware,
 } from './generated';
+import {
+  AdminApi as ContentAdminApi,
+  Configuration as ContentConfiguration,
+  ReportsApi as ContentReportsApi,
+  SourcesApi as ContentSourcesApi,
+} from './generated/content';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -34,7 +40,16 @@ const configuration = new Configuration({
   middleware: [csrfMiddleware],
 });
 
+const contentConfiguration = new ContentConfiguration({
+  basePath: API_URL,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
 export const api = {
+  contentAdmin: new ContentAdminApi(contentConfiguration),
+  contentReports: new ContentReportsApi(contentConfiguration),
+  contentSources: new ContentSourcesApi(contentConfiguration),
   profile: new ProfileApi(configuration),
   onboarding: new OnboardingApi(configuration),
   preferences: new PreferencesApi(configuration),

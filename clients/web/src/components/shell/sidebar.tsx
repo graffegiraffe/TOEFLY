@@ -59,6 +59,16 @@ export function Sidebar({ roles, displayName, onSignOut }: SidebarProps) {
             ))}
           </>
         )}
+        {nav.admin.length > 0 && (
+          <>
+            <div className="px-2.5 pb-1.5 pt-3.5 text-micro font-semibold uppercase tracking-[.06em] text-ink-muted">
+              {t('nav.adminGroup')}
+            </div>
+            {nav.admin.map((item) => (
+              <NavLink key={item.to} item={item} />
+            ))}
+          </>
+        )}
       </nav>
       <div className="min-h-3 flex-1" />
       <NavLink item={SETTINGS_NAV} />
