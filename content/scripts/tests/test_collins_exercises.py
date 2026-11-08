@@ -73,3 +73,19 @@ def test_keys_are_grouped_by_part_unit_and_letter(monkeypatch):
     keys = ce.read_keys(None, 1, 3)
 
     assert keys == {("VOCABULARY", 1, "A"): {1: "x"}, ("VOCABULARY", 2, "B"): {2: "y"}, ("GRAMMAR", 1, "A"): {3: "z"}}
+
+
+def test_the_grammar_key_starts_where_the_unit_numbers_start_again(monkeypatch):
+    pages = iter([
+        {"part": "VOCABULARY", "units": [{"unit": 19, "exercises": {"A": [{"n": 1, "answer": "v19"}]}}]},
+        {"part": None, "units": [{"unit": 20, "exercises": {"A": [{"n": 1, "answer": "v20"}]}},
+                                 {"unit": 1, "exercises": {"A": [{"n": 1, "answer": "g1"}]}}]},
+        {"part": None, "units": [{"unit": 2, "exercises": {"A": [{"n": 1, "answer": "g2"}]}}]},
+    ])
+    monkeypatch.setattr(ce, "render", lambda pdf, page: b"")
+    monkeypatch.setattr(llm, "ask_json", lambda prompt, image: next(pages))
+
+    keys = ce.read_keys(None, 1, 3)
+
+    assert keys == {("VOCABULARY", 19, "A"): {1: "v19"}, ("VOCABULARY", 20, "A"): {1: "v20"},
+                    ("GRAMMAR", 1, "A"): {1: "g1"}, ("GRAMMAR", 2, "A"): {1: "g2"}}
