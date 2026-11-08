@@ -9,6 +9,7 @@ import base64
 import hashlib
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -54,7 +55,10 @@ def ask(prompt: str, image: bytes | None = None, *, model: str = MODEL, max_toke
             break
         except urllib.error.HTTPError as error:
             if error.code in (429, 500, 502, 503) and attempt < attempts - 1:
-                time.sleep(max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * (attempt + 1))))
+                wait = max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * (attempt + 1)))
+                detail = error.read().decode(errors="replace")[:300]
+                print(f"llm: HTTP {error.code}, waiting {wait:.0f}s: {detail}", file=sys.stderr, flush=True)
+                time.sleep(wait)
                 continue
             raise
     CACHE.mkdir(parents=True, exist_ok=True)
