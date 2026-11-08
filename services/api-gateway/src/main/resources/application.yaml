@@ -48,7 +48,7 @@ spring:
             - id: content-service
               uri: ${toefly.gateway.services.content-service}
               predicates:
-                - Path=/api/v1/item-sets,/api/v1/item-sets/**,/api/v1/sources,/api/v1/item-reports,/api/v1/admin/item-sets,/api/v1/admin/item-sets/**,/api/v1/admin/item-reports,/api/v1/admin/item-reports/**,/api/v1/admin/sources/**,/api/v1/admin/imports,/api/v1/admin/imports/**
+                - Path=/api/v1/item-sets,/api/v1/item-sets/**,/api/v1/sources,/api/v1/item-reports,/api/v1/admin/item-sets,/api/v1/admin/item-sets/**,/api/v1/admin/item-reports,/api/v1/admin/item-reports/**,/api/v1/admin/sources/**,/api/v1/admin/imports,/api/v1/admin/imports/**,/api/v1/grammar-units,/api/v1/grammar-units/**,/api/v1/vocabulary-units,/api/v1/vocabulary-units/**,/api/v1/admin/grammar-units,/api/v1/admin/grammar-units/**,/api/v1/admin/vocabulary-units,/api/v1/admin/vocabulary-units/**
 
 server:
   port: 8080
