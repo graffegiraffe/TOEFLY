@@ -1,207 +1,31 @@
 package com.toefly.content.adapter.out.seed;
 
 import com.toefly.content.application.port.out.SeedFileException;
-import com.toefly.content.application.port.out.SeedLocationPort;
-import com.toefly.content.application.seed.Extraction;
-import com.toefly.content.application.seed.SeedItemSet;
-import com.toefly.content.application.seed.SeedItemSet.SeedItem;
-import com.toefly.content.application.seed.SeedManifest;
-import com.toefly.content.application.seed.SeedSourceInfo;
-import com.toefly.content.application.seed.SeedUnit;
-import com.toefly.content.domain.catalog.ExamFormat;
-import com.toefly.content.domain.catalog.Provenance;
-import com.toefly.content.domain.catalog.TaskType;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HexFormat;
-import java.util.List;
 import java.util.Optional;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Reads the seed bundle from a directory ({@code toefly.content.seed.location=dir:/path}); the layout is the one of
- * docs/08-content-pipeline.md §4.2 with {@code manifest.json} in the root.
- */
-public class DirectorySeedLocationAdapter implements SeedLocationPort {
+/** Reads the seed bundle from a directory ({@code toefly.content.seed.location=dir:/path}). */
+public class DirectorySeedLocationAdapter extends BundleSeedLocationAdapter {
 
     private final Path root;
-    private final JsonMapper json = JsonMapper.builder().build();
 
     public DirectorySeedLocationAdapter(Path root) {
         this.root = root;
     }
 
     @Override
-    public Optional<SeedManifest> manifest() {
-        Path file = root.resolve("manifest.json");
-        if (!Files.isRegularFile(file)) {
-            return Optional.empty();
-        }
-        JsonNode node = read(file);
-        List<SeedManifest.SourceBundle> sources = new ArrayList<>();
-        for (JsonNode s : node.path("sources")) {
-            List<SeedManifest.FileRef> files = new ArrayList<>();
-            for (JsonNode f : s.path("files")) {
-                files.add(new SeedManifest.FileRef(
-                        text(f, "path"), text(f, "seedId"), text(f, "kind"), text(f, "sha256")));
-            }
-            sources.add(new SeedManifest.SourceBundle(text(s, "sourceCode"), text(s, "bundleSha256"), files));
-        }
-        return Optional.of(new SeedManifest(sources));
+    protected Optional<byte[]> find(String path) {
+        return Files.isRegularFile(root.resolve(path)) ? Optional.of(read(path)) : Optional.empty();
     }
 
     @Override
-    public SeedSourceInfo source(String sourceCode) {
-        JsonNode n = read(root.resolve(sourceCode).resolve("source.json"));
-        JsonNode extra = n.path("extra");
-        return new SeedSourceInfo(
-                text(n, "sourceCode"),
-                text(n, "title"),
-                text(n, "publisher"),
-                n.hasNonNull("year") ? n.get("year").asInt() : null,
-                n.hasNonNull("url") ? n.get("url").asString() : null,
-                ExamFormat.valueOf(text(n, "examFormat")),
-                text(n, "attributionText"),
-                extra.isMissingNode() ? "{}" : Canonical.of(extra));
-    }
-
-    @Override
-    public SeedItemSet itemSet(SeedManifest.FileRef ref) {
-        Path file = root.resolve(ref.path());
-        byte[] bytes;
+    protected byte[] read(String path) {
         try {
-            bytes = Files.readAllBytes(file);
+            return Files.readAllBytes(root.resolve(path));
         } catch (IOException e) {
-            throw new SeedFileException("cannot read " + ref.path(), e);
-        }
-        String actual = "sha256:" + sha256(bytes);
-        if (!actual.equals(ref.sha256())) {
-            throw new SeedFileException("hash of " + ref.path() + " differs from the manifest");
-        }
-        JsonNode env = json.readTree(new String(bytes, StandardCharsets.UTF_8));
-        JsonNode set = env.path("itemSet");
-        JsonNode payload = set.path("payload");
-        if (!"ITEM_SET".equals(env.path("kind").asString())) {
-            throw new SeedFileException(ref.path() + " is not an ITEM_SET");
-        }
-        String seedId = text(env, "seedId");
-        TaskType type = TaskType.valueOf(text(set, "taskType"));
-        List<SeedItem> items = new ArrayList<>();
-        for (JsonNode i : payload.path("items")) {
-            int ordinal = i.path("ordinal").asInt(items.size() + 1);
-            items.add(new SeedItem(
-                    Uuids.item(seedId, ordinal),
-                    ordinal,
-                    i.hasNonNull("subskill") ? i.get("subskill").asString() : null,
-                    i.path("maxScore").asInt(1)));
-        }
-        if (items.isEmpty()) {
-            throw new SeedFileException(ref.path() + " has no items");
-        }
-        List<String> skills = new ArrayList<>();
-        set.path("skills").forEach(s -> skills.add(s.asString()));
-        JsonNode locator = env.path("locator");
-        String method = env.path("extraction").path("method").asString("TEXT_LAYER");
-        String canonical = Canonical.of(payload);
-        StringBuilder text = new StringBuilder();
-        Canonical.collectStrings(payload, text);
-        return new SeedItemSet(
-                seedId,
-                Uuids.itemSet(seedId),
-                text(env, "sourceCode"),
-                type,
-                Provenance.valueOf(set.path("provenance").asString("EXTRACTED")),
-                set.hasNonNull("cefr") ? set.get("cefr").asString() : null,
-                text(set, "topic"),
-                set.hasNonNull("domain") ? set.get("domain").asString() : null,
-                skills,
-                locator.path("pages").path(0).isInt()
-                        ? locator.path("pages").path(0).asInt()
-                        : null,
-                locator.path("questionNumbers").path(0).isInt()
-                        ? String.valueOf(locator.path("questionNumbers").path(0).asInt())
-                        : null,
-                env.path("extraction").path("reviewed").asBoolean(false),
-                "OCR_LLM".equals(method),
-                payload.path("stimulus").path("audio").path("durationSeconds").asDouble(0),
-                canonical,
-                sha256(canonical.getBytes(StandardCharsets.UTF_8)),
-                text.toString(),
-                items,
-                extraction(env));
-    }
-
-    @Override
-    public SeedUnit unit(SeedManifest.FileRef ref) {
-        byte[] bytes;
-        try {
-            bytes = Files.readAllBytes(root.resolve(ref.path()));
-        } catch (IOException e) {
-            throw new SeedFileException("cannot read " + ref.path(), e);
-        }
-        if (!("sha256:" + sha256(bytes)).equals(ref.sha256())) {
-            throw new SeedFileException("hash of " + ref.path() + " differs from the manifest");
-        }
-        JsonNode env = json.readTree(new String(bytes, StandardCharsets.UTF_8));
-        JsonNode unit = env.path("unit");
-        SeedUnit.Kind kind = SeedUnit.Kind.valueOf(text(env, "kind"));
-        String seedId = text(env, "seedId");
-        List<String> topics = new ArrayList<>();
-        unit.path("topicCodes").forEach(t -> topics.add(t.asString()));
-        return new SeedUnit(
-                kind,
-                seedId,
-                Uuids.itemSet(seedId),
-                text(env, "sourceCode"),
-                env.path("extraction").path("reviewed").asBoolean(false),
-                sha256(Canonical.of(unit).getBytes(StandardCharsets.UTF_8)),
-                unit.path("unitNo").asInt(),
-                unit.hasNonNull("framework") ? unit.get("framework").asString() : null,
-                unit.hasNonNull("theme") ? unit.get("theme").asString() : null,
-                text(unit, "title"),
-                topics,
-                unit.hasNonNull("ruleCard") ? Canonical.of(unit.get("ruleCard")) : null,
-                unit.hasNonNull("progressCheckNo") ? unit.get("progressCheckNo").asInt() : null,
-                unit.has("words") ? Canonical.of(unit.get("words")) : "[]",
-                unit.has("exercises") ? Canonical.of(unit.get("exercises")) : "[]",
-                extraction(env));
-    }
-
-    private static Extraction extraction(JsonNode env) {
-        JsonNode e = env.path("extraction");
-        List<String> warnings = new ArrayList<>();
-        e.path("warnings").forEach(w -> warnings.add(w.asString()));
-        return new Extraction(
-                e.path("method").asString("TEXT_LAYER"), e.path("reviewed").asBoolean(false), warnings);
-    }
-
-    private JsonNode read(Path file) {
-        try {
-            return json.readTree(Files.readString(file));
-        } catch (IOException e) {
-            throw new SeedFileException("cannot read " + file, e);
-        }
-    }
-
-    private static String text(JsonNode n, String field) {
-        JsonNode v = n.get(field);
-        if (v == null || v.isNull() || v.asString().isBlank()) {
-            throw new SeedFileException("missing field '" + field + "'");
-        }
-        return v.asString();
-    }
-
-    static String sha256(byte[] bytes) {
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
+            throw new SeedFileException("cannot read " + path, e);
         }
     }
 }

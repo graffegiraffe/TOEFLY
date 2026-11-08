@@ -12,6 +12,7 @@ public final class ToeflyTestImages {
     public static final DockerImageName KEYCLOAK = DockerImageName.parse("quay.io/keycloak/keycloak:26.8.1");
     public static final DockerImageName DEBEZIUM_CONNECT =
             DockerImageName.parse("quay.io/debezium/connect:3.7.0.Final");
+    public static final DockerImageName SEAWEEDFS = DockerImageName.parse("chrislusf/seaweedfs:4.52");
 
     private ToeflyTestImages() {}
 }
