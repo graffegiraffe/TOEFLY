@@ -20,7 +20,8 @@ public record SeedUnit(
         @Nullable String ruleCardJson,
         @Nullable Integer progressCheckNo,
         String wordsJson,
-        String exercisesJson) {
+        String exercisesJson,
+        Extraction extraction) {
 
     public enum Kind {
         GRAMMAR_UNIT,

@@ -127,6 +127,26 @@ class ContentComponentIT {
 
     @Test
     @Order(3)
+    @DisplayName("the administrator sees the extraction warnings of a set, a student does not")
+    void extractionWarnings() throws Exception {
+        String library = jdbc.sql("SELECT id::text FROM item_set WHERE seed_id = 'demo-reading/library-002'")
+                .query(String.class)
+                .single();
+        mvc.perform(get("/api/v1/admin/item-sets/" + library).with(JwtFixtures.admin(UUID.randomUUID())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.extraction.method").value("TEXT_LAYER"))
+                .andExpect(jsonPath("$.extraction.warnings[0]").value("library-002: option B has no explanation"));
+        mvc.perform(get("/api/v1/admin/item-sets")
+                        .param("sourceCode", "demo-reading")
+                        .with(JwtFixtures.admin(UUID.randomUUID())))
+                .andExpect(jsonPath("$.items[?(@.id == '%s')].extractionWarnings".formatted(library))
+                        .value(1));
+        mvc.perform(get("/api/v1/item-sets/" + library).with(JwtFixtures.student(UUID.randomUUID())))
+                .andExpect(jsonPath("$.extraction").doesNotExist());
+    }
+
+    @Test
+    @Order(3)
     @DisplayName("a student sees the source and no answer keys")
     void studentGetsKeylessSet() throws Exception {
         mvc.perform(get("/api/v1/item-sets/" + itemSetId).with(JwtFixtures.student(UUID.randomUUID())))
@@ -303,14 +323,18 @@ class ContentComponentIT {
         mvc.perform(get("/api/v1/grammar-units/" + id).with(JwtFixtures.student(student)))
                 .andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/admin/grammar-units").with(JwtFixtures.admin(UUID.randomUUID())))
-                .andExpect(jsonPath("$.items[0].status").value("IN_REVIEW"));
+                .andExpect(jsonPath("$.items[0].status").value("IN_REVIEW"))
+                .andExpect(jsonPath("$.items[0].extraction.method").value("OCR_LLM"))
+                .andExpect(jsonPath("$.items[0].extraction.warnings[0]")
+                        .value("grammar-u01: exercise B: 2 of 9 items skipped"));
         mvc.perform(post("/api/v1/admin/grammar-units/" + id + "/approval").with(JwtFixtures.admin(UUID.randomUUID())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("APPROVED"));
         mvc.perform(get("/api/v1/grammar-units")
                         .param("framework", "ROUND_UP_5")
                         .with(JwtFixtures.student(student)))
-                .andExpect(jsonPath("$.items[0].title").value("Present forms"));
+                .andExpect(jsonPath("$.items[0].title").value("Present forms"))
+                .andExpect(jsonPath("$.items[0].extraction").doesNotExist());
         mvc.perform(post("/api/v1/admin/vocabulary-units/" + UUID.randomUUID() + "/approval")
                         .with(JwtFixtures.admin(UUID.randomUUID())))
                 .andExpect(status().isNotFound());
@@ -404,7 +428,8 @@ class ContentComponentIT {
             Files.createDirectories(root.resolve("demo-reading/vocabulary-units"));
             Files.writeString(root.resolve("demo-reading/grammar-units/grammar-u01.json"), """
                     {"schemaVersion":"1.0","kind":"GRAMMAR_UNIT","seedId":"demo-reading/grammar-u01",
-                     "sourceCode":"demo-reading","extraction":{"method":"TEXT_LAYER","reviewed":false},
+                     "sourceCode":"demo-reading","extraction":{"method":"OCR_LLM","reviewed":false,
+                       "warnings":["grammar-u01: exercise B: 2 of 9 items skipped"]},
                      "unit":{"framework":"ROUND_UP_5","unitNo":1,"title":"Present forms","topicCodes":["present-forms"],
                              "ruleCard":null,"progressCheckNo":null,"exercises":[]}}
                     """);
@@ -491,7 +516,8 @@ class ContentComponentIT {
     private static String library() {
         return """
                 {"schemaVersion":"1.0","kind":"ITEM_SET","seedId":"demo-reading/library-002","sourceCode":"demo-reading",
-                 "locator":{"pages":[4,4],"questionNumbers":[2]},"extraction":{"method":"TEXT_LAYER","reviewed":true},
+                 "locator":{"pages":[4,4],"questionNumbers":[2]},"extraction":{"method":"TEXT_LAYER","reviewed":true,
+                  "warnings":["library-002: option B has no explanation"]},
                  "itemSet":{"taskType":"READ_DAILY_LIFE","examFormat":"TOEFL_2026","section":"READING",
                   "provenance":"EXTRACTED","cefr":"B1","topic":"campus library","skills":["reading.detail"],
                   "payload":{"stimulus":{"genre":"NOTICE","title":"Opening hours",

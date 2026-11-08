@@ -69,6 +69,17 @@ final class CatalogMapper {
                 .openReports(row.openReports());
     }
 
+    static com.toefly.content.adapter.in.web.dto.@org.jspecify.annotations.Nullable Extraction extraction(
+            com.toefly.content.application.seed.@org.jspecify.annotations.Nullable Extraction e) {
+        if (e == null) {
+            return null;
+        }
+        return new com.toefly.content.adapter.in.web.dto.Extraction()
+                .method(com.toefly.content.adapter.in.web.dto.Extraction.MethodEnum.fromValue(e.method()))
+                .reviewed(e.reviewed())
+                .warnings(e.warnings());
+    }
+
     static ItemSet full(com.toefly.content.domain.catalog.ItemSet s, Source source, boolean withKeys) {
         JsonNode payload = JSON.readTree(s.payload());
         Map<String, Object> body = JSON.convertValue(

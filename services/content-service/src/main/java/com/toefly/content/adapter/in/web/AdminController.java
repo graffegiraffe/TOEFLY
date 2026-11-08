@@ -24,6 +24,7 @@ import com.toefly.content.application.port.in.BrowseCatalogUseCase;
 import com.toefly.content.application.port.in.BrowseCatalogUseCase.Filter;
 import com.toefly.content.application.port.in.ImportSeedUseCase;
 import com.toefly.content.application.port.in.ModerateCatalogUseCase;
+import com.toefly.content.application.port.in.ReadExtractionUseCase;
 import com.toefly.content.domain.catalog.HideReason;
 import com.toefly.content.domain.catalog.ItemSetNotFoundException;
 import java.time.Instant;
@@ -44,11 +45,17 @@ public class AdminController implements AdminApi {
     private final BrowseCatalogUseCase catalog;
     private final ModerateCatalogUseCase moderation;
     private final ImportSeedUseCase imports;
+    private final ReadExtractionUseCase extractions;
 
-    public AdminController(BrowseCatalogUseCase catalog, ModerateCatalogUseCase moderation, ImportSeedUseCase imports) {
+    public AdminController(
+            BrowseCatalogUseCase catalog,
+            ModerateCatalogUseCase moderation,
+            ImportSeedUseCase imports,
+            ReadExtractionUseCase extractions) {
         this.catalog = catalog;
         this.moderation = moderation;
         this.imports = imports;
+        this.extractions = extractions;
     }
 
     @Override
@@ -90,15 +97,26 @@ public class AdminController implements AdminApi {
             info.nextCursor(CursorCodec.encode(
                     fingerprint, List.of(last.createdAt().toString(), last.id().toString())));
         }
+        var notes = extractions.extractions(
+                page.rows().stream().map(r -> r.itemSet().id()).toList());
         return ResponseEntity.ok(new AdminItemSetPage()
-                .items(page.rows().stream().map(CatalogMapper::adminRow).toList())
+                .items(page.rows().stream()
+                        .map(r -> {
+                            var note = notes.get(r.itemSet().id());
+                            return CatalogMapper.adminRow(r)
+                                    .extractionWarnings(
+                                            note == null ? 0 : note.warnings().size());
+                        })
+                        .toList())
                 .page(info));
     }
 
     @Override
     public ResponseEntity<ItemSet> adminGetItemSet(UUID itemSetId) {
         var set = catalog.any(itemSetId).orElseThrow(() -> new ItemSetNotFoundException(itemSetId));
-        return ResponseEntity.ok(CatalogMapper.full(set, catalog.source(set.sourceId()), true));
+        return ResponseEntity.ok(CatalogMapper.full(set, catalog.source(set.sourceId()), true)
+                .extraction(CatalogMapper.extraction(
+                        extractions.extractions(List.of(itemSetId)).get(itemSetId))));
     }
 
     @Override

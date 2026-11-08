@@ -25,7 +25,8 @@ public record SeedItemSet(
         String payloadJson,
         String contentHash,
         String searchText,
-        List<SeedItem> items) {
+        List<SeedItem> items,
+        Extraction extraction) {
 
     public record SeedItem(UUID id, int ordinal, @Nullable String subskill, int maxScore) {}
 }
