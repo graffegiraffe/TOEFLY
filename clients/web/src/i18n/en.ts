@@ -157,7 +157,7 @@ export const en = {
   admin: {
     title: 'Content',
     subtitle: 'The item bank: review, hide and restore sets, answer complaints, take a source down.',
-    tabs: { itemSets: 'Item sets', reports: 'Reports', sources: 'Sources' },
+    tabs: { itemSets: 'Item sets', units: 'Units', reports: 'Reports', sources: 'Sources' },
     filters: {
       status: 'Status',
       taskType: 'Task type',
@@ -213,6 +213,31 @@ export const en = {
       run: 'Run import',
       importResult:
         '{{code}}: {{status}}, created {{created}}, updated {{updated}}, unchanged {{unchanged}}, hidden {{hidden}}',
+    },
+    units: {
+      grammar: 'Grammar units',
+      vocabulary: 'Vocabulary units',
+      empty: 'No units yet.',
+      waiting_one: '{{count}} waits for review',
+      waiting_other: '{{count}} wait for review',
+      unit: 'Unit {{no}}',
+      words_one: '{{count}} word',
+      words_other: '{{count}} words',
+      exercises_one: '{{count}} exercise set',
+      exercises_other: '{{count}} exercise sets',
+      warnings_one: '{{count}} extraction warning',
+      warnings_other: '{{count}} extraction warnings',
+      columns: { unit: 'Unit', source: 'Source', content: 'Content', status: 'Status', actions: 'Actions' },
+    },
+    extraction: {
+      title: 'Extraction',
+      method: {
+        TEXT_LAYER: 'Read from the text layer of the PDF.',
+        HTML_DATA: 'Read from the data of the HTML page.',
+        OCR_LLM: 'Read from page images by a vision model.',
+      },
+      checkAgainstBook: 'Compare the content and the answer keys with the book before you approve it.',
+      noWarnings: 'No warnings.',
     },
     error: 'The request failed. Try again.',
   },

@@ -10,6 +10,7 @@ import {
 } from './generated';
 import {
   AdminApi as ContentAdminApi,
+  AdminUnitsApi as ContentAdminUnitsApi,
   Configuration as ContentConfiguration,
   ReportsApi as ContentReportsApi,
   SourcesApi as ContentSourcesApi,
@@ -48,6 +49,7 @@ const contentConfiguration = new ContentConfiguration({
 
 export const api = {
   contentAdmin: new ContentAdminApi(contentConfiguration),
+  contentAdminUnits: new ContentAdminUnitsApi(contentConfiguration),
   contentReports: new ContentReportsApi(contentConfiguration),
   contentSources: new ContentSourcesApi(contentConfiguration),
   profile: new ProfileApi(configuration),

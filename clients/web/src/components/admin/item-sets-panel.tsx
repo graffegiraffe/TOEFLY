@@ -143,6 +143,7 @@ function Row({ row, onView }: { row: AdminItemSetRow; onView: () => void }) {
         <div className="text-ink-muted">
           {row.cefr ?? '—'} · v{row.version}
           {row.hiddenReason ? ` · ${humanize(row.hiddenReason)}` : ''}
+          {row.extractionWarnings ? ` · ${t('admin.units.warnings', { count: row.extractionWarnings })}` : ''}
         </div>
       </td>
       <td className="px-3 py-2">{humanize(row.taskType)}</td>
