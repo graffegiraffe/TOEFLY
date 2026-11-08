@@ -26,5 +26,13 @@
   "tst-speaking-guide-2026": {
     "sets": 4,
     "items": 25
+  },
+  "collins-vocab-grammar-2013": {
+    "sets": 33,
+    "items": 238
+  },
+  "new-roundup-5": {
+    "sets": 15,
+    "items": 0
   }
 }

@@ -9,11 +9,11 @@ from . import SCRIPT_VERSION
 from .common import schema
 from .common.hashing import sha256_hex
 from .common.envelope import Report
-from .sources import secret_toefl_html, tst_listening_2026, tst_complete_test_2026, tst_listening_legacy, tst_speaking_guide_2026, tst_reading_2026, tst_reading_legacy
+from .sources import secret_toefl_html, tst_listening_2026, tst_complete_test_2026, tst_listening_legacy, tst_speaking_guide_2026, tst_reading_2026, tst_reading_legacy, collins, roundup
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTENT = ROOT
-EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026, tst_reading_legacy, tst_listening_legacy, tst_complete_test_2026, tst_speaking_guide_2026)}
+EXTRACTORS = {m.SOURCE_CODE: m for m in (secret_toefl_html, tst_listening_2026, tst_reading_2026, tst_reading_legacy, tst_listening_legacy, tst_complete_test_2026, tst_speaking_guide_2026, collins, roundup)}
 RAW = Path("/Users/katusarublevsk/Documents/English")
 SOURCE_FILES = {
     "secret-toefl-society-reading": "TOEFL Reading Sets - The Secret TOEFL Society.html",
@@ -22,8 +22,19 @@ SOURCE_FILES = {
     "tst-listening-legacy-2020": "TST Prep - 100 TOEFL Listening Practice Questions.pdf",
     "tst-complete-test-1-2026": "toefl-complete-test-1-2026.pdf",
     "tst-speaking-guide-2026": "your-guide-to-the-toefl-speaking.pdf",
+    "collins-vocab-grammar-2013": "Collins_Vocabulary_and_Grammar_for.pdf",
+    "new-roundup-5": "New_Round-Up_5_-_Student_39_s_Book.pdf",
     "tst-listening-2026": "2026 toefl-listening-100-questions-freebie-2026.pdf",
 }
+
+
+UNIT_DIRS = ("item-sets", "grammar-units", "vocabulary-units")
+
+
+def _count(envelope: dict) -> int:
+    if "itemSet" in envelope:
+        return len(envelope["itemSet"]["payload"]["items"])
+    return len(envelope["unit"].get("words", []))
 
 
 def _write(path: Path, value) -> None:
@@ -60,7 +71,7 @@ def validate(args) -> int:
             print(f"{code}/source.json {problem}")
             failed += 1
         sets = items = 0
-        for file in sorted((source_dir / "item-sets").glob("*.json")):
+        for file in sorted(f for d in UNIT_DIRS for f in (source_dir / d).glob("*.json")):
             envelope = json.loads(file.read_text())
             for problem in schema.validate_envelope(envelope):
                 print(f"{code}/{file.name} {problem}")
@@ -71,7 +82,7 @@ def validate(args) -> int:
                     failed += 1
                 seen_ids.add(envelope[key])
             sets += 1
-            items += len(envelope["itemSet"]["payload"]["items"])
+            items += _count(envelope)
         want = expected.get(code)
         if want and (want["sets"], want["items"]) != (sets, items):
             print(f"{code}: expected {want['sets']} sets / {want['items']} items, found {sets} / {items}")
@@ -85,12 +96,12 @@ def manifest(args) -> int:
     sources = []
     for source_dir in sorted(p for p in seed.iterdir() if (p / "source.json").exists()):
         files, counts = [], {}
-        for file in sorted((source_dir / "item-sets").glob("*.json")):
+        for file in sorted(f for d in UNIT_DIRS for f in (source_dir / d).glob("*.json")):
             data = file.read_bytes()
             envelope = json.loads(data)
-            task = envelope["itemSet"]["taskType"]
+            task = envelope["itemSet"]["taskType"] if "itemSet" in envelope else envelope["kind"]
             counts[task] = counts.get(task, 0) + 1
-            files.append({"path": f"{source_dir.name}/item-sets/{file.name}", "seedId": envelope["seedId"],
+            files.append({"path": f"{source_dir.name}/{file.parent.name}/{file.name}", "seedId": envelope["seedId"],
                           "kind": envelope["kind"], "sha256": "sha256:" + sha256_hex(data), "bytes": len(data)})
         bundle = "".join(f"{f['path']}\0{f['sha256']}\n" for f in files)
         sources.append({"sourceCode": source_dir.name, "bundleSha256": "sha256:" + sha256_hex(bundle.encode()),

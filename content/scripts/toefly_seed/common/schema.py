@@ -22,6 +22,9 @@ def errors(instance, schema_path: Path) -> list[str]:
 
 def validate_envelope(envelope: dict) -> list[str]:
     problems = errors(envelope, SCHEMAS / "seed-envelope.schema.json")
+    if envelope.get("kind") in ("GRAMMAR_UNIT", "VOCABULARY_UNIT"):
+        name = "grammar-unit" if envelope["kind"] == "GRAMMAR_UNIT" else "vocabulary-unit"
+        return problems + [f"unit{p}" for p in errors(envelope.get("unit", {}), SCHEMAS / f"{name}.schema.json")]
     task_type = envelope.get("itemSet", {}).get("taskType")
     payload_schema = SCHEMAS / "payload" / f"{task_type}.schema.json"
     if task_type and payload_schema.exists():
