@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { ItemSetsPanel } from '@/components/admin/item-sets-panel';
 import { ReportsPanel } from '@/components/admin/reports-panel';
 import { SourcesPanel } from '@/components/admin/sources-panel';
+import { UnitsPanel } from '@/components/admin/units-panel';
 import { cn } from '@/lib/cn';
 
-type Tab = 'itemSets' | 'reports' | 'sources';
-const TABS: Tab[] = ['itemSets', 'reports', 'sources'];
+type Tab = 'itemSets' | 'units' | 'reports' | 'sources';
+const TABS: Tab[] = ['itemSets', 'units', 'reports', 'sources'];
 
 /** Content administration (docs/02-functional-requirements.md, admin of the item bank); ADMIN only. */
 export const Route = createFileRoute('/_auth/_app/admin/content')({
@@ -49,6 +50,7 @@ function AdminContent() {
       </div>
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'itemSets' && <ItemSetsPanel />}
+        {tab === 'units' && <UnitsPanel />}
         {tab === 'reports' && <ReportsPanel />}
         {tab === 'sources' && <SourcesPanel />}
       </div>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { adminItemSetQuery } from '@/api/content';
 import { Button } from '@/components/ui/button';
 import { humanize } from '@/lib/admin-content';
+import { ExtractionNotes } from './extraction-notes';
 import { StatusBadge } from './status-badge';
 
 interface Props {
@@ -57,6 +58,7 @@ export function ItemSetDialog({ itemSetId, onClose }: Props) {
             <dt className="text-ink-muted">{t('admin.detail.minutes')}</dt>
             <dd>{data.estimatedMinutes}</dd>
           </dl>
+          <ExtractionNotes extraction={data.extraction} />
           <section aria-label={t('admin.detail.payload')}>
             <h3 className="mb-2 text-body font-semibold">{t('admin.detail.payload')}</h3>
             <pre className="max-h-[40vh] overflow-auto whitespace-pre-wrap rounded-lg bg-surface-sunken p-3 text-micro">

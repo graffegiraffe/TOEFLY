@@ -9,8 +9,17 @@ const listItemSets = vi.fn();
 const patch = vi.fn();
 const listReports = vi.fn();
 const resolve = vi.fn();
+const listGrammarUnits = vi.fn();
+const listVocabularyUnits = vi.fn();
+const approveGrammarUnit = vi.fn();
 vi.mock('@/api/client', () => ({
   api: {
+    contentAdminUnits: {
+      adminListGrammarUnits: (...a: unknown[]) => listGrammarUnits(...a),
+      adminListVocabularyUnits: (...a: unknown[]) => listVocabularyUnits(...a),
+      adminApproveGrammarUnit: (...a: unknown[]) => approveGrammarUnit(...a),
+      adminApproveVocabularyUnit: vi.fn(),
+    },
     contentAdmin: {
       adminListItemSets: (...a: unknown[]) => listItemSets(...a),
       adminPatchItemSet: (...a: unknown[]) => patch(...a),
@@ -25,6 +34,7 @@ vi.mock('@/api/client', () => ({
 import { ItemSetsPanel } from './item-sets-panel';
 import { ReportsPanel } from './reports-panel';
 import { StatusBadge } from './status-badge';
+import { UnitsPanel } from './units-panel';
 
 function renderWithClient(ui: React.ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -111,5 +121,39 @@ describe('Content administration', () => {
       reportId: 'r1',
       resolveItemReportRequest: { outcome: 'RESOLVED', hideItemSet: true },
     });
+  });
+
+  it('lists units with their extraction warnings and approves one in review', async () => {
+    listGrammarUnits.mockResolvedValue({
+      items: [
+        {
+          id: 'g1',
+          framework: 'COLLINS_GRAMMAR',
+          unitNo: 6,
+          title: 'Conditional sentences',
+          status: ItemStatus.InReview,
+          sourceCode: 'collins',
+          topicCodes: ['conditional-sentences'],
+          exercises: [{ role: 'EXERCISE' }],
+          extraction: {
+            method: 'OCR_LLM',
+            reviewed: false,
+            warnings: ['grammar-u06: exercise B: 1 of 8 items skipped'],
+          },
+        },
+      ],
+    });
+    listVocabularyUnits.mockResolvedValue({ items: [] });
+    approveGrammarUnit.mockResolvedValue({});
+    renderWithClient(<UnitsPanel />);
+
+    expect(await screen.findByText('Unit 6 · Conditional sentences')).toBeInTheDocument();
+    expect(screen.getByText('1 waits for review')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('1 extraction warning'));
+    expect(screen.getByText('grammar-u06: exercise B: 1 of 8 items skipped')).toBeVisible();
+    expect(screen.getByText(/Compare the content and the answer keys/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    expect(approveGrammarUnit).toHaveBeenCalledWith({ unitId: 'g1' });
   });
 });

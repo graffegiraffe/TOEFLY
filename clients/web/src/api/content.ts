@@ -78,3 +78,26 @@ export function useStartImport() {
     onSuccess: () => client.invalidateQueries({ queryKey: ['admin'] }),
   });
 }
+
+export const adminGrammarUnitsQuery = queryOptions({
+  queryKey: ['admin', 'grammar-units'],
+  queryFn: () => api.contentAdminUnits.adminListGrammarUnits(),
+});
+
+export const adminVocabularyUnitsQuery = queryOptions({
+  queryKey: ['admin', 'vocabulary-units'],
+  queryFn: () => api.contentAdminUnits.adminListVocabularyUnits(),
+});
+
+export type UnitKind = 'grammar' | 'vocabulary';
+
+export function useApproveUnit() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ kind, unitId }: { kind: UnitKind; unitId: string }): Promise<unknown> =>
+      kind === 'grammar'
+        ? api.contentAdminUnits.adminApproveGrammarUnit({ unitId })
+        : api.contentAdminUnits.adminApproveVocabularyUnit({ unitId }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['admin'] }),
+  });
+}
