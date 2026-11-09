@@ -14,9 +14,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The iOS client appears in phase 12; until the Xcode project exists the macOS job is skipped.
+  # hashFiles() is not available in a job-level `if`, so a cheap job looks for the project first.
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      project: ${{ steps.project.outputs.exists }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: project
+        run: |
+          if [ -f clients/ios/Toefly.xcodeproj/project.pbxproj ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::clients/ios/Toefly.xcodeproj does not exist yet; the iOS build is skipped"
+          fi
+
   ios:
-    # The iOS client appears in phase 12; the job skips until the Xcode project exists.
-    if: hashFiles('clients/ios/Toefly.xcodeproj/project.pbxproj') != ''
+    needs: detect
+    if: needs.detect.outputs.project == 'true'
     runs-on: macos-26
     permissions:
       contents: read
