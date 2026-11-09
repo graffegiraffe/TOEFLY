@@ -11,6 +11,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -28,14 +29,17 @@ class Provider:
     name: str
     url: str
     key_var: str
-    model: str | None  # None: the model must be named in <NAME>_MODEL
+    model: str | None  # comma-separated models, tried in order; None: they must be named in <NAME>_MODEL
     extra: dict = field(default_factory=dict)
 
 
 PROVIDERS = {
     "groq": Provider("groq", "https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY", "qwen/qwen3.8-27b"),
     "gemini": Provider("gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-                       "GEMINI_API_KEY", "gemini-3.5-flash", {"reasoning_effort": "low", "max_tokens": 16000}),
+                       "GEMINI_API_KEY",
+                       # the free tier allows 20 requests a day for each model, so several models are used
+                       "gemini-3.5-flash,gemini-3.8-flash,gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash-lite",
+                       {"reasoning_effort": "low", "max_tokens": 16000}),
     "mistral": Provider("mistral", "https://api.mistral.ai/v1/chat/completions", "MISTRAL_API_KEY",
                         "mistral-small-latest"),
     "openrouter": Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", None),
@@ -58,6 +62,10 @@ class Endpoint:
     model: str
     key: str
 
+    @property
+    def name(self) -> str:
+        return f"{self.provider.name}/{self.model}"
+
 
 def endpoints() -> list[Endpoint]:
     """The configured providers in order of preference; one without a key (or without a model) is left out."""
@@ -67,9 +75,9 @@ def endpoints() -> list[Endpoint]:
         provider = PROVIDERS.get(name)
         if provider is None:
             raise RuntimeError(f"unknown LLM provider {name!r}; known: {', '.join(PROVIDERS)}")
-        key, model = _env(provider.key_var), _env(f"{name.upper()}_MODEL") or provider.model
-        if key and model:
-            out.append(Endpoint(provider, model, key))
+        key, models = _env(provider.key_var), _env(f"{name.upper()}_MODEL") or provider.model or ""
+        if key:
+            out += [Endpoint(provider, m.strip(), key) for m in models.split(",") if m.strip()]
     if not out:
         raise RuntimeError("no LLM key is set in infra/compose/.env (GROQ_API_KEY, GEMINI_API_KEY, ...)")
     return out
@@ -102,6 +110,12 @@ class EmptyAnswer(Exception):
     pass
 
 
+def _retry_after(header: str | None, body: str) -> float:
+    """Seconds to wait: the Retry-After header, or Google's ``"retryDelay": "59182s"`` in the error body."""
+    found = re.search(r'"retryDelay":\s*"(\d+(?:\.\d+)?)s"', body)
+    return max(float(header or 0), float(found.group(1)) if found else 0.0)
+
+
 def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> str:
     """One deterministic (temperature 0) request; an identical request is answered from the cache."""
     configured = endpoints()
@@ -112,24 +126,25 @@ def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> s
     tries: dict[str, int] = {}
     while True:
         now = time.time()
-        ready = [e for e in configured if _resting.get(e.provider.name, 0) <= now]
+        ready = [e for e in configured if _resting.get(e.name, 0) <= now]
         if not ready:
-            wait = min(_resting[e.provider.name] for e in configured) - now
+            wait = min(_resting[e.name] for e in configured) - now
             print(f"llm: every provider is resting, waiting {wait:.0f}s", file=sys.stderr, flush=True)
             time.sleep(max(wait, 1.0))
             continue
         endpoint = ready[0]
-        name = endpoint.provider.name
+        name = endpoint.name
         try:
             text = _post(endpoint, prompt, image, max_tokens)
             break
         except urllib.error.HTTPError as error:
             if error.code not in (429, 500, 502, 503, 504):
-                raise RuntimeError(f"{name} ({endpoint.model}) answered HTTP {error.code}: "
+                raise RuntimeError(f"{name} answered HTTP {error.code}: "
                                    f"{error.read().decode(errors='replace')[:300]}") from error
             tries[name] = tries.get(name, 0) + 1
-            wait = max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * tries[name]))
-            detail, code = error.read().decode(errors="replace")[:200], error.code
+            body = error.read().decode(errors="replace")
+            wait = max(_retry_after(error.headers.get("retry-after"), body), min(60.0, 5.0 * tries[name]))
+            detail, code = body[:200], error.code
         except (TimeoutError, urllib.error.URLError, EmptyAnswer) as error:  # an overloaded provider may hold the request open
             tries[name] = tries.get(name, 0) + 1
             wait, detail, code = min(60.0, 5.0 * tries[name]), str(error)[:200], type(error).__name__
@@ -140,12 +155,12 @@ def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> s
                   f"{detail}", file=sys.stderr, flush=True)
             continue
         if tries[name] > 12:
-            raise RuntimeError(f"{name} ({endpoint.model}) kept failing: {detail}")
+            raise RuntimeError(f"{name} kept failing: {detail}")
         print(f"llm: {name} {code}, waiting {wait:.0f}s: {detail}", file=sys.stderr, flush=True)
         time.sleep(wait)
     CACHE.mkdir(parents=True, exist_ok=True)
     _cache_file(endpoint.model, prompt, image).write_text(
-        json.dumps({"provider": name, "model": endpoint.model, "text": text}, ensure_ascii=False))
+        json.dumps({"provider": endpoint.provider.name, "model": endpoint.model, "text": text}, ensure_ascii=False))
     return text
 
 def _json_from(text: str):
