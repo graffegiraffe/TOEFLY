@@ -35,7 +35,7 @@ class Provider:
 PROVIDERS = {
     "groq": Provider("groq", "https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY", "qwen/qwen3.8-27b"),
     "gemini": Provider("gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-                       "GEMINI_API_KEY", "gemini-3.8-flash", {"reasoning_effort": "low"}),
+                       "GEMINI_API_KEY", "gemini-3.5-flash", {"reasoning_effort": "low"}),
     "mistral": Provider("mistral", "https://api.mistral.ai/v1/chat/completions", "MISTRAL_API_KEY",
                         "mistral-small-latest"),
     "openrouter": Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", None),
@@ -121,17 +121,20 @@ def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> s
                                    f"{error.read().decode(errors='replace')[:300]}") from error
             tries[name] = tries.get(name, 0) + 1
             wait = max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * tries[name]))
-            detail = error.read().decode(errors="replace")[:200]
-            if len(configured) > 1 and (wait > SWITCH_AFTER or tries[name] >= 3):
-                _resting[name] = time.time() + max(wait, 60.0)
-                tries[name] = 0
-                print(f"llm: {name} HTTP {error.code}, resting {max(wait, 60.0):.0f}s, asking the next provider: "
-                      f"{detail}", file=sys.stderr, flush=True)
-                continue
-            if tries[name] > 12:
-                raise
-            print(f"llm: {name} HTTP {error.code}, waiting {wait:.0f}s: {detail}", file=sys.stderr, flush=True)
-            time.sleep(wait)
+            detail, code = error.read().decode(errors="replace")[:200], error.code
+        except (TimeoutError, urllib.error.URLError) as error:  # an overloaded provider may hold the request open
+            tries[name] = tries.get(name, 0) + 1
+            wait, detail, code = min(60.0, 5.0 * tries[name]), str(error)[:200], "timeout"
+        if len(configured) > 1 and (wait > SWITCH_AFTER or tries[name] >= 3):
+            _resting[name] = time.time() + max(wait, 60.0)
+            tries[name] = 0
+            print(f"llm: {name} {code}, resting {max(wait, 60.0):.0f}s, asking the next provider: "
+                  f"{detail}", file=sys.stderr, flush=True)
+            continue
+        if tries[name] > 12:
+            raise RuntimeError(f"{name} ({endpoint.model}) kept failing: {detail}")
+        print(f"llm: {name} {code}, waiting {wait:.0f}s: {detail}", file=sys.stderr, flush=True)
+        time.sleep(wait)
     CACHE.mkdir(parents=True, exist_ok=True)
     _cache_file(endpoint.model, prompt, image).write_text(
         json.dumps({"provider": name, "model": endpoint.model, "text": text}, ensure_ascii=False))
