@@ -44,6 +44,18 @@ def test_grammar_choices_become_multiple_choice_with_the_cg_topic_and_placeholde
     assert schema.validate_envelope(env) == []
 
 
+def test_a_rewritten_sentence_is_an_open_answer_and_is_left_out():
+    exercises = [{"letter": "B", "instruction": "Rewrite each sentence.", "items": [
+        {"n": 1, "text": "The test made him nervous. (cause) ___", "blanks": 1},
+        {"n": 2, "text": "He ___ late.", "blanks": 1}]}]
+    report = Report()
+    [env] = build("GRAMMAR_EXERCISE", GRAMMAR_REF, exercises,
+                  {"B": {1: "The test caused him to feel nervous.", 2: "was"}}, report)
+
+    assert [i["answerKey"] for i in env["itemSet"]["payload"]["items"]] == ["was"]
+    assert any("1 of 2 items skipped" in w for w in report.warnings)
+
+
 def test_a_key_that_names_no_option_is_not_guessed():
     exercises = [{"letter": "A", "instruction": "Choose.", "items": [
         {"n": 1, "text": "It ___.", "options": ["is", "are", "be"], "blanks": 1}]}]
