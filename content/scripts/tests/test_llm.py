@@ -1,6 +1,7 @@
 """Parsing of model answers: a stray closing bracket is dropped, values are never changed."""
 
 import email.message
+import json
 import io
 import urllib.error
 
@@ -87,3 +88,16 @@ def test_a_provider_that_holds_the_request_open_is_set_aside(providers, monkeypa
 
     assert llm.ask("p") == "ok"
     assert asked == ["groq", "groq", "groq", "gemini"]
+
+
+def test_an_answer_without_text_is_not_cached_and_the_next_provider_is_asked(providers, monkeypatch):
+    def post(endpoint, prompt, image, max_tokens):
+        if endpoint.provider.name == "gemini":
+            raise llm.EmptyAnswer("no text in the answer (finish_reason length)")
+        return "ok"
+
+    providers["TOEFLY_LLM_PROVIDERS"] = "gemini,groq"
+    monkeypatch.setattr(llm, "_post", post)
+
+    assert llm.ask("p") == "ok"
+    assert [json.loads(f.read_text())["provider"] for f in llm.CACHE.iterdir()] == ["groq"]
