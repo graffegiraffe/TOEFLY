@@ -1,8 +1,10 @@
 """OpenAI-compatible chat client for the offline scripts, with an on-disk cache (docs/08-content-pipeline.md §4.1, §5.2).
 
-Calls go straight to the provider: ``ai-gateway`` does not exist at this stage and the scripts only send public book
-pages. The key is read from ``infra/compose/.env`` (``GROQ_API_KEY``) and never printed. Responses are cached by
-``sha256(image + prompt + model)``, so a second run costs nothing and returns the same text.
+Calls go straight to the providers: ``ai-gateway`` does not exist at this stage and the scripts only send public book
+pages. Every provider whose key is set in ``infra/compose/.env`` is used, in the order of ``TOEFLY_LLM_PROVIDERS``
+(default: groq, gemini, mistral, openrouter); when one runs out of its free quota the request moves to the next one
+and the first is left alone until its wait is over. Keys are never printed. Responses are cached by
+``sha256(model + prompt + image)``; an answer cached by any configured model is reused, so a run resumes for free.
 """
 
 import base64
@@ -13,58 +15,127 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from dataclasses import dataclass, field
 from pathlib import Path
 
 ENV = Path(__file__).resolve().parents[4] / "infra" / "compose" / ".env"
 CACHE = Path(__file__).resolve().parents[3] / "seed" / "_cache" / "llm"
-URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "qwen/qwen3.8-27b"
+SWITCH_AFTER = 20.0  # a provider that asks to wait longer than this is set aside and the next one is asked
 
 
-def _key() -> str:
-    key = os.environ.get("GROQ_API_KEY", "")
-    if not key and ENV.exists():
+@dataclass(frozen=True)
+class Provider:
+    name: str
+    url: str
+    key_var: str
+    model: str | None  # None: the model must be named in <NAME>_MODEL
+    extra: dict = field(default_factory=dict)
+
+
+PROVIDERS = {
+    "groq": Provider("groq", "https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY", "qwen/qwen3.8-27b"),
+    "gemini": Provider("gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+                       "GEMINI_API_KEY", "gemini-3.8-flash", {"reasoning_effort": "low"}),
+    "mistral": Provider("mistral", "https://api.mistral.ai/v1/chat/completions", "MISTRAL_API_KEY",
+                        "mistral-small-latest"),
+    "openrouter": Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", None),
+}
+_resting: dict[str, float] = {}  # provider name -> time.time() when it may be asked again
+
+
+def _env(name: str) -> str:
+    value = os.environ.get(name, "")
+    if not value and ENV.exists():
         for line in ENV.read_text().splitlines():
-            if line.startswith("GROQ_API_KEY="):
-                key = line.split("=", 1)[1].strip()
-    if not key:
-        raise RuntimeError("GROQ_API_KEY is not set (infra/compose/.env)")
-    return key
+            if line.startswith(name + "="):
+                value = line.split("=", 1)[1].strip()
+    return value
 
 
-def ask(prompt: str, image: bytes | None = None, *, model: str = MODEL, max_tokens: int = 4000) -> str:
-    """One deterministic (temperature 0) request; an identical request is answered from the cache."""
+@dataclass(frozen=True)
+class Endpoint:
+    provider: Provider
+    model: str
+    key: str
+
+
+def endpoints() -> list[Endpoint]:
+    """The configured providers in order of preference; one without a key (or without a model) is left out."""
+    names = [n.strip() for n in (_env("TOEFLY_LLM_PROVIDERS") or ",".join(PROVIDERS)).split(",") if n.strip()]
+    out = []
+    for name in names:
+        provider = PROVIDERS.get(name)
+        if provider is None:
+            raise RuntimeError(f"unknown LLM provider {name!r}; known: {', '.join(PROVIDERS)}")
+        key, model = _env(provider.key_var), _env(f"{name.upper()}_MODEL") or provider.model
+        if key and model:
+            out.append(Endpoint(provider, model, key))
+    if not out:
+        raise RuntimeError("no LLM key is set in infra/compose/.env (GROQ_API_KEY, GEMINI_API_KEY, ...)")
+    return out
+
+
+def _cache_file(model: str, prompt: str, image: bytes | None) -> Path:
     digest = hashlib.sha256((model + "\0" + prompt).encode() + (b"\0" + image if image else b"")).hexdigest()
-    cached = CACHE / f"{digest}.json"
-    if cached.exists():
-        return json.loads(cached.read_text())["text"]
+    return CACHE / f"{digest}.json"
+
+
+def _post(endpoint: Endpoint, prompt: str, image: bytes | None, max_tokens: int) -> str:
     content: list[dict] = [{"type": "text", "text": prompt}]
     if image:
         content.append({"type": "image_url",
                         "image_url": {"url": "data:image/png;base64," + base64.b64encode(image).decode()}})
-    body = json.dumps({"model": model, "temperature": 0, "max_tokens": max_tokens,
-                       "messages": [{"role": "user", "content": content}]}).encode()
-    attempts = 12  # the free tier allows 8000 tokens a minute: one page image may need a full minute of budget
-    for attempt in range(attempts):
-        request = urllib.request.Request(URL, body, {"Authorization": f"Bearer {_key()}",
-                                                     "Content-Type": "application/json",
-                                                     "User-Agent": "toefly-seed/0.1"})
+    body = json.dumps({"model": endpoint.model, "temperature": 0, "max_tokens": max_tokens,
+                       "messages": [{"role": "user", "content": content}], **endpoint.provider.extra}).encode()
+    request = urllib.request.Request(endpoint.provider.url, body, {"Authorization": f"Bearer {endpoint.key}",
+                                                                   "Content-Type": "application/json",
+                                                                   "User-Agent": "toefly-seed/0.1"})
+    with urllib.request.urlopen(request, timeout=180) as response:
+        return json.load(response)["choices"][0]["message"]["content"]
+
+
+def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> str:
+    """One deterministic (temperature 0) request; an identical request is answered from the cache."""
+    configured = endpoints()
+    for endpoint in configured:
+        cached = _cache_file(endpoint.model, prompt, image)
+        if cached.exists():
+            return json.loads(cached.read_text())["text"]
+    tries: dict[str, int] = {}
+    while True:
+        now = time.time()
+        ready = [e for e in configured if _resting.get(e.provider.name, 0) <= now]
+        if not ready:
+            wait = min(_resting[e.provider.name] for e in configured) - now
+            print(f"llm: every provider is resting, waiting {wait:.0f}s", file=sys.stderr, flush=True)
+            time.sleep(max(wait, 1.0))
+            continue
+        endpoint = ready[0]
+        name = endpoint.provider.name
         try:
-            with urllib.request.urlopen(request, timeout=180) as response:
-                text = json.load(response)["choices"][0]["message"]["content"]
+            text = _post(endpoint, prompt, image, max_tokens)
             break
         except urllib.error.HTTPError as error:
-            if error.code in (429, 500, 502, 503) and attempt < attempts - 1:
-                wait = max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * (attempt + 1)))
-                detail = error.read().decode(errors="replace")[:300]
-                print(f"llm: HTTP {error.code}, waiting {wait:.0f}s: {detail}", file=sys.stderr, flush=True)
-                time.sleep(wait)
+            if error.code not in (429, 500, 502, 503, 504):
+                raise RuntimeError(f"{name} ({endpoint.model}) answered HTTP {error.code}: "
+                                   f"{error.read().decode(errors='replace')[:300]}") from error
+            tries[name] = tries.get(name, 0) + 1
+            wait = max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * tries[name]))
+            detail = error.read().decode(errors="replace")[:200]
+            if len(configured) > 1 and (wait > SWITCH_AFTER or tries[name] >= 3):
+                _resting[name] = time.time() + max(wait, 60.0)
+                tries[name] = 0
+                print(f"llm: {name} HTTP {error.code}, resting {max(wait, 60.0):.0f}s, asking the next provider: "
+                      f"{detail}", file=sys.stderr, flush=True)
                 continue
-            raise
+            if tries[name] > 12:
+                raise
+            print(f"llm: {name} HTTP {error.code}, waiting {wait:.0f}s: {detail}", file=sys.stderr, flush=True)
+            time.sleep(wait)
     CACHE.mkdir(parents=True, exist_ok=True)
-    cached.write_text(json.dumps({"model": model, "text": text}, ensure_ascii=False))
+    _cache_file(endpoint.model, prompt, image).write_text(
+        json.dumps({"provider": name, "model": endpoint.model, "text": text}, ensure_ascii=False))
     return text
-
 
 def _json_from(text: str):
     text = text.strip()
