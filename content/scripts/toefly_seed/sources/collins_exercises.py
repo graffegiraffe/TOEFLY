@@ -15,6 +15,7 @@ from ..common.envelope import Report, envelope
 from ..common.text import normalise
 
 PLACEHOLDER = "Explanation not provided by the source."
+MAX_GAP_WORDS = 5  # longer keys are sentences to rewrite (open answers), which a gap cannot check
 
 PAGE_PROMPT = """You are transcribing one page of a TOEFL vocabulary/grammar workbook for a database.
 Return ONLY JSON: {"exercises":[{"letter":"A","instruction":"...","wordBank":["..."]|null,
@@ -166,6 +167,8 @@ def build_sets(*, source_code: str, task_type: str, unit_ref: dict, slug_base: s
             answer = answers.get(n)
             if not answer or "|" in answer or "vary" in answer.lower():
                 continue
+            if len(answer.split()) > MAX_GAP_WORDS:  # a rewritten sentence: a sample answer, not a key to match
+                continue
             item = _item(raw, answer, task_type=task_type, topic=grammar)
             if item is None:
                 report.warn(slug, f"exercise {letter} item {n}: the key “{answer}” names none of the options")
@@ -179,7 +182,7 @@ def build_sets(*, source_code: str, task_type: str, unit_ref: dict, slug_base: s
             continue
         if len(items) < len(raw_items):
             report.warn(slug, f"exercise {letter}: {len(raw_items) - len(items)} of {len(raw_items)} items skipped "
-                              "(several blanks, open answers or no key)")
+                              "(several blanks, open answers or rewritten sentences, or no key)")
         items = items[:20]
         stimulus = {"instructions": normalise(ex.get("instruction") or "Complete the sentences."),
                     "unitRef": unit_ref}
