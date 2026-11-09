@@ -128,12 +128,15 @@ def read_keys(pdf, first: int, last: int) -> dict[tuple[str, int, str], dict[int
     return keys
 
 
+MAX_GAP_WORDS = 5  # a longer key is a rewritten sentence (an open answer), which a gap cannot check
+
+
 def _answers(answer: str) -> list[str] | None:
     """Alternatives of a closed answer, None for an open (suggested) or multi-gap answer."""
     if answer.upper().startswith("SUGGESTED") or "|" in answer:
         return None
     parts = [normalise(p) for p in answer.split(" / ")]
-    if not all(parts) or any(len(p.split()) > 6 for p in parts):
+    if not all(parts) or any(len(p.split()) > MAX_GAP_WORDS for p in parts):
         return None
     return list(dict.fromkeys(parts))
 

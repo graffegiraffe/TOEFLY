@@ -78,3 +78,10 @@ def test_an_own_words_rule_card_is_kept(monkeypatch):
     card = rx.rule_card("Present Forms", source, Report(), "u01")
 
     assert card == {**own, "generatedBy": "SUMMARY_OF_SOURCE"}
+
+
+def test_a_whole_sentence_as_the_key_is_an_open_answer():
+    assert rx.build_item({"n": 1, "text": "never ___", "blanks": 1}, "She has never read it before.", "T") is None
+    assert rx.build_item({"n": 2, "text": "B: ___ (be there / twice).", "blanks": 1},
+                         "B: I have been there twice.", "T") is None
+    assert rx.build_item({"n": 3, "text": "She ___ to school.", "blanks": 1}, "has never been", "T") is not None
