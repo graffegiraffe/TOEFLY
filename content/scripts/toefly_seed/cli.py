@@ -48,10 +48,19 @@ def extract(args) -> int:
     report = Report()
     out = Path(args.out) / args.source
     options = {"units": [int(u) for u in args.units.split(",")]} if args.units else {}
+    written = set()
     for envelope in module.extract_file(Path(args.input or RAW / SOURCE_FILES[args.source]), report, **options):
         relative = envelope.pop("_file")
         _write(out / relative, envelope)
+        written.add((out / relative).resolve())
     _write(out / "source.json", module.source_info())
+    if not options:  # a full run owns the folder: files of sets it no longer produces are stale
+        stale = [f for f in out.rglob("*.json")
+                 if f.resolve() not in written and f.name != "source.json" and "_report" not in f.parts]
+        for f in stale:
+            f.unlink()
+        if stale:
+            print(f"{args.source}: removed {len(stale)} files no longer produced")
     _write(
         out / "_report" / "extraction-report.json",
         {"scriptVersion": SCRIPT_VERSION, "sets": report.sets, "items": report.items, "byType": report.by_type,
