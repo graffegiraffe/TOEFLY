@@ -85,3 +85,19 @@ def test_a_whole_sentence_as_the_key_is_an_open_answer():
     assert rx.build_item({"n": 2, "text": "B: ___ (be there / twice).", "blanks": 1},
                          "B: I have been there twice.", "T") is None
     assert rx.build_item({"n": 3, "text": "She ___ to school.", "blanks": 1}, "has never been", "T") is not None
+
+
+def test_english_in_use_and_misread_headings_never_give_a_unit_its_keys(monkeypatch):
+    pages = iter([
+        {"sections": [{"kind": "UNIT", "number": 2, "continued": False, "exercises": {"1": [{"n": 1, "answer": "u"}]}},
+                      {"kind": "ENGLISH_IN_USE", "number": 2, "continued": False,
+                       "exercises": {"1": [{"n": 1, "answer": "e"}]}}]},
+        {"sections": [{"kind": "UNIT", "number": 17, "continued": False, "exercises": {"2": [{"n": 1, "answer": "x"}]}},
+                      {"kind": None, "number": None, "continued": True, "exercises": {"3": [{"n": 1, "answer": "y"}]}}]},
+    ])
+    monkeypatch.setattr(rx, "render", lambda pdf, page: b"")
+    monkeypatch.setattr(llm, "ask_json", lambda prompt, image: next(pages))
+
+    keys = rx.read_keys(None, 1, 2)
+
+    assert keys == {("UNIT", 2, "1"): {1: "u"}, ("ENGLISH_IN_USE", 2, "1"): {1: "e"}}
