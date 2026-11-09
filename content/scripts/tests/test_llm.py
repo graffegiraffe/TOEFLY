@@ -29,14 +29,14 @@ def test_text_without_json_still_fails():
 
 
 class _Quota(urllib.error.HTTPError):
-    def __init__(self, retry_after: str):
-        super().__init__("u", 429, "Too Many Requests", email.message.Message(), io.BytesIO(b"rate limit"))
+    def __init__(self, retry_after: str, body: bytes = b"rate limit"):
+        super().__init__("u", 429, "Too Many Requests", email.message.Message(), io.BytesIO(body))
         self.headers["retry-after"] = retry_after
 
 
 @pytest.fixture
 def providers(monkeypatch, tmp_path):
-    keys = {"GROQ_API_KEY": "g", "GEMINI_API_KEY": "m", "TOEFLY_LLM_PROVIDERS": "groq,gemini,openrouter"}
+    keys = {"GROQ_API_KEY": "g", "GEMINI_API_KEY": "m", "GEMINI_MODEL": "gemini-a", "TOEFLY_LLM_PROVIDERS": "groq,gemini,openrouter"}
     monkeypatch.setattr(llm, "_env", lambda name: keys.get(name, ""))
     monkeypatch.setattr(llm, "CACHE", tmp_path)
     monkeypatch.setattr(llm, "_resting", {})
@@ -101,3 +101,21 @@ def test_an_answer_without_text_is_not_cached_and_the_next_provider_is_asked(pro
 
     assert llm.ask("p") == "ok"
     assert [json.loads(f.read_text())["provider"] for f in llm.CACHE.iterdir()] == ["groq"]
+
+
+def test_every_model_of_a_provider_has_its_own_quota(providers, monkeypatch):
+    providers["GEMINI_MODEL"] = "gemini-a, gemini-b"
+    providers["TOEFLY_LLM_PROVIDERS"] = "gemini"
+    asked = []
+
+    def post(endpoint, prompt, image, max_tokens):
+        asked.append(endpoint.model)
+        if endpoint.model == "gemini-a":
+            raise _Quota("0", b'{"error": {"details": [{"retryDelay": "59182s"}]}}')
+        return "ok"
+
+    monkeypatch.setattr(llm, "_post", post)
+
+    assert llm.ask("p") == "ok" and llm.ask("q") == "ok"
+    assert asked == ["gemini-a", "gemini-b", "gemini-b"]
+    assert llm._resting["gemini/gemini-a"] > llm.time.time() + 59000  # Google's retryDelay is respected
