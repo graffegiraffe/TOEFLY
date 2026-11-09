@@ -5,242 +5,468 @@
   "scriptVersion": "0.1.0",
   "sources": [
     {
-      "bundleSha256": "sha256:ca13d988cec9c14546eb2cba28a43cef0c116a2d2e627a3e774466e9d6a5204c",
+      "bundleSha256": "sha256:8e18fdd379c5a851fec1f32c43a5902ff66c4affaef811782cd18698e2e1be94",
       "counts": {
+        "GRAMMAR_EXERCISE": 11,
         "GRAMMAR_UNIT": 20,
-        "VOCABULARY_UNIT": 13
+        "VOCABULARY_UNIT": 13,
+        "VOCAB_EXERCISE": 21
       },
       "files": [
         {
-          "bytes": 742,
+          "bytes": 990,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u01.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u01",
-          "sha256": "sha256:eeb0e1a12475ba1192dcdba9e1303a76e7dae0478f3e64f07c3139bc77e1b3e4"
+          "sha256": "sha256:cf5ec5ca0a21d1a659a528c3807139ba2c6ad6e9a8ad14b3b76470790cb62b67"
         },
         {
-          "bytes": 738,
+          "bytes": 1442,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u02.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u02",
-          "sha256": "sha256:0e4e2c02e9900e534de050e899e274670a12203eaed717ee980aef8990df13cf"
+          "sha256": "sha256:4d9d40d8f29795c4c90046fa427bf8a5ea62ca29023cf0e05c00b122413918c5"
         },
         {
-          "bytes": 746,
+          "bytes": 911,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u03.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u03",
-          "sha256": "sha256:222409832a3ffeaa920b4779db8a2c1193ad40ac43b559a7ca2b9bade51ea25a"
+          "sha256": "sha256:76fbae0e95152a2893acff04b43d29154c6e789cac636cb936857e61fef156dd"
         },
         {
-          "bytes": 748,
+          "bytes": 998,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u04.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u04",
-          "sha256": "sha256:4560007f96cb208c0f928b6efb183f071cd9554fbed63c3ff00410d2fe2b005b"
+          "sha256": "sha256:a75a7f079d860f70cf3f626374a42e3e67c3ac69d9297322b481c0779c09ac16"
         },
         {
-          "bytes": 756,
+          "bytes": 1239,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u05.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u05",
-          "sha256": "sha256:f56bb43dbf338ee63da700228a30354c40fc73127ec1c6bfe62f28f3662cde40"
+          "sha256": "sha256:319beb9fbfedf41aff047a3f16821fa5a102291b2a9a549674af75020c8ff4bf"
         },
         {
-          "bytes": 746,
+          "bytes": 1352,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u06.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u06",
-          "sha256": "sha256:06a1fa8e87d6d5ce996ce0a0930ee20e6f367a1604cc1c473a7b9339a8a6bb56"
+          "sha256": "sha256:b7dfce404a5756359d41d857107e8200ac4859203fe182bfd1ccfa409f6afc17"
         },
         {
-          "bytes": 748,
+          "bytes": 998,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u07.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u07",
-          "sha256": "sha256:3d4e37a3fea1b02b3f19fa8aa2b65e51650f1bf15c5898dfa372e8581c8bc915"
+          "sha256": "sha256:59302077fbdf1b316106df82d226b41c866bd785fbc7ed7a692f7c5f8d63f9cf"
         },
         {
-          "bytes": 740,
+          "bytes": 1045,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u08.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u08",
-          "sha256": "sha256:5d6a2bae8b29701186e53cc3f4acba93cd8b0ffb5ff9a54975535a87306091b1"
+          "sha256": "sha256:0376d1c000e67fb7a0ab5de7bea4bd9103ae53088dc8f2eeed2ecf45905f8a81"
         },
         {
-          "bytes": 740,
+          "bytes": 1007,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u09.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u09",
-          "sha256": "sha256:1b099fad7291e012c777303c3ae3c08f2c86b58dbace545cc5cb9e8f9cb7bbba"
+          "sha256": "sha256:507fb37a9c9a17338da480bd7513e1fc364bba802fb01ce5f9b9e967733ffc02"
         },
         {
-          "bytes": 751,
+          "bytes": 916,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u10.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u10",
-          "sha256": "sha256:769003bb04466cd5c48145fc1d0c3b8d94c2da171a18312bc7b365428002f959"
+          "sha256": "sha256:7cdf5cd20c0db64a5db4e5b75d8d1567c9cc7286999d9678abb050c325a05fe8"
         },
         {
-          "bytes": 735,
+          "bytes": 900,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u11.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u11",
-          "sha256": "sha256:8723e9535d2185e0f7b810cfcad7eb7683017f38e38124981bb85b60f76912ac"
+          "sha256": "sha256:751ca78520bbc8141b9b95dbc02fb2143963543d04294ae4f23098cd52a7ae2c"
         },
         {
-          "bytes": 727,
+          "bytes": 892,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u12.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u12",
-          "sha256": "sha256:206b862943503fe476f7724e8a7d9017b3f135f3691348b472e26201f373b40e"
+          "sha256": "sha256:ffb6e7151fa9798dfb86c34a9a287564921f27353fb8f7ea76e18e26ea35a545"
         },
         {
-          "bytes": 729,
+          "bytes": 949,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u13.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u13",
-          "sha256": "sha256:329d81af15dcacfab4f7e73e19fa8ad11d4a410bd2f1a426fb973cb21eea6c62"
+          "sha256": "sha256:2ba7e81b9574a40d6e6d763e854d03f5d50d9ad217a30ced42bb1c34bcf3c6f7"
         },
         {
-          "bytes": 737,
+          "bytes": 902,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u14.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u14",
-          "sha256": "sha256:cf2914d6e3080450b15662bfa86e6fcf615f991b3cb99388f46c436315bcce19"
+          "sha256": "sha256:ef2e3aad65e9ef309d25afc390e4dda4a956b36f68436fad7d13395da304a1e1"
         },
         {
-          "bytes": 757,
+          "bytes": 1277,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u15.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u15",
-          "sha256": "sha256:c516aee532be8b4dd5ec88d90394435f48729a5e5966ee32095357f1ed7fb18e"
+          "sha256": "sha256:0cc980312ecfec8ab207d03ce5d5ca2480427df97d69b1e28ebd4ff25e793eea"
         },
         {
-          "bytes": 725,
+          "bytes": 890,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u16.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u16",
-          "sha256": "sha256:5983956f121abb0940bf1c795f17b02c9e4a40c53d4ad11d68622d6c5f3efc3b"
+          "sha256": "sha256:26e9ba53f957b8802034f858ae1fabd33bf3054b6c37a47f24fb71284ef07197"
         },
         {
-          "bytes": 756,
+          "bytes": 1187,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u17.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u17",
-          "sha256": "sha256:829a3cc6417e4a5a47905b48505ce59b48994eff4df49e1bfc1b0c4d0aadcf96"
+          "sha256": "sha256:240e72d5afe34a745f29249290cf2ca1fa8145d8bc1aa045749d7bf3abf605b5"
         },
         {
-          "bytes": 729,
+          "bytes": 807,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u18.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u18",
-          "sha256": "sha256:0b1631773344cb1726d806ffeeb702c1ef9c0614dfbe24391a68dc40e0387246"
+          "sha256": "sha256:88a64bb10d632485687350e050bf16f8cb97547f0ff3dd852c35024fc5993e22"
         },
         {
-          "bytes": 733,
+          "bytes": 898,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u19.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u19",
-          "sha256": "sha256:2337f11af604e94af976a8485307228343a44439c4c185bb5d6072d5df30314f"
+          "sha256": "sha256:e833e5c4c6805b5c1c27dd7a74dda53ebb5419524c9fe16dfd787162592eb1e2"
         },
         {
-          "bytes": 731,
+          "bytes": 896,
           "kind": "GRAMMAR_UNIT",
           "path": "collins-vocab-grammar-2013/grammar-units/grammar-u20.json",
           "seedId": "collins-vocab-grammar-2013/grammar-u20",
-          "sha256": "sha256:4a76683360ef1240cb788a9135f93f2004e4d0c41728c9fea7f7d00dcae4f98d"
+          "sha256": "sha256:75bed3d67fd0ae4dc60b27fe4c1f80838b89753a037b111c12e2e3c8b789b06c"
         },
         {
-          "bytes": 5362,
+          "bytes": 4304,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u02-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u02-ex-a",
+          "sha256": "sha256:2ff34396f1ca0004b23e1e992f66dcf542e3f9a4f07bb8893bb1bdad836a700d"
+        },
+        {
+          "bytes": 3776,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u05-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u05-ex-a",
+          "sha256": "sha256:27443d5dd936917545ded001ecabacfb3f39bacd28db77dc78f2e9d4ca302696"
+        },
+        {
+          "bytes": 1689,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u05-ex-c.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u05-ex-c",
+          "sha256": "sha256:98e95f1092494789f5e3e758961b45d55443a04b2dace10d2e413934830d8210"
+        },
+        {
+          "bytes": 3240,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u06-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u06-ex-a",
+          "sha256": "sha256:74ab184715f2df33c19dbcb54d27eb70652728077af1c05af06c8a9213a90351"
+        },
+        {
+          "bytes": 2385,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u06-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u06-ex-b",
+          "sha256": "sha256:fd6a8f19b5f2b48379fb88ad8c22fa1493149d66c36fc2032bd609330d268b87"
+        },
+        {
+          "bytes": 6371,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u08-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u08-ex-a",
+          "sha256": "sha256:735d3ed7b011de3103989cfb244f1907ef555ad07b868d0af91e43a6344b949f"
+        },
+        {
+          "bytes": 6608,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u09-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u09-ex-a",
+          "sha256": "sha256:75411c565eae44a14001f367d34a5a0254d7e2014dc1025fc7236ed1decf6fd8"
+        },
+        {
+          "bytes": 3929,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u09-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u09-ex-b",
+          "sha256": "sha256:922c01ac52394ff10932a139411a3850cf23bbec3d1f477ab92e4f7628ad9ced"
+        },
+        {
+          "bytes": 4390,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u13-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u13-ex-a",
+          "sha256": "sha256:4f6b32872d205d692e89e1de57a00d26757c6558e413783a1bd71cb0fc484a0c"
+        },
+        {
+          "bytes": 4675,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u15-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u15-ex-a",
+          "sha256": "sha256:bf0fe78342453e6fdbb2a73af5287b34f04a15caab3e974b1575cdf180965a69"
+        },
+        {
+          "bytes": 1707,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/grammar-u17-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/grammar-u17-ex-a",
+          "sha256": "sha256:9aa86f34d9722d193aae6456514862cd77dbeb198f8cf32dbc7df8bacda9eec2"
+        },
+        {
+          "bytes": 2627,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u01-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u01-ex-b",
+          "sha256": "sha256:84efe33c859d66fa56e8db63fc1be8e0073c0309ec7157f88e42a53ad0ac5ac3"
+        },
+        {
+          "bytes": 3009,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u01-ex-c.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u01-ex-c",
+          "sha256": "sha256:660c6ee21de3121ffdaa79cdcb828f7be1abb3605a3e2d911074313604fa130d"
+        },
+        {
+          "bytes": 3146,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u02-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u02-ex-a",
+          "sha256": "sha256:61b63d3bbbb1e29c6f978a3fff6c9dd2ec16459e5d6995fed54d8a0421f865d4"
+        },
+        {
+          "bytes": 4679,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u03-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u03-ex-a",
+          "sha256": "sha256:15c4ab50f89160159279c2f5d136d5dfc409132cb110308b94fbe0cf8a9ba230"
+        },
+        {
+          "bytes": 4747,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u03-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u03-ex-b",
+          "sha256": "sha256:813ecf70e78a94ba811ae797023a0a1cf480de432f3c9a38555afa3c25e984ad"
+        },
+        {
+          "bytes": 3188,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u04-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u04-ex-a",
+          "sha256": "sha256:da16d72027874b174555185954d1e391e744e67c1e3842954db3e519ab3ae899"
+        },
+        {
+          "bytes": 4203,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u05-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u05-ex-a",
+          "sha256": "sha256:07ef00c585cd0e1dd2d4bd9305efff9c4444ed2ab62fcf6b07dde424bbb1408a"
+        },
+        {
+          "bytes": 3047,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u05-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u05-ex-b",
+          "sha256": "sha256:80f9395ddf77381ce99950af1dd1e0a692d5d5f0a8cba2f19d163fe3a78b6b54"
+        },
+        {
+          "bytes": 3317,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u06-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u06-ex-a",
+          "sha256": "sha256:57cf4989828b39f62b4abe1acfd0300721c25a4eb628a6590de33a05878642f9"
+        },
+        {
+          "bytes": 3743,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u06-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u06-ex-b",
+          "sha256": "sha256:b8a61063547877454e9182907d2812ee575b3fb9d1e560119c7755061d4d449c"
+        },
+        {
+          "bytes": 3327,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u08-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u08-ex-b",
+          "sha256": "sha256:9e524fb12c1ff347fa89aa8966e8b5b1f3b7a97e7751f8a58733c160b86e12d2"
+        },
+        {
+          "bytes": 4456,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u09-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u09-ex-a",
+          "sha256": "sha256:1c2f86e59f96bd101e5a2cf7c087b93014868960ce3ed396997c7192550a915d"
+        },
+        {
+          "bytes": 5221,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u12-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u12-ex-b",
+          "sha256": "sha256:7abf1cccc1b05e3b743fec2050900e547a1ced1b5c261f5163829df89a96bce0"
+        },
+        {
+          "bytes": 3016,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u14-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u14-ex-a",
+          "sha256": "sha256:6ea73efadc6dc1d247bec4833eda9d6e82220fe9da43054017699110982182aa"
+        },
+        {
+          "bytes": 3386,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u14-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u14-ex-b",
+          "sha256": "sha256:1c91c673c13e0e6591fd2d2fc126eb880c8aeed3fbffbca340708dca94830d8d"
+        },
+        {
+          "bytes": 2319,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u16-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u16-ex-a",
+          "sha256": "sha256:50a4cdf21b380c2b9481f1c538b43d2a15dda0eaa63e22cf62a2d2363df59eb7"
+        },
+        {
+          "bytes": 2189,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u16-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u16-ex-b",
+          "sha256": "sha256:4dd8badad6d01b8b6e6546bea3a44f4d4b78e1831bbdd0fd9a9d527d0747dc38"
+        },
+        {
+          "bytes": 2282,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u17-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u17-ex-a",
+          "sha256": "sha256:bd3362babf85926ad3da86000dc1f43ae61b184ec7b54b5e2b43331ed8f27244"
+        },
+        {
+          "bytes": 1944,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u17-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u17-ex-b",
+          "sha256": "sha256:4a3b25d16f95e32df71e6f769b26638b1ac5bf663ff3e89729394d94e650e27f"
+        },
+        {
+          "bytes": 2853,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u20-ex-a.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u20-ex-a",
+          "sha256": "sha256:27d16453ee2753e04be21c9d5fb0c65259e26cad1b39f7f080d44855abf1da16"
+        },
+        {
+          "bytes": 2990,
+          "kind": "ITEM_SET",
+          "path": "collins-vocab-grammar-2013/item-sets/vocab-u20-ex-b.json",
+          "seedId": "collins-vocab-grammar-2013/vocab-u20-ex-b",
+          "sha256": "sha256:54730d683ea82d9a10c9a666efd113c35015ed32165d9577f96e7219999a0180"
+        },
+        {
+          "bytes": 5727,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u01.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u01",
-          "sha256": "sha256:77934f0a2e3d787da46d596cab151051acb6597d5de49fdf622643466d364826"
+          "sha256": "sha256:a5e7f2ba3bebcee89a3af40eda6e2b0069d40833e8160f5965aa81e78fc09ed4"
         },
         {
-          "bytes": 11945,
+          "bytes": 12297,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u02.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u02",
-          "sha256": "sha256:d3fa28820c72caad4808f7b66d58b9f79a9f678ec02fc95f50fad8b093f1eb39"
+          "sha256": "sha256:348dfa4c25c4fe4b2dc323a2121481e286189b3823877abc3eeb9e516671a3c4"
         },
         {
-          "bytes": 4842,
+          "bytes": 5118,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u03.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u03",
-          "sha256": "sha256:ed6a08a6b43678a16e8982a4d39a849142699428ceeca352031da4651f8118a9"
+          "sha256": "sha256:dd14ec944388040fde9925b5a96a65b6c0e8793c95fc1a8614edc50b0013aab1"
         },
         {
-          "bytes": 5100,
+          "bytes": 5497,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u05.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u05",
-          "sha256": "sha256:c0fe7694215c3815341c8c0556fcb7d971eff033ead49d3db756bad4dc9c8408"
+          "sha256": "sha256:b825d810b8d45dafe4416898f45d3a227cb576de8482e5a86a4ad6509b0d6d2f"
         },
         {
-          "bytes": 7889,
+          "bytes": 8247,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u06.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u06",
-          "sha256": "sha256:ba5d06f225c737d41dcb05de8fe35b13ca55c1f249fec3b19070c2db8f78379e"
+          "sha256": "sha256:87346b59f727e743036a9fdf3f5a275b3a0252b0a10bcdae9a07437586d9b93d"
         },
         {
-          "bytes": 5448,
+          "bytes": 5613,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u07.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u07",
-          "sha256": "sha256:299e2578d14c0bab00b35264702ef423a659df13bb2dcb7d0aa08dd044364d4c"
+          "sha256": "sha256:9904a90ce00b8f2230c5f7e45b1883faefadc0476be0347e89a7ecb9d344416c"
         },
         {
-          "bytes": 5818,
+          "bytes": 6040,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u09.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u09",
-          "sha256": "sha256:da17f1761a7b5eeae54200c4b16baae8e8bd9b9c6503cdaa159fbb40422dbdb5"
+          "sha256": "sha256:cd093db2ec1d6c5442188d703f992c18dd3409ec9edbb20d1d46d42e6e275144"
         },
         {
-          "bytes": 8046,
+          "bytes": 8213,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u10.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u10",
-          "sha256": "sha256:243e41d4c69fe3a79673a0c34183de53e31a1d85b199e3728b18b2d43229d6f8"
+          "sha256": "sha256:588d49b0bdb13381a0e57be842eed0960634893d651176a852393a6be9fb3de0"
         },
         {
-          "bytes": 5495,
+          "bytes": 5658,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u11.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u11",
-          "sha256": "sha256:fccfd4b7b7a9e017ff12a7e4f0b4a4b6e0ff3cd1c9f9a1825514b72dbe52c5ce"
+          "sha256": "sha256:07465efb66f35862078fb9eb23bab0240641ad6a640315b501184960bdbed92b"
         },
         {
-          "bytes": 4810,
+          "bytes": 4975,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u13.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u13",
-          "sha256": "sha256:4ca4f368fe02884ebda515d0172b4b03c9700ee348cec9310976cd40cf00d081"
+          "sha256": "sha256:a670b03ff2dc8cdf93f1df816cd35dbeb9024076e6e6616c8688fbb36bff0aaa"
         },
         {
-          "bytes": 5091,
+          "bytes": 5449,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u14.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u14",
-          "sha256": "sha256:4a5beef17c2f695b734b04e30a3771d23b275e203f67ea9967297f3e4784eae7"
+          "sha256": "sha256:eecfe80a4d3e0356a9aca6d0688419b6a5dc669b20614d420644f5d526ac0734"
         },
         {
-          "bytes": 4382,
+          "bytes": 4805,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u15.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u15",
-          "sha256": "sha256:10a83f153c6dc4bc03a9e2231877823405d9d17bb054557d135a7885a83f9395"
+          "sha256": "sha256:2023ed585e9fb3ce601bb827e25bd119204eb55ad554e421fd7df92066a8a951"
         },
         {
-          "bytes": 4791,
+          "bytes": 5395,
           "kind": "VOCABULARY_UNIT",
           "path": "collins-vocab-grammar-2013/vocabulary-units/vocab-u17.json",
           "seedId": "collins-vocab-grammar-2013/vocab-u17",
-          "sha256": "sha256:f1f6b868a9a6c20b44a07ef0e14af7c03251d6ec96f778912b043a58747907b8"
+          "sha256": "sha256:40616f029852bac009fecb7a64c78f370f88f93f0acd340de83e88f775f1e971"
         }
       ],
       "sourceCode": "collins-vocab-grammar-2013"
