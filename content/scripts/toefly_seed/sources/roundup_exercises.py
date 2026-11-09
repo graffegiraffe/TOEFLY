@@ -52,11 +52,14 @@ Rules:
 If the page has no exercise return {"exercises":[],"ruleText":"..."}."""
 
 KEY_PROMPT = """This is a page of the answer key of a grammar book (Teacher's Book). Return ONLY JSON:
-{"sections":[{"kind":"UNIT"|"PROGRESS_CHECK"|"REVISION"|"TEST"|"QUIZ","number":1,"continued":false,
-"exercises":{"5":[{"n":1,"answer":"needs"}]}}]}.
-A heading such as "1 Present Forms", "Progress Check 1", "Revision 2", "Test 3" or "Quiz 4" starts a section; the
-answers at the top of the page before any heading belong to the section of the previous page: give them
-"continued": true and number null. Inside a section a bold exercise number starts an exercise; a section that is
+{"sections":[{"kind":"UNIT"|"ENGLISH_IN_USE"|"PROGRESS_CHECK"|"REVISION"|"TEST"|"QUIZ","number":1,
+"continued":false,"exercises":{"5":[{"n":1,"answer":"needs"}]}}]}.
+The page has two columns: read the whole left column from top to bottom, then the whole right column, and list the
+sections in that order. A heading such as "1 Present Forms" (kind UNIT), "English in Use 2" (kind ENGLISH_IN_USE,
+a section of its own, not part of the unit), "Progress Check 1", "Revision 2", "Test 3" or "Quiz 4" starts a section;
+the answers at the top of the left column before any heading belong to the section of the previous page, and the
+answers at the top of the right column belong to the last section of the left column: give them "continued": true
+and number null. Inside a section a bold exercise number starts an exercise; a section that is
 one list of numbered answers without exercise numbers has the single exercise "1". For every numbered
 answer give n and the answer exactly as printed; alternatives stay joined with " / ". Mark open answers by starting
 them with "SUGGESTED:". Give answers of a gap that has several words as one string."""
@@ -78,6 +81,8 @@ TB_QUIZ_PAGES = {n: (51 + 2 * (n - 1), 52 + 2 * (n - 1)) for n in range(1, 16)}
 TB_UNIT_KEY_PAGES = (6, 32)
 TB_TEST_KEY_PAGES = (48, 49)
 TB_QUIZ_KEY_PAGES = (82, 83)
+SECTION_COUNTS = {"UNIT": len(SB_UNIT_PAGES), "QUIZ": len(TB_QUIZ_PAGES), "TEST": len(TB_TEST_PAGES),
+                  "PROGRESS_CHECK": len(SB_PROGRESS_CHECK_PAGES), "REVISION": 5, "ENGLISH_IN_USE": len(SB_UNIT_PAGES)}
 
 
 def topics_for(units: list[int]) -> list[str]:
@@ -105,7 +110,11 @@ def read_pages(pdf, first: int, last: int, topics: list[str]) -> tuple[list[dict
 
 
 def read_keys(pdf, first: int, last: int) -> dict[tuple[str, int, str], dict[int, str]]:
-    """(kind, number, exercise) -> {item: answer}; a section continued from the previous page keeps its address."""
+    """(kind, number, exercise) -> {item: answer}; a section continued from the previous page keeps its address.
+
+    A heading the book does not have (Unit 16 of 15 units, an unknown kind) drops its answers and those continued
+    after it, so that they never become the key of another exercise.
+    """
     keys: dict[tuple[str, int, str], dict[int, str]] = {}
     current: tuple[str, int] | None = None
     for page in range(first, last + 1):
@@ -115,7 +124,10 @@ def read_keys(pdf, first: int, last: int) -> dict[tuple[str, int, str], dict[int
                 try:
                     current = (str(section["kind"]), int(section["number"]))
                 except (TypeError, ValueError):
+                    current = None
                     continue
+                if not 1 <= current[1] <= SECTION_COUNTS.get(current[0], 0):  # a misread heading: its answers
+                    current = None                                             # would land on another section
             if current is None:
                 continue
             for exercise, answers in (section.get("exercises") or {}).items():

@@ -4,7 +4,8 @@ Calls go straight to the providers: ``ai-gateway`` does not exist at this stage 
 pages. Every provider whose key is set in ``infra/compose/.env`` is used, in the order of ``TOEFLY_LLM_PROVIDERS``
 (default: groq, gemini, mistral, openrouter); when one runs out of its free quota the request moves to the next one
 and the first is left alone until its wait is over. Keys are never printed. Responses are cached by
-``sha256(model + prompt + image)``; an answer cached by any configured model is reused, so a run resumes for free.
+``sha256(model + prompt + image)``; an answer cached by any configured or default model is reused, so a run
+resumes for free even with fewer providers.
 """
 
 import base64
@@ -119,8 +120,9 @@ def _retry_after(header: str | None, body: str) -> float:
 def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> str:
     """One deterministic (temperature 0) request; an identical request is answered from the cache."""
     configured = endpoints()
-    for endpoint in configured:
-        cached = _cache_file(endpoint.model, prompt, image)
+    known = [e.model for e in configured] + [m.strip() for p in PROVIDERS.values() for m in (p.model or "").split(",")]
+    for model in dict.fromkeys(m for m in known if m):
+        cached = _cache_file(model, prompt, image)
         if cached.exists():
             return json.loads(cached.read_text())["text"]
     tries: dict[str, int] = {}
