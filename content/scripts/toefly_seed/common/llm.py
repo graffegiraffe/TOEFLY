@@ -35,7 +35,7 @@ class Provider:
 PROVIDERS = {
     "groq": Provider("groq", "https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY", "qwen/qwen3.8-27b"),
     "gemini": Provider("gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-                       "GEMINI_API_KEY", "gemini-3.5-flash", {"reasoning_effort": "low"}),
+                       "GEMINI_API_KEY", "gemini-3.5-flash", {"reasoning_effort": "low", "max_tokens": 16000}),
     "mistral": Provider("mistral", "https://api.mistral.ai/v1/chat/completions", "MISTRAL_API_KEY",
                         "mistral-small-latest"),
     "openrouter": Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", None),
@@ -91,7 +91,15 @@ def _post(endpoint: Endpoint, prompt: str, image: bytes | None, max_tokens: int)
                                                                    "Content-Type": "application/json",
                                                                    "User-Agent": "toefly-seed/0.1"})
     with urllib.request.urlopen(request, timeout=180) as response:
-        return json.load(response)["choices"][0]["message"]["content"]
+        choice = json.load(response)["choices"][0]
+    text = choice.get("message", {}).get("content")
+    if not text:  # e.g. a thinking model that spent every token on its reasoning
+        raise EmptyAnswer(f"no text in the answer (finish_reason {choice.get('finish_reason')})")
+    return text
+
+
+class EmptyAnswer(Exception):
+    pass
 
 
 def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> str:
@@ -122,9 +130,9 @@ def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> s
             tries[name] = tries.get(name, 0) + 1
             wait = max(float(error.headers.get("retry-after") or 0), min(60.0, 5.0 * tries[name]))
             detail, code = error.read().decode(errors="replace")[:200], error.code
-        except (TimeoutError, urllib.error.URLError) as error:  # an overloaded provider may hold the request open
+        except (TimeoutError, urllib.error.URLError, EmptyAnswer) as error:  # an overloaded provider may hold the request open
             tries[name] = tries.get(name, 0) + 1
-            wait, detail, code = min(60.0, 5.0 * tries[name]), str(error)[:200], "timeout"
+            wait, detail, code = min(60.0, 5.0 * tries[name]), str(error)[:200], type(error).__name__
         if len(configured) > 1 and (wait > SWITCH_AFTER or tries[name] >= 3):
             _resting[name] = time.time() + max(wait, 60.0)
             tries[name] = 0
