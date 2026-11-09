@@ -71,3 +71,19 @@ def test_an_answer_cached_by_another_provider_is_reused(providers, monkeypatch):
     providers["TOEFLY_LLM_PROVIDERS"] = "groq,gemini"
     monkeypatch.setattr(llm, "_post", lambda *a: pytest.fail("the cache should answer"))
     assert llm.ask("p") == "from gemini"
+
+
+def test_a_provider_that_holds_the_request_open_is_set_aside(providers, monkeypatch):
+    asked = []
+
+    def post(endpoint, prompt, image, max_tokens):
+        asked.append(endpoint.provider.name)
+        if endpoint.provider.name == "groq":
+            raise TimeoutError("The read operation timed out")
+        return "ok"
+
+    providers["TOEFLY_LLM_PROVIDERS"] = "groq,gemini"
+    monkeypatch.setattr(llm, "_post", post)
+
+    assert llm.ask("p") == "ok"
+    assert asked == ["groq", "groq", "groq", "gemini"]
