@@ -1,0 +1,153 @@
+{
+ "id": "796cf4a4-f14d-51d6-bbcc-1f65207b699b",
+ "version": 1,
+ "taskType": "COMPLETE_THE_WORDS",
+ "section": "READING",
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 10,
+ "estimatedMinutes": 3.0,
+ "etsNormSeconds": 180,
+ "payload": {
+  "stimulus": {
+   "title": "Rivers",
+   "markup": "Rivers shape the land. Ov{er} wa{ter} aw{ay} a{nd} car{ving} a{nd} n{ew} val{leys} o{ver} tim{e} Rivers keep moving.",
+   "wordCount": 70
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "gapId": "g1",
+    "prefix": "Ov",
+    "suffix": "er",
+    "fullWord": "Over",
+    "answerKey": "Ov{er}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 2,
+    "gapId": "g2",
+    "prefix": "wa",
+    "suffix": "ter",
+    "fullWord": "water",
+    "answerKey": "wa{ter}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 3,
+    "gapId": "g3",
+    "prefix": "aw",
+    "suffix": "ay",
+    "fullWord": "away",
+    "answerKey": "aw{ay}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 4,
+    "gapId": "g4",
+    "prefix": "a",
+    "suffix": "nd",
+    "fullWord": "and",
+    "answerKey": "a{nd}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 5,
+    "gapId": "g5",
+    "prefix": "car",
+    "suffix": "ving",
+    "fullWord": "carving",
+    "answerKey": "car{ving}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 6,
+    "gapId": "g6",
+    "prefix": "a",
+    "suffix": "nd",
+    "fullWord": "and",
+    "answerKey": "a{nd}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 7,
+    "gapId": "g7",
+    "prefix": "n",
+    "suffix": "ew",
+    "fullWord": "new",
+    "answerKey": "n{ew}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 8,
+    "gapId": "g8",
+    "prefix": "val",
+    "suffix": "leys",
+    "fullWord": "valleys",
+    "answerKey": "val{leys}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 9,
+    "gapId": "g9",
+    "prefix": "o",
+    "suffix": "ver",
+    "fullWord": "over",
+    "answerKey": "o{ver}",
+    "acceptedAnswers": []
+   },
+   {
+    "ordinal": 10,
+    "gapId": "g10",
+    "prefix": "tim",
+    "suffix": "e",
+    "fullWord": "time",
+    "answerKey": "tim{e}",
+    "acceptedAnswers": []
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "TEXT",
+   "text": "er"
+  },
+  {
+   "type": "TEXT",
+   "text": "ter"
+  },
+  {
+   "type": "TEXT",
+   "text": "ay"
+  },
+  {
+   "type": "TEXT",
+   "text": "nd"
+  },
+  {
+   "type": "TEXT",
+   "text": "ving"
+  },
+  {
+   "type": "TEXT",
+   "text": "nd"
+  },
+  {
+   "type": "TEXT",
+   "text": "ew"
+  },
+  {
+   "type": "TEXT",
+   "text": "leys"
+  },
+  {
+   "type": "TEXT",
+   "text": "ver"
+  },
+  {
+   "type": "TEXT",
+   "text": "e"
+  }
+ ]
+}

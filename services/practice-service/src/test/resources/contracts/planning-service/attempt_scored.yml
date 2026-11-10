@@ -1,0 +1,36 @@
+name: attempt_scored
+description: planning-service closes the week task; tutor-agent and content read the item results
+input:
+  triggeredBy: attemptScored()
+outputMessage:
+  sentTo: toefly.practice.attempt-scored.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/practice-service
+    content-type: application/avro
+    ce_type: toefly.practice.attempt-scored.v1
+  body:
+    taskType: READ_DAILY_LIFE
+    section: READING
+    mode: PRACTICE
+    correctCount: 0
+    totalCount: 2
+    unansweredCount: 2
+    estimatedSeconds: 120
+    thetaBefore: 0.0
+    unaided: true
+  matchers:
+    body:
+      - path: $.attemptId
+        type: by_regex
+        predefined: uuid
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.items
+        type: by_type
+        minOccurrence: 2
+        maxOccurrence: 2
+      - path: $.items[0].itemId
+        type: by_regex
+        predefined: uuid

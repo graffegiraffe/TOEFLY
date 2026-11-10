@@ -1,0 +1,78 @@
+{
+ "id": "cfdcbc53-f5cf-5a8a-a763-3d9c5e69c8f4",
+ "version": 1,
+ "taskType": "LEGACY_LISTENING",
+ "section": "LISTENING",
+ "examFormat": "LEGACY",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 1,
+ "estimatedMinutes": 2.0,
+ "etsNormSeconds": 120,
+ "payload": {
+  "stimulus": {
+   "title": "Volcanoes",
+   "domain": "PHYSICAL_SCIENCE",
+   "contextLine": "Listen to a lecture.",
+   "speakers": [
+    {
+     "id": "p",
+     "role": "Professor"
+    }
+   ],
+   "transcript": [
+    {
+     "speaker": "p",
+     "text": "Volcanoes form where plates meet."
+    }
+   ],
+   "audio": {
+    "origin": "TTS",
+    "accent": "US",
+    "durationSeconds": 30
+   },
+   "wordCount": 60
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "Where do volcanoes form?",
+    "options": [
+     {
+      "key": "A",
+      "text": "In oceans only",
+      "rationale": "A is wrong: in oceans only."
+     },
+     {
+      "key": "B",
+      "text": "Where plates meet",
+      "rationale": "B is right: where plates meet."
+     },
+     {
+      "key": "C",
+      "text": "In deserts",
+      "rationale": "C is wrong: in deserts."
+     },
+     {
+      "key": "D",
+      "text": "Nowhere",
+      "rationale": "D is wrong: nowhere."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The text supports option B."
+    },
+    "subskill": "DETAIL"
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}

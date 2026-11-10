@@ -1,0 +1,19 @@
+name: export_user_data
+description: profile-service collects the practice part of a GDPR export
+request:
+  method: GET
+  url: /internal/v1/users/0b6f1c0e-3b0c-4f3e-9d57-6a3f1d1d7a11/export
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    userId: 0b6f1c0e-3b0c-4f3e-9d57-6a3f1d1d7a11
+  matchers:
+    body:
+      - path: $.attempts
+        type: by_type
+        minOccurrence: 1
+      - path: $.generatedAt
+        type: by_regex
+        predefined: iso_date_time

@@ -1,0 +1,107 @@
+{
+ "id": "dfc76340-c6ec-512f-8cbe-2c7b9f683429",
+ "version": 1,
+ "taskType": "LISTEN_CHOOSE_RESPONSE",
+ "section": "LISTENING",
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 1.0,
+ "etsNormSeconds": 60,
+ "payload": {
+  "stimulus": {
+   "contextLine": "Listen to the speaker."
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "Choose the best response.",
+    "options": [
+     {
+      "key": "A",
+      "text": "Sure, at noon.",
+      "rationale": "A is right: sure, at noon.."
+     },
+     {
+      "key": "B",
+      "text": "It is blue.",
+      "rationale": "B is wrong: it is blue.."
+     },
+     {
+      "key": "C",
+      "text": "No, a cat.",
+      "rationale": "C is wrong: no, a cat.."
+     },
+     {
+      "key": "D",
+      "text": "Yesterday.",
+      "rationale": "D is wrong: yesterday.."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The text supports option A."
+    },
+    "audio": {
+     "url": "https://example.invalid/a.mp3",
+     "durationSeconds": 20,
+     "origin": "HOSTED_MP3",
+     "accent": "US"
+    },
+    "transcript": "Can we meet for lunch?"
+   },
+   {
+    "ordinal": 2,
+    "prompt": "Choose the best response.",
+    "options": [
+     {
+      "key": "A",
+      "text": "Red.",
+      "rationale": "A is wrong: red.."
+     },
+     {
+      "key": "B",
+      "text": "Yes, thanks.",
+      "rationale": "B is right: yes, thanks.."
+     },
+     {
+      "key": "C",
+      "text": "A book.",
+      "rationale": "C is wrong: a book.."
+     },
+     {
+      "key": "D",
+      "text": "Never.",
+      "rationale": "D is wrong: never.."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The text supports option B."
+    },
+    "audio": {
+     "url": "https://example.invalid/a.mp3",
+     "durationSeconds": 20,
+     "origin": "HOSTED_MP3",
+     "accent": "US"
+    },
+    "transcript": "Would you like some tea?"
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}

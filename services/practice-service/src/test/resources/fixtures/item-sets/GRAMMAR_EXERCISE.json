@@ -1,0 +1,134 @@
+{
+ "id": "47b0b75d-3ef9-5112-ba30-89f674dfa094",
+ "version": 1,
+ "taskType": "GRAMMAR_EXERCISE",
+ "section": null,
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 4,
+ "estimatedMinutes": 3.0,
+ "etsNormSeconds": 180,
+ "payload": {
+  "stimulus": {
+   "instructions": "Complete the sentences.",
+   "unitRef": {
+    "framework": "CUSTOM",
+    "topicTitle": "Comparatives"
+   }
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "exerciseType": "GAP_FILL",
+    "sentence": "This test is ___ (easy) than the last one.",
+    "answerKey": "easier",
+    "acceptedAnswers": [],
+    "grammarTopic": "COMPARATIVE",
+    "explanation": {
+     "summary": "Comparatives of long adjectives take more."
+    }
+   },
+   {
+    "ordinal": 2,
+    "exerciseType": "MULTIPLE_CHOICE",
+    "sentence": "She is ___ than her brother.",
+    "options": [
+     {
+      "key": "A",
+      "text": "tall",
+      "rationale": "Base form."
+     },
+     {
+      "key": "B",
+      "text": "taller",
+      "rationale": "Comparative."
+     },
+     {
+      "key": "C",
+      "text": "tallest",
+      "rationale": "Superlative."
+     },
+     {
+      "key": "D",
+      "text": "more tall",
+      "rationale": "Wrong form."
+     }
+    ],
+    "answerKey": "B",
+    "grammarTopic": "COMPARATIVE",
+    "explanation": {
+     "summary": "Comparatives of long adjectives take more."
+    }
+   },
+   {
+    "ordinal": 3,
+    "exerciseType": "TRANSFORMATION",
+    "source": "Nobody is taller than Tom.",
+    "keyWord": "tallest",
+    "template": "Tom ___ .",
+    "answerKey": "Tom is the tallest",
+    "acceptedAnswers": [],
+    "aiCheckOnMismatch": true,
+    "grammarTopic": "SUPERLATIVE",
+    "explanation": {
+     "summary": "Comparatives of long adjectives take more."
+    }
+   },
+   {
+    "ordinal": 4,
+    "exerciseType": "ERROR_CORRECTION",
+    "sentence": "He goed home early.",
+    "fragments": [
+     {
+      "key": "A",
+      "text": "He"
+     },
+     {
+      "key": "B",
+      "text": "goed"
+     },
+     {
+      "key": "C",
+      "text": "home"
+     },
+     {
+      "key": "D",
+      "text": "early"
+     }
+    ],
+    "errorKey": "B",
+    "correction": "went",
+    "grammarTopic": "PAST_SIMPLE",
+    "explanation": {
+     "summary": "Comparatives of long adjectives take more."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "TEXT",
+   "text": "Easier"
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  },
+  {
+   "type": "TEXT",
+   "text": "Tom is the tallest."
+  },
+  {
+   "type": "MAPPING",
+   "pairs": [
+    {
+     "key": "B",
+     "value": "went"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,127 @@
+{
+ "id": "723ea11c-e426-5d55-8a6c-5a9824a3c954",
+ "version": 1,
+ "taskType": "BUILD_A_SENTENCE",
+ "section": "WRITING",
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 1.2,
+ "etsNormSeconds": 72,
+ "payload": {
+  "stimulus": {},
+  "items": [
+   {
+    "ordinal": 1,
+    "contextLine": "Did you finish the report?",
+    "template": [
+     {
+      "kind": "FIXED",
+      "text": "I"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s1"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s2"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s3"
+     },
+     {
+      "kind": "FIXED",
+      "text": "yet."
+     }
+    ],
+    "chunks": [
+     {
+      "id": "c1",
+      "text": "finished"
+     },
+     {
+      "id": "c2",
+      "text": "have"
+     },
+     {
+      "id": "c3",
+      "text": "not"
+     },
+     {
+      "id": "c4",
+      "text": "already"
+     }
+    ],
+    "answerKey": [
+     "c2",
+     "c3",
+     "c1"
+    ],
+    "acceptedKeys": [],
+    "distractorChunkId": "c4",
+    "sentence": "I have not finished yet.",
+    "explanation": {
+     "summary": "Negative present perfect: have + not + past participle."
+    }
+   },
+   {
+    "ordinal": 2,
+    "contextLine": "Where is the bus stop?",
+    "template": [
+     {
+      "kind": "SLOT",
+      "slotId": "s1"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s2"
+     },
+     {
+      "kind": "FIXED",
+      "text": "the corner."
+     }
+    ],
+    "chunks": [
+     {
+      "id": "c1",
+      "text": "It is"
+     },
+     {
+      "id": "c2",
+      "text": "at"
+     }
+    ],
+    "answerKey": [
+     "c1",
+     "c2"
+    ],
+    "acceptedKeys": [],
+    "distractorChunkId": null,
+    "sentence": "It is at the corner.",
+    "explanation": {
+     "summary": "Subject, verb, preposition."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "SEQUENCE",
+   "fragmentIds": [
+    "c2",
+    "c3",
+    "c1"
+   ]
+  },
+  {
+   "type": "SEQUENCE",
+   "fragmentIds": [
+    "c1",
+    "c2"
+   ]
+  }
+ ]
+}

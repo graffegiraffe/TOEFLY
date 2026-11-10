@@ -1,0 +1,98 @@
+{
+ "id": "eb136cf5-43e2-52b6-9181-ffde8b0e8a55",
+ "version": 1,
+ "taskType": "READ_DAILY_LIFE",
+ "section": "READING",
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 2.0,
+ "etsNormSeconds": 120,
+ "payload": {
+  "stimulus": {
+   "genre": "NOTICE",
+   "title": "Library hours",
+   "body": "The campus library closes at 9 pm on Fridays during exam week.",
+   "wordCount": 15
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "When does the library close on Fridays?",
+    "options": [
+     {
+      "key": "A",
+      "text": "At 6 pm",
+      "rationale": "A is wrong: at 6 pm."
+     },
+     {
+      "key": "B",
+      "text": "At 9 pm",
+      "rationale": "B is right: at 9 pm."
+     },
+     {
+      "key": "C",
+      "text": "At midnight",
+      "rationale": "C is wrong: at midnight."
+     },
+     {
+      "key": "D",
+      "text": "It stays open",
+      "rationale": "D is wrong: it stays open."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The text supports option B."
+    },
+    "subskill": "DETAIL"
+   },
+   {
+    "ordinal": 2,
+    "prompt": "What is the notice about?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Opening hours",
+      "rationale": "A is right: opening hours."
+     },
+     {
+      "key": "B",
+      "text": "A new book",
+      "rationale": "B is wrong: a new book."
+     },
+     {
+      "key": "C",
+      "text": "A lost card",
+      "rationale": "C is wrong: a lost card."
+     },
+     {
+      "key": "D",
+      "text": "A party",
+      "rationale": "D is wrong: a party."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The text supports option A."
+    },
+    "subskill": "MAIN_IDEA"
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  }
+ ]
+}
