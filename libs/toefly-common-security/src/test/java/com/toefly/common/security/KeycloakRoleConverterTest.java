@@ -30,13 +30,51 @@ class KeycloakRoleConverterTest {
         assertThat(converter.convert(jwt(Map.of())).getAuthorities()).isEmpty();
     }
 
+    @Test
+    void serviceTokenWithInternalScopeGetsTheServiceRole() {
+        Jwt jwt = jwt(Map.of("roles", List.of("STUDENT", "default-roles-toefly")), "internal");
+
+        assertThat(converter.convert(jwt).getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactly("ROLE_STUDENT", "ROLE_SERVICE");
+    }
+
+    @Test
+    void userTokenWithoutInternalScopeHasNoServiceRole() {
+        Jwt jwt = jwt(Map.of("roles", List.of("STUDENT")), "openid profile internal-ish");
+
+        assertThat(converter.convert(jwt).getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactly("ROLE_STUDENT");
+    }
+
+    @Test
+    void scopeAsListIsAccepted() {
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "RS256")
+                .subject("7b1c9a44-0f3e-4f0b-9a60-6a53f1d2c871")
+                .claim("scope", List.of("internal"))
+                .build();
+
+        assertThat(converter.convert(jwt).getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactly("ROLE_SERVICE");
+    }
+
     private static Jwt jwt(Map<String, Object> realmAccess) {
-        return Jwt.withTokenValue("token")
+        return jwt(realmAccess, null);
+    }
+
+    private static Jwt jwt(Map<String, Object> realmAccess, String scope) {
+        var builder = Jwt.withTokenValue("token")
                 .header("alg", "RS256")
                 .subject("7b1c9a44-0f3e-4f0b-9a60-6a53f1d2c871")
                 .issuedAt(Instant.parse("2026-11-01T09:00:00Z"))
                 .expiresAt(Instant.parse("2026-11-01T09:15:00Z"))
-                .claim("realm_access", realmAccess)
-                .build();
+                .claim("realm_access", realmAccess);
+        if (scope != null) {
+            builder.claim("scope", scope);
+        }
+        return builder.build();
     }
 }
