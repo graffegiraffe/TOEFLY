@@ -94,6 +94,10 @@ final class ItemSetPayloadParser {
         if (taskType == TaskType.BUILD_A_SENTENCE) {
             copy.remove("sentence"); // the assembled sentence is the answer
         }
+        if (taskType == TaskType.COMPLETE_THE_WORDS) {
+            // the exam shows one cell per missing letter (AC-07.01.1); the letters stay secret
+            copy.put("missingLetters", item.path("suffix").asString().length());
+        }
         return toMap(copy);
     }
 
