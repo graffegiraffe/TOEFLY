@@ -1,0 +1,1322 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY planning-service API
+  version: 1.0.0
+  summary: План до экзамена, недели, Today, выполнение и пропуск заданий, ребалансировка, утверждение репетитором.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`; операция с тегом `InternalWeeks` —
+    только для `classroom-service` (`/internal/v1`, scope `internal`).
+    Прогресс заданий `ITEM_SET` закрывается автоматически событиями `attempt-scored` и `submission-evaluated`;
+    ручная отметка допускается только для остальных видов заданий.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: StudyPlans, description: 'План до экзамена' }
+  - { name: Weeks, description: 'Недели и их задания' }
+  - { name: Today, description: 'Задания на сегодня' }
+  - { name: WeekTasks, description: 'Выполнение и пропуск заданий недели' }
+  - { name: Tutor, description: 'Ученики и черновики недель репетитора' }
+  - { name: InternalWeeks, description: 'Внутренний API для classroom-service (x-toefly-internal)' }
+paths:
+  /study-plans:
+    post:
+      tags: [StudyPlans]
+      operationId: createStudyPlan
+      summary: Создать или пересоздать план
+      description: |
+        Используется, если план не создан автоматически после диагностики (пропуск диагностики) или пользователь
+        меняет цель целиком. Строит Week 1 по составу недели и публикует `study-plan-created`.
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateStudyPlanRequest' }
+      responses:
+        '201':
+          description: План создан.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            ETag: { $ref: '#/components/headers/ETag' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudyPlan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /study-plans/current:
+    get:
+      tags: [StudyPlans]
+      operationId: getCurrentStudyPlan
+      summary: Текущий план
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      responses:
+        '200':
+          description: План.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudyPlan' }
+        '304': { description: Не изменялся. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    patch:
+      tags: [StudyPlans]
+      operationId: patchCurrentStudyPlan
+      summary: Изменить дату экзамена или минуты в день
+      description: JSON Merge Patch (RFC 7396). Пересобирает будущие недели; текущая и закрытые недели не меняются.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/StudyPlanPatch' }
+      responses:
+        '200':
+          description: План обновлён.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudyPlan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /study-plans/current/weeks:
+    get:
+      tags: [StudyPlans]
+      operationId: listCurrentPlanWeeks
+      summary: Галерея недель
+      description: Все недели плана; недели `DRAFT` и `AWAITING_TUTOR_APPROVAL` ученику не показываются как составленные (только номер и даты).
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Недели.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekSummaryList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /weeks/{weekId}:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    get:
+      tags: [Weeks]
+      operationId: getWeek
+      summary: Неделя
+      description: |
+        Обложка, прогресс, таблица заданий по разделам, дни, Today. Неделя в статусах `DRAFT` и
+        `AWAITING_TUTOR_APPROVAL` недоступна ученику (`404 not-found`). Для недели с номером больше 1 без права
+        `UNLIMITED_WEEKS` — `403 entitlement-required`. Поддерживает `If-None-Match`.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      responses:
+        '200':
+          description: Неделя.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '304': { description: Не изменялась. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /weeks/{weekId}/events:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+      - name: Last-Event-ID
+        in: header
+        required: false
+        description: Идентификатор последнего полученного события (`<streamId>:<seq>`) при переподключении.
+        schema: { type: string }
+    get:
+      tags: [Weeks]
+      operationId: streamWeekEvents
+      summary: SSE статуса сборки недели
+      description: |
+        Поток `text/event-stream`: `week.status` с `{weekId, status, pendingSlots}` при ожидании генерации
+        заданий; завершается при статусе `PUBLISHED` или `AWAITING_TUTOR_APPROVAL`. Формат — раздел 4 документа 05.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Поток событий.
+          content:
+            text/event-stream:
+              schema: { type: string }
+              example: "retry: 3000\n\nid: 0193f2b0-1d4e-7c55-9e1a-6b6f2b8d0c11:1\nevent: week.status\ndata: {\"weekId\":\"0193f2b0-1d4e-7c55-9e1a-6b6f2b8d0c11\",\"status\":\"DRAFT\",\"pendingSlots\":2}\n\n"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /weeks/{weekId}/tasks:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    post:
+      tags: [Weeks]
+      operationId: addWeekTask
+      summary: Добавить задание в неделю
+      description: |
+        Репетитор добавляет ItemSet, юнит грамматики или лексики, диапазон страниц материала или внешний ресурс.
+        Название, оценочное время и тип ItemSet или юнита планировщик получает у `content-service` синхронно
+        (один переход); для `TUTOR_MATERIAL` и `EXTERNAL_RESOURCE` они передаются в теле запроса. Правка
+        опубликованной недели увеличивает `version` недели и инвалидирует кэш Today ученика.
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddWeekTaskRequest' }
+      responses:
+        '201':
+          description: Задание добавлено.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            ETag:
+              description: Новая версия недели.
+              schema: { type: string, pattern: '^"[0-9]+"$' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /weeks/{weekId}/tasks/{taskId}:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+      - { $ref: '#/components/parameters/TaskId' }
+    patch:
+      tags: [Weeks]
+      operationId: patchWeekTask
+      summary: Перенести задание, изменить заметку или ссылку
+      description: JSON Merge Patch. Ученик может менять только `dayIndex` (перенос не влияет на правила закрытия недели); остальные поля — репетитор.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/WeekTaskPatch' }
+      responses:
+        '200':
+          description: Задание обновлено.
+          headers:
+            ETag:
+              description: Новая версия недели.
+              schema: { type: string, pattern: '^"[0-9]+"$' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    delete:
+      tags: [Weeks]
+      operationId: deleteWeekTask
+      summary: Удалить задание из недели
+      description: Для опубликованной недели задание получает `SKIPPED` с причиной `TUTOR` и исключается из прогресса; в черновике удаляется физически.
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      responses:
+        '204':
+          description: Задание удалено.
+          headers:
+            ETag:
+              description: Новая версия недели.
+              schema: { type: string, pattern: '^"[0-9]+"$' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /weeks/{weekId}/task-order:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    put:
+      tags: [Weeks]
+      operationId: reorderWeekTasks
+      summary: Порядок заданий в разделах
+      description: Полная перестановка заданий по разделам; набор `taskId` должен совпадать с текущим составом недели.
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReorderWeekTasksRequest' }
+      responses:
+        '200':
+          description: Неделя с новым порядком.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /weeks/{weekId}/rebalance:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    post:
+      tags: [Weeks]
+      operationId: rebalanceWeek
+      summary: Пересобрать остаток недели
+      description: |
+        Исключает задания (`SKIPPED`, причина `REBALANCE`) и перераспределяет остаток по дням, если отставание
+        превышает 3 дня. Не чаще одного раза в 48 ч: иначе `409 conflict` с полем `nextAllowedAt`.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RebalanceWeekRequest' }
+      responses:
+        '200':
+          description: Неделя после ребалансировки.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /weeks/{weekId}/approval:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    post:
+      tags: [Weeks]
+      operationId: approveWeek
+      summary: Утвердить черновик недели
+      description: Переводит `AWAITING_TUTOR_APPROVAL` в `PUBLISHED` и публикует `week-published` (`autoPublished=false`). Без действия репетитора за 48 ч неделя публикуется автоматически.
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApproveWeekRequest' }
+      responses:
+        '200':
+          description: Неделя опубликована.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /today:
+    get:
+      tags: [Today]
+      operationId: getToday
+      summary: Задания на сегодня
+      description: |
+        Группы `overdue`, `today`, повторение словаря и подсказки «get ahead». Читается из кэша Valkey
+        `today:{userId}:{localDate}`; поддерживает `If-None-Match`.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - name: date
+          in: query
+          required: false
+          description: Дата ученика; по умолчанию сегодня в его часовом поясе.
+          schema: { type: string, format: date }
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      responses:
+        '200':
+          description: Задания дня.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Today' }
+        '304': { description: Не изменялось. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /week-tasks/{taskId}/completion:
+    parameters:
+      - { $ref: '#/components/parameters/TaskId' }
+    post:
+      tags: [WeekTasks]
+      operationId: completeWeekTask
+      summary: Отметить задание выполненным
+      description: |
+        Для заданий `GRAMMAR_UNIT`, `VOCABULARY_UNIT`, `TUTOR_MATERIAL`, `EXTERNAL_RESOURCE`. Задания `ITEM_SET`
+        закрываются автоматически событиями практики и проверки (`409 week-task-not-completable`).
+        Публикует `week-task-completed`.
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteWeekTaskRequest' }
+      responses:
+        '200':
+          description: Задание выполнено.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    delete:
+      tags: [WeekTasks]
+      operationId: uncompleteWeekTask
+      summary: Снять отметку о выполнении
+      description: Возвращает `PENDING`; допустимо только для вручную отмеченных заданий в незакрытой неделе.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Отметка снята.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekTask' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /week-tasks/{taskId}/skip:
+    parameters:
+      - { $ref: '#/components/parameters/TaskId' }
+    post:
+      tags: [WeekTasks]
+      operationId: skipWeekTask
+      summary: Пропустить задание
+      description: Переводит `PENDING` или `IN_PROGRESS` в `SKIPPED` (причина `USER_SKIPPED`); в отличие от причин `TUTOR`, `REBALANCE`, `NO_ENTITLEMENT`, пропуск учеником не исключается из знаменателя прогресса недели (03 §10.6).
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SkipWeekTaskRequest' }
+      responses:
+        '200':
+          description: Задание пропущено.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /students/{studentId}/study-plan:
+    parameters:
+      - { $ref: '#/components/parameters/StudentIdPath' }
+    get:
+      tags: [Tutor]
+      operationId: getStudentStudyPlan
+      summary: План ученика
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: План ученика.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudyPlan' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /students/{studentId}/weeks:
+    parameters:
+      - { $ref: '#/components/parameters/StudentIdPath' }
+    get:
+      tags: [Tutor]
+      operationId: listStudentWeeks
+      summary: Недели ученика
+      description: Включает черновики `DRAFT` и `AWAITING_TUTOR_APPROVAL`.
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Недели ученика.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekSummaryList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /tutor/pending-approvals:
+    get:
+      tags: [Tutor]
+      operationId: listPendingApprovals
+      summary: Черновики недель, ожидающие утверждения
+      x-toefly-roles: [TUTOR]
+      parameters:
+        - name: sort
+          in: query
+          schema: { type: string, enum: [approvalDeadline, -approvalDeadline], default: approvalDeadline }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница черновиков.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PendingApprovalPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/weeks/{weekId}/tasks:
+    servers:
+      - url: http://planning-service.toefly.svc.cluster.local:8087
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    post:
+      tags: [InternalWeeks]
+      operationId: addWeekTaskInternal
+      summary: Вставить задание в неделю ученика
+      description: |
+        Вызывается `classroom-service` при вставке диапазона страниц или утверждённого ItemSet репетитором.
+        Права репетитора проверены вызывающим; planning проверяет связь по локальной проекции `tutor_student_link`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      x-toefly-idempotent: true
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InternalAddWeekTaskRequest' }
+      responses:
+        '201':
+          description: Задание добавлено.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/users/{userId}/weeks/current:
+    servers:
+      - url: http://planning-service.toefly.svc.cluster.local:8087
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalWeeks]
+      operationId: getCurrentWeekOfUserInternal
+      summary: Текущая неделя пользователя (для инструментов агента)
+      description: Допустим scope `internal` или JWT с `sub == userId`. Возвращает опубликованную неделю (`PUBLISHED`, `IN_PROGRESS`).
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Текущая неделя.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/weeks/{weekId}:
+    servers:
+      - url: http://planning-service.toefly.svc.cluster.local:8087
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    get:
+      tags: [InternalWeeks]
+      operationId: getWeekInternal
+      summary: Неделя по идентификатору (для инструментов агента)
+      description: Только scope `internal`; возвращает неделю в любом статусе, включая черновики.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+      responses:
+        '200':
+          description: Неделя.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/users/{userId}/export:
+    servers:
+      - url: http://planning-service.toefly.svc.cluster.local:8087
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalWeeks]
+      operationId: exportPlanningUserData
+      summary: Фрагмент экспорта GDPR
+      description: Вызывается `profile-service` из фонового задания экспорта; только scope `internal`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+      responses:
+        '200':
+          description: Данные пользователя в `planning-service`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanningUserDataExport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+    serviceAuth:
+      type: oauth2
+      description: Client credentials клиента `svc-<service>`.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes:
+            internal: Внутренние вызовы сервис-сервис
+  parameters:
+    WeekId:
+      name: weekId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    StudentIdPath:
+      name: studentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID операции; повтор с тем же ключом и телом возвращает сохранённый ответ (хранится 24 ч).
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Сильный ETag ресурса (номер версии агрегата), например `"7"`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: ETag из предыдущего ответа; при совпадении — `304`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Непрозрачный курсор из `page.nextCursor`; привязан к сортировке и фильтрам.
+      schema: { type: string, maxLength: 1024 }
+    StudentId:
+      name: studentId
+      in: query
+      required: false
+      description: Идентификатор ученика; только для `TUTOR` (ученик репетитора). Для `STUDENT` игнорируется или должен совпадать с `sub`.
+      schema: { type: string, format: uuid }
+  headers:
+    ETag:
+      description: Сильный ETag — номер версии ресурса.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Location:
+      description: Адрес созданного ресурса.
+      schema: { type: string, format: uri-reference }
+    IdempotentReplayed:
+      description: "`true`, если ответ воспроизведён по `Idempotency-Key`."
+      schema: { type: boolean }
+    RetryAfter:
+      description: Секунды до повтора.
+      schema: { type: integer, minimum: 0 }
+  responses:
+    BadRequest:
+      description: "`400` — `validation-failed`, `malformed-request`, `invalid-cursor`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://toefly.app/problems/validation-failed
+            title: Validation failed
+            status: 400
+            detail: Request body is invalid.
+            instance: /api/v1/resource
+            code: VALIDATION_FAILED
+            requestId: f1c2d3e4-0a1b-4c5d-8e9f-001122334455
+            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+            errors:
+              - { pointer: /answer/optionIds, code: REQUIRED, message: must not be empty }
+    Unauthorized:
+      description: "`401 unauthenticated` — нет или просрочен токен."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403` — `forbidden`, `entitlement-required`, `quota-exceeded`, `consent-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found` — ресурс не найден или недоступен пользователю."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409` — доменный конфликт состояния (`conflict`, `request-in-progress` и специфичные типы операции)."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionFailed:
+      description: "`412 version-mismatch` — `If-Match` не совпал; в ответе актуальный `ETag` и поле `currentVersion`."
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422` — `business-rule-violated` (поле `rule`) или `idempotency-key-reuse`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428` — `precondition-required` (нет `If-Match`) или `idempotency-key-required` (нет `Idempotency-Key`)."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: "`429 rate-limited`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+        X-RateLimit-Remaining: { schema: { type: integer, minimum: 0 }, description: Остаток токенов в корзине. }
+        X-RateLimit-Replenish-Rate: { schema: { type: integer, minimum: 0 }, description: Пополнение в секунду. }
+        X-RateLimit-Burst-Capacity: { schema: { type: integer, minimum: 0 }, description: Ёмкость корзины. }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    InternalError:
+      description: "`500 internal-error`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: "`503` — `dependency-unavailable` (поле `dependency`) или `ai-unavailable`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri, description: "`https://toefly.app/problems/<slug>`." }
+        title: { type: string, description: Стабильный английский заголовок типа. }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string, description: Локализованное описание без персональных данных. }
+        instance: { type: string, format: uri-reference }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$', description: Стабильный машинный код. }
+        requestId: { type: string }
+        traceId: { type: string, pattern: '^[0-9a-f]{32}$' }
+        errors:
+          type: array
+          items: { $ref: '#/components/schemas/ProblemError' }
+      additionalProperties: true
+    ProblemError:
+      type: object
+      required: [pointer, code]
+      properties:
+        pointer: { type: string, description: JSON Pointer (RFC 6901) на поле запроса. }
+        code: { type: string }
+        message: { type: string }
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'], description: "`null`, если страниц больше нет." }
+        hasMore: { type: boolean }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    Section:
+      type: string
+      enum: [READING, LISTENING, WRITING, SPEAKING]
+    WeekSection:
+      type: string
+      enum: [READING, LISTENING, WRITING, SPEAKING, VOCABULARY, GRAMMAR, RESOURCES]
+    WeekStatus:
+      type: string
+      enum: [DRAFT, AWAITING_TUTOR_APPROVAL, PUBLISHED, IN_PROGRESS, COMPLETED]
+    WeekTaskKind:
+      type: string
+      enum: [ITEM_SET, GRAMMAR_UNIT, VOCABULARY_UNIT, VOCABULARY_REVIEW, TUTOR_MATERIAL, EXTERNAL_RESOURCE, MOCK_EXAM]
+    WeekTaskStatus:
+      type: string
+      enum: [PENDING, IN_PROGRESS, DONE, SKIPPED]
+    WeekTaskSkipReason:
+      type: string
+      description: Каноническое перечисление (00-README §5.2); из знаменателя прогресса исключаются `TUTOR`, `REBALANCE`, `NO_ENTITLEMENT`.
+      enum: [USER_SKIPPED, REBALANCE, TUTOR, WEEK_CLOSE, NO_ENTITLEMENT]
+    MaterialAnswerMode:
+      type: string
+      description: Каноническое перечисление (00-README §5.2).
+      enum: [FREE_ANSWER, PHOTO, MARK_DONE, INTERACTIVE]
+    Provenance:
+      type: string
+      enum: [EXTRACTED, GENERATED, TUTOR_CREATED]
+    TaskType:
+      type: string
+      enum:
+        - COMPLETE_THE_WORDS
+        - READ_DAILY_LIFE
+        - READ_ACADEMIC_PASSAGE
+        - LISTEN_CHOOSE_RESPONSE
+        - LISTEN_CONVERSATION
+        - LISTEN_ANNOUNCEMENT
+        - LISTEN_ACADEMIC_TALK
+        - BUILD_A_SENTENCE
+        - WRITE_EMAIL
+        - WRITE_ACADEMIC_DISCUSSION
+        - LISTEN_AND_REPEAT
+        - TAKE_AN_INTERVIEW
+        - GRAMMAR_EXERCISE
+        - VOCAB_EXERCISE
+        - LEGACY_READING
+        - LEGACY_LISTENING
+    StudyDays:
+      type: array
+      minItems: 1
+      maxItems: 7
+      uniqueItems: true
+      description: Дни занятий, ISO 8601 (1 — понедельник, 7 — воскресенье).
+      items: { type: integer, minimum: 1, maximum: 7 }
+    CreateStudyPlanRequest:
+      type: object
+      required: [examDate, minutesPerDay]
+      properties:
+        examDate: { type: string, format: date, description: Дата экзамена (в будущем). }
+        weeksCount: { type: integer, minimum: 1, maximum: 16, default: 8 }
+        minutesPerDay: { type: integer, minimum: 10, maximum: 240 }
+        studyDays: { $ref: '#/components/schemas/StudyDays' }
+        startDate: { type: string, format: date, description: Первый день плана; по умолчанию сегодня. }
+      additionalProperties: false
+    StudyPlanPatch:
+      type: object
+      description: Merge Patch; поля, не указанные в запросе, не меняются.
+      properties:
+        examDate: { type: string, format: date }
+        minutesPerDay: { type: integer, minimum: 10, maximum: 240 }
+        studyDays: { $ref: '#/components/schemas/StudyDays' }
+      minProperties: 1
+      additionalProperties: false
+    StudyPlan:
+      type: object
+      required: [planId, userId, examDate, weeksCount, minutesPerDay, studyDays, startDate, currentWeekNo, createdAt, version]
+      properties:
+        planId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        examDate: { type: [string, 'null'], format: date, description: "`null`, если ученик ещё не записался на экзамен (план на 8 недель, AC-02.01.4)." }
+        timezone: { type: string, description: Часовой пояс IANA, в котором считаются дни плана. }
+        weeksCount: { type: integer, minimum: 1, maximum: 16 }
+        minutesPerDay: { type: integer, minimum: 10, maximum: 240 }
+        studyDays: { $ref: '#/components/schemas/StudyDays' }
+        startDate: { type: string, format: date }
+        currentWeekNo: { type: [integer, 'null'], minimum: 1 }
+        daysToExam: { type: integer }
+        createdAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 0 }
+    WeekSummary:
+      type: object
+      required: [weekId, weekNo, status, startDate, endDate, mockExam]
+      properties:
+        weekId: { type: string, format: uuid }
+        weekNo: { type: integer, minimum: 1 }
+        status: { $ref: '#/components/schemas/WeekStatus' }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        progressPercent: { type: [number, 'null'], minimum: 0, maximum: 100 }
+        mockExam: { type: boolean, description: 'Неделя с пробным экзаменом (недели 4, 8 и последняя).' }
+        locked: { type: boolean, description: "`true`, если неделя недоступна без права `UNLIMITED_WEEKS`." }
+        finalScore:
+          type: [object, 'null']
+          description: Итог закрытой недели.
+          properties:
+            progressPercent: { type: number, minimum: 0, maximum: 100 }
+            bands:
+              type: object
+              description: Прогноз по секциям на конец недели (`band` с шагом 0.5).
+              propertyNames: { $ref: '#/components/schemas/Section' }
+              additionalProperties: { type: number, minimum: 1, maximum: 6, multipleOf: 0.5 }
+          additionalProperties: false
+    WeekSummaryList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/WeekSummary' }
+    Week:
+      type: object
+      required: [weekId, planId, userId, weekNo, status, startDate, endDate, dayCount, progressPercent, sections, days, version]
+      properties:
+        weekId: { type: string, format: uuid }
+        planId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        weekNo: { type: integer, minimum: 1 }
+        status: { $ref: '#/components/schemas/WeekStatus' }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        dayCount: { type: integer, minimum: 7, maximum: 10, description: 7 по умолчанию; до 10 при продлении недели (выполнено менее 70%). }
+        currentDayIndex: { type: [integer, 'null'], minimum: 1, maximum: 10 }
+        progressPercent: { type: number, minimum: 0, maximum: 100, description: Доля выполненного оценочного времени. }
+        mockExam: { type: boolean }
+        rationale: { type: [string, 'null'], description: 'Текст «почему эта неделя такая» (может отсутствовать, если ai-gateway был недоступен).' }
+        approvalDeadline: { type: [string, 'null'], format: date-time }
+        autoPublished: { type: boolean }
+        pendingSlots: { type: integer, minimum: 0, description: 'Число заданий, ожидающих генерации.' }
+        rebalance: { $ref: '#/components/schemas/RebalanceInfo' }
+        sections:
+          type: array
+          items: { $ref: '#/components/schemas/WeekSectionBlock' }
+        days:
+          type: array
+          items: { $ref: '#/components/schemas/DayPlan' }
+        version: { type: integer, minimum: 0, description: Совпадает с `ETag`. }
+    RebalanceInfo:
+      type: object
+      properties:
+        lastRebalancedAt: { type: [string, 'null'], format: date-time }
+        nextAllowedAt: { type: [string, 'null'], format: date-time }
+        excludedTaskIds:
+          type: array
+          items: { type: string, format: uuid }
+    WeekSectionBlock:
+      type: object
+      required: [section, tasks]
+      properties:
+        section: { $ref: '#/components/schemas/WeekSection' }
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/WeekTask' }
+    DayPlan:
+      type: object
+      required: [dayIndex, date, estimatedMinutes, taskIds]
+      properties:
+        dayIndex: { type: integer, minimum: 1, maximum: 10 }
+        date: { type: string, format: date }
+        estimatedMinutes: { type: integer, minimum: 0 }
+        taskIds:
+          type: array
+          items: { type: string, format: uuid }
+    WeekTask:
+      type: object
+      required: [taskId, weekId, kind, section, dayIndex, ordinal, status, estimatedMinutes, title]
+      properties:
+        taskId: { type: string, format: uuid }
+        weekId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/WeekTaskKind' }
+        section: { $ref: '#/components/schemas/WeekSection' }
+        taskType:
+          oneOf:
+            - { $ref: '#/components/schemas/TaskType' }
+            - { type: 'null' }
+        dayIndex: { type: integer, minimum: 1, maximum: 10 }
+        ordinal: { type: integer, minimum: 1 }
+        status: { $ref: '#/components/schemas/WeekTaskStatus' }
+        skippedReason:
+          oneOf:
+            - { $ref: '#/components/schemas/WeekTaskSkipReason' }
+            - { type: 'null' }
+        estimatedMinutes: { type: integer, minimum: 0 }
+        title: { type: string, maxLength: 200 }
+        provenance:
+          oneOf:
+            - { $ref: '#/components/schemas/Provenance' }
+            - { type: 'null' }
+        legacy: { type: boolean, description: Тег «legacy»; не входит в правило 70%. }
+        itemSetId: { type: [string, 'null'], format: uuid }
+        unitId: { type: [string, 'null'], format: uuid }
+        materialId: { type: [string, 'null'], format: uuid }
+        pageFrom: { type: [integer, 'null'], minimum: 1 }
+        pageTo: { type: [integer, 'null'], minimum: 1 }
+        resourceUrl: { type: [string, 'null'], format: uri, maxLength: 2000 }
+        answerMode:
+          oneOf:
+            - { $ref: '#/components/schemas/MaterialAnswerMode' }
+            - { type: 'null' }
+        note: { type: [string, 'null'], maxLength: 1000 }
+        rationale: { type: [string, 'null'], maxLength: 500, description: Короткое обоснование агента для репетитора. }
+        lastAttemptId: { type: [string, 'null'], format: uuid }
+        completedAt: { type: [string, 'null'], format: date-time }
+    AddWeekTaskBase:
+      type: object
+      required: [kind, weekSection, dayIndex]
+      properties:
+        weekSection: { $ref: '#/components/schemas/WeekSection' }
+        dayIndex: { type: integer, minimum: 1, maximum: 10 }
+        note: { type: [string, 'null'], maxLength: 1000 }
+    AddWeekTaskRequest:
+      description: Добавляемое задание; вид определяется `kind`. `VOCABULARY_REVIEW` и `MOCK_EXAM` вручную не добавляются.
+      oneOf:
+        - { $ref: '#/components/schemas/AddItemSetTask' }
+        - { $ref: '#/components/schemas/AddGrammarUnitTask' }
+        - { $ref: '#/components/schemas/AddVocabularyUnitTask' }
+        - { $ref: '#/components/schemas/AddTutorMaterialTask' }
+        - { $ref: '#/components/schemas/AddExternalResourceTask' }
+      discriminator:
+        propertyName: kind
+        mapping:
+          ITEM_SET: '#/components/schemas/AddItemSetTask'
+          GRAMMAR_UNIT: '#/components/schemas/AddGrammarUnitTask'
+          VOCABULARY_UNIT: '#/components/schemas/AddVocabularyUnitTask'
+          TUTOR_MATERIAL: '#/components/schemas/AddTutorMaterialTask'
+          EXTERNAL_RESOURCE: '#/components/schemas/AddExternalResourceTask'
+    AddItemSetTask:
+      allOf:
+        - { $ref: '#/components/schemas/AddWeekTaskBase' }
+        - type: object
+          required: [itemSetId]
+          properties:
+            kind: { type: string, const: ITEM_SET }
+            itemSetId: { type: string, format: uuid }
+    AddGrammarUnitTask:
+      allOf:
+        - { $ref: '#/components/schemas/AddWeekTaskBase' }
+        - type: object
+          required: [unitId]
+          properties:
+            kind: { type: string, const: GRAMMAR_UNIT }
+            unitId: { type: string, format: uuid }
+    AddVocabularyUnitTask:
+      allOf:
+        - { $ref: '#/components/schemas/AddWeekTaskBase' }
+        - type: object
+          required: [unitId]
+          properties:
+            kind: { type: string, const: VOCABULARY_UNIT }
+            unitId: { type: string, format: uuid }
+    AddTutorMaterialTask:
+      allOf:
+        - { $ref: '#/components/schemas/AddWeekTaskBase' }
+        - type: object
+          required: [materialId, pageFrom, pageTo, answerMode, title, estimatedMinutes]
+          properties:
+            kind: { type: string, const: TUTOR_MATERIAL }
+            title: { type: string, minLength: 1, maxLength: 200 }
+            estimatedMinutes: { type: integer, minimum: 1, maximum: 240 }
+            materialId: { type: string, format: uuid }
+            pageFrom: { type: integer, minimum: 1 }
+            pageTo: { type: integer, minimum: 1 }
+            answerMode: { $ref: '#/components/schemas/MaterialAnswerMode' }
+            itemSetId:
+              type: [string, 'null']
+              format: uuid
+              description: Утверждённый ItemSet, созданный из диапазона страниц (режим `INTERACTIVE`).
+    AddExternalResourceTask:
+      allOf:
+        - { $ref: '#/components/schemas/AddWeekTaskBase' }
+        - type: object
+          required: [resourceUrl, title]
+          properties:
+            kind: { type: string, const: EXTERNAL_RESOURCE }
+            resourceUrl: { type: string, format: uri, maxLength: 2000 }
+            title: { type: string, minLength: 1, maxLength: 200 }
+            estimatedMinutes: { type: integer, minimum: 1, maximum: 240, default: 15 }
+    WeekTaskPatch:
+      type: object
+      description: Merge Patch. Ученику разрешён только `dayIndex`.
+      properties:
+        dayIndex: { type: integer, minimum: 1, maximum: 10 }
+        note: { type: [string, 'null'], maxLength: 1000 }
+        resourceUrl: { type: [string, 'null'], format: uri, maxLength: 2000 }
+      minProperties: 1
+      additionalProperties: false
+    ReorderWeekTasksRequest:
+      type: object
+      required: [sections]
+      properties:
+        sections:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [section, taskIds]
+            properties:
+              section: { $ref: '#/components/schemas/WeekSection' }
+              taskIds:
+                type: array
+                uniqueItems: true
+                items: { type: string, format: uuid }
+            additionalProperties: false
+      additionalProperties: false
+    RebalanceWeekRequest:
+      type: object
+      properties:
+        reason: { type: string, maxLength: 300 }
+        keepTaskIds:
+          type: array
+          description: Задания, которые нельзя исключать (репетитор).
+          items: { type: string, format: uuid }
+      additionalProperties: false
+    ApproveWeekRequest:
+      type: object
+      properties:
+        note: { type: string, maxLength: 1000, description: Комментарий ученику к неделе. }
+      additionalProperties: false
+    CompleteWeekTaskRequest:
+      type: object
+      properties:
+        freeAnswer: { type: string, maxLength: 5000, description: Свободный ответ к материалу (режим `FREE_ANSWER`). }
+        elapsedSeconds: { type: integer, minimum: 0, maximum: 86400 }
+      additionalProperties: false
+    SkipWeekTaskRequest:
+      type: object
+      properties:
+        reason: { type: string, maxLength: 200, description: Свободный комментарий ученика (необязательно). }
+      additionalProperties: false
+    Today:
+      type: object
+      required: [date, overdue, today, vocabularyReview, waitingForTutor, estimatedMinutes, doneMinutes]
+      properties:
+        date: { type: string, format: date }
+        weekId: { type: [string, 'null'], format: uuid }
+        weekNo: { type: [integer, 'null'], minimum: 1 }
+        dayIndex: { type: [integer, 'null'], minimum: 1, maximum: 10 }
+        overdue:
+          type: array
+          items: { $ref: '#/components/schemas/TodayTask' }
+        today:
+          type: array
+          items: { $ref: '#/components/schemas/TodayTask' }
+        getAhead:
+          type: array
+          description: До 2 заданий следующего дня, если все задания дня выполнены.
+          items: { $ref: '#/components/schemas/TodayTask' }
+        vocabularyReview:
+          type: object
+          required: [dueCount]
+          properties:
+            dueCount: { type: integer, minimum: 0 }
+            taskId: { type: [string, 'null'], format: uuid }
+          additionalProperties: false
+        waitingForTutor: { type: boolean, description: "`true`, если следующая неделя ожидает утверждения репетитором." }
+        estimatedMinutes: { type: integer, minimum: 0 }
+        doneMinutes: { type: integer, minimum: 0 }
+        goalReached: { type: boolean }
+    TodayTask:
+      type: object
+      required: [task]
+      properties:
+        task: { $ref: '#/components/schemas/WeekTask' }
+        overdueDays: { type: integer, minimum: 0 }
+    PendingApproval:
+      type: object
+      required: [weekId, weekNo, studentId, draftGeneratedAt, approvalDeadline, taskCount]
+      properties:
+        weekId: { type: string, format: uuid }
+        weekNo: { type: integer, minimum: 1 }
+        studentId: { type: string, format: uuid }
+        studentName: { type: string }
+        draftGeneratedAt: { type: string, format: date-time }
+        approvalDeadline: { type: string, format: date-time, description: 48 ч после `week-draft-generated`; затем автопубликация. }
+        taskCount: { type: integer, minimum: 0 }
+        rationale: { type: [string, 'null'] }
+    PendingApprovalPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/PendingApproval' }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    InternalAddWeekTaskRequest:
+      type: object
+      description: Вызывающий (`classroom-service`) передаёт готовые метаданные, чтобы эндпоинт оставался листовым (без обращения к `content-service`).
+      required: [studentId, tutorId, title, estimatedMinutes, task]
+      properties:
+        studentId: { type: string, format: uuid }
+        tutorId: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        estimatedMinutes: { type: integer, minimum: 1, maximum: 240 }
+        taskType:
+          oneOf:
+            - { $ref: '#/components/schemas/TaskType' }
+            - { type: 'null' }
+        provenance: { $ref: '#/components/schemas/Provenance' }
+        task: { $ref: '#/components/schemas/AddWeekTaskRequest' }
+      additionalProperties: false
+    PlanningUserDataExport:
+      type: object
+      description: Фрагмент экспорта GDPR (схема `PlanningUserDataExport`).
+      required: [userId, generatedAt, weeks]
+      properties:
+        userId: { type: string, format: uuid }
+        generatedAt: { type: string, format: date-time }
+        studyPlan:
+          oneOf:
+            - { $ref: '#/components/schemas/StudyPlan' }
+            - { type: 'null' }
+        weeks:
+          type: array
+          items: { $ref: '#/components/schemas/Week' }

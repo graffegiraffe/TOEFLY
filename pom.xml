@@ -25,6 +25,7 @@
         <module>services/api-gateway</module>
         <module>services/content-service</module>
         <module>services/practice-service</module>
+        <module>services/planning-service</module>
         <module>tools/service-archetype</module>
         <module>infra/keycloak/extensions</module>
     </modules>
