@@ -146,6 +146,15 @@ def headings(pdf, page: int, titles: dict[int, str]) -> list[tuple[str, int]]:
     return found
 
 
+def key_prompt(found: list[tuple[str, int]] | None) -> str:
+    """The key prompt, told the headings of the page when they are known from the text layer."""
+    if found is None:
+        return KEY_PROMPT
+    names = ", ".join(f"{k} {n}" for k, n in found) or "none"
+    return KEY_PROMPT + (f"\nThe section headings on this page, in reading order, are: {names}. Start a section only "
+                         "at one of them; every other answer continues the section before it.")
+
+
 def read_keys(pdf, first: int, last: int,
               titles: dict[int, str] | None = None) -> dict[tuple[str, int, str], dict[int, str]]:
     """(kind, number, exercise) -> {item: answer}; a section continued from the previous page keeps its address.
@@ -158,13 +167,8 @@ def read_keys(pdf, first: int, last: int,
     keys: dict[tuple[str, int, str], dict[int, str]] = {}
     current: tuple[str, int] | None = None
     for page in range(first, last + 1):
-        prompt, found = KEY_PROMPT, None
-        if titles is not None:
-            found = headings(pdf, page, titles)
-            names = ", ".join(f"{k} {n}" for k, n in found) or "none"
-            prompt += (f"\nThe section headings on this page, in reading order, are: {names}. Start a section only "
-                       "at one of them; every other answer continues the section before it.")
-        data = llm.ask_json(prompt, render(pdf, page))
+        found = headings(pdf, page, titles) if titles is not None else None
+        data = llm.ask_json(key_prompt(found), render(pdf, page))
         sections = data.get("sections", [])
         started = [s for s in sections if not s.get("continued")]
         if found is not None and len(started) == len(found):
