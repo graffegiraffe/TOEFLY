@@ -1,0 +1,311 @@
+{
+  "type": "record",
+  "name": "AttemptScoredV1",
+  "namespace": "com.toefly.events.practice",
+  "doc": "Closed items are scored, the score and the review are ready (toefly.practice.attempt-scored.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "attemptId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Attempt; the subject is attempts/{attemptId}."
+    },
+    {
+      "name": "itemSetId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "ItemSet of the attempt."
+    },
+    {
+      "name": "taskType",
+      "type": {
+        "type": "enum",
+        "name": "TaskType",
+        "namespace": "com.toefly.events.common",
+        "doc": "Task type (docs/00-README.md section 5.1).",
+        "symbols": [
+          "UNKNOWN",
+          "COMPLETE_THE_WORDS",
+          "READ_DAILY_LIFE",
+          "READ_ACADEMIC_PASSAGE",
+          "LISTEN_CHOOSE_RESPONSE",
+          "LISTEN_CONVERSATION",
+          "LISTEN_ANNOUNCEMENT",
+          "LISTEN_ACADEMIC_TALK",
+          "BUILD_A_SENTENCE",
+          "WRITE_EMAIL",
+          "WRITE_ACADEMIC_DISCUSSION",
+          "LISTEN_AND_REPEAT",
+          "TAKE_AN_INTERVIEW",
+          "GRAMMAR_EXERCISE",
+          "VOCAB_EXERCISE",
+          "LEGACY_READING",
+          "LEGACY_LISTENING"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Task type."
+    },
+    {
+      "name": "section",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "Section",
+          "namespace": "com.toefly.events.common",
+          "doc": "Exam section.",
+          "symbols": [
+            "UNKNOWN",
+            "READING",
+            "LISTENING",
+            "WRITING",
+            "SPEAKING"
+          ],
+          "default": "UNKNOWN"
+        }
+      ],
+      "default": null,
+      "doc": "Section; null for grammar and vocabulary exercises."
+    },
+    {
+      "name": "mode",
+      "type": {
+        "type": "enum",
+        "name": "AttemptMode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Attempt mode.",
+        "symbols": [
+          "UNKNOWN",
+          "PRACTICE",
+          "EXAM"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Attempt mode."
+    },
+    {
+      "name": "weekTaskId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Week task; null for free practice and EXAM."
+    },
+    {
+      "name": "examSessionId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Exam session for the EXAM mode."
+    },
+    {
+      "name": "scoredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment scoring finished, UTC."
+    },
+    {
+      "name": "correctCount",
+      "type": "int",
+      "doc": "Correct answers."
+    },
+    {
+      "name": "totalCount",
+      "type": "int",
+      "doc": "Items in total."
+    },
+    {
+      "name": "unansweredCount",
+      "type": "int",
+      "doc": "Items without an answer (scored as wrong)."
+    },
+    {
+      "name": "activeSeconds",
+      "type": "int",
+      "doc": "Active time, seconds."
+    },
+    {
+      "name": "estimatedSeconds",
+      "type": "int",
+      "doc": "ETS norm of the set, seconds."
+    },
+    {
+      "name": "timingMultiplier",
+      "type": "double",
+      "default": 1.0,
+      "doc": "Time multiplier from the accessibility settings (1.0, 1.5, 2.0)."
+    },
+    {
+      "name": "thetaBefore",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Section theta before this attempt; null if the set has no theta section."
+    },
+    {
+      "name": "unaided",
+      "type": "boolean",
+      "default": true,
+      "doc": "No hints and no audio replays; only such attempts feed difficulty calibration."
+    },
+    {
+      "name": "items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "ItemResultV1",
+          "namespace": "com.toefly.events.practice",
+          "doc": "Result of one item.",
+          "fields": [
+            {
+              "name": "itemId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              },
+              "doc": "Item."
+            },
+            {
+              "name": "ordinal",
+              "type": "int",
+              "doc": "Position of the item in the set, from 1."
+            },
+            {
+              "name": "score",
+              "type": "double",
+              "doc": "Points earned."
+            },
+            {
+              "name": "maxScore",
+              "type": "double",
+              "doc": "Maximum points of the item."
+            },
+            {
+              "name": "b",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null,
+              "doc": "Item difficulty in logits at scoring time; null for AI-scored items."
+            },
+            {
+              "name": "correct",
+              "type": "boolean",
+              "doc": "The answer is correct."
+            },
+            {
+              "name": "answered",
+              "type": "boolean",
+              "doc": "An answer was given."
+            },
+            {
+              "name": "chosenOptionIds",
+              "type": {
+                "type": "array",
+                "items": "string"
+              },
+              "default": [],
+              "doc": "Chosen options (distractor analysis and calibration); empty when not applicable."
+            },
+            {
+              "name": "mistakeCategory",
+              "type": [
+                "null",
+                {
+                  "type": "enum",
+                  "name": "MistakeCategory",
+                  "namespace": "com.toefly.events.common",
+                  "doc": "Mistake category.",
+                  "symbols": [
+                    "UNKNOWN",
+                    "GRAMMAR",
+                    "VOCABULARY",
+                    "SPELLING",
+                    "COHERENCE",
+                    "TASK_RESPONSE",
+                    "PRONUNCIATION",
+                    "FLUENCY",
+                    "COMPREHENSION",
+                    "TIME_MANAGEMENT"
+                  ],
+                  "default": "UNKNOWN"
+                }
+              ],
+              "default": null,
+              "doc": "Category of the mistake of a closed item; null if correct."
+            }
+          ]
+        }
+      },
+      "doc": "Results by item in display order."
+    }
+  ]
+}

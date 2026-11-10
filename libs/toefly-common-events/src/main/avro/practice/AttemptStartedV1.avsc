@@ -1,0 +1,193 @@
+{
+  "type": "record",
+  "name": "AttemptStartedV1",
+  "namespace": "com.toefly.events.practice",
+  "doc": "An attempt was started (toefly.practice.attempt-started.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "attemptId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Attempt; the subject is attempts/{attemptId}."
+    },
+    {
+      "name": "itemSetId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "ItemSet of the attempt."
+    },
+    {
+      "name": "taskType",
+      "type": {
+        "type": "enum",
+        "name": "TaskType",
+        "namespace": "com.toefly.events.common",
+        "doc": "Task type (docs/00-README.md section 5.1).",
+        "symbols": [
+          "UNKNOWN",
+          "COMPLETE_THE_WORDS",
+          "READ_DAILY_LIFE",
+          "READ_ACADEMIC_PASSAGE",
+          "LISTEN_CHOOSE_RESPONSE",
+          "LISTEN_CONVERSATION",
+          "LISTEN_ANNOUNCEMENT",
+          "LISTEN_ACADEMIC_TALK",
+          "BUILD_A_SENTENCE",
+          "WRITE_EMAIL",
+          "WRITE_ACADEMIC_DISCUSSION",
+          "LISTEN_AND_REPEAT",
+          "TAKE_AN_INTERVIEW",
+          "GRAMMAR_EXERCISE",
+          "VOCAB_EXERCISE",
+          "LEGACY_READING",
+          "LEGACY_LISTENING"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Task type."
+    },
+    {
+      "name": "section",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "Section",
+          "namespace": "com.toefly.events.common",
+          "doc": "Exam section.",
+          "symbols": [
+            "UNKNOWN",
+            "READING",
+            "LISTENING",
+            "WRITING",
+            "SPEAKING"
+          ],
+          "default": "UNKNOWN"
+        }
+      ],
+      "default": null,
+      "doc": "Section; null for grammar and vocabulary exercises."
+    },
+    {
+      "name": "mode",
+      "type": {
+        "type": "enum",
+        "name": "AttemptMode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Attempt mode.",
+        "symbols": [
+          "UNKNOWN",
+          "PRACTICE",
+          "EXAM"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Attempt mode."
+    },
+    {
+      "name": "weekTaskId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Week task; null for free practice and EXAM."
+    },
+    {
+      "name": "examSessionId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Exam session for the EXAM mode."
+    },
+    {
+      "name": "itemSetVersion",
+      "type": "int",
+      "doc": "ItemSet version pinned by the attempt, at least 1."
+    },
+    {
+      "name": "startedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Start of the attempt, UTC."
+    },
+    {
+      "name": "itemCount",
+      "type": "int",
+      "doc": "Number of items in the attempt."
+    },
+    {
+      "name": "estimatedSeconds",
+      "type": "int",
+      "doc": "ETS norm of the set, seconds."
+    },
+    {
+      "name": "retry",
+      "type": "boolean",
+      "default": false,
+      "doc": "true if the learner already scored this ItemSet before."
+    }
+  ]
+}
