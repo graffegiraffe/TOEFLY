@@ -116,7 +116,7 @@ export function ClozeParagraph({ markup, lengths, values, onChange }: ClozeParag
                   letter: cell + 1,
                   length,
                 })}
-                className="mx-px w-[0.95em] border-0 border-b-[1.5px] border-border-strong bg-transparent p-0 text-center font-medium text-ink caret-primary focus:border-primary focus:bg-accent-soft focus:outline-none"
+                className="mx-px h-[1.3em] w-[0.95em] border-0 align-baseline leading-none border-b-[1.5px] border-border-strong bg-transparent p-0 text-center font-medium text-ink caret-primary focus:border-primary focus:bg-accent-soft focus:outline-none"
               />
             ))}
           </span>
