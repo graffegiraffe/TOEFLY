@@ -116,6 +116,7 @@ export interface StubState {
   heartbeats: { activeSecondsDelta: number; state: string }[];
   saved: { itemId: string; answer: unknown; ifMatch: string | undefined }[];
   submissions: Json[];
+  lateHeartbeats: number;
 }
 
 interface StubOptions {
@@ -138,7 +139,7 @@ export async function stubPractice(
   let version = 1;
   let status = 'IN_PROGRESS';
   let paused = false;
-  const state: StubState = { heartbeats: [], saved: [], submissions: [] };
+  const state: StubState = { heartbeats: [], saved: [], submissions: [], lateHeartbeats: 0 };
 
   const visibleItem = (item: Json) => {
     const copy = redact(item) as Json;
@@ -315,6 +316,7 @@ export async function stubPractice(
       });
     }
     if (path.endsWith('/heartbeats')) {
+      if (status !== 'IN_PROGRESS') state.lateHeartbeats += 1;
       const beat = request.postDataJSON() as { activeSecondsDelta: number; state: string };
       state.heartbeats.push(beat);
       if (beat.state === 'PAUSED') paused = true;

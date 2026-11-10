@@ -45,6 +45,7 @@ test.describe('US-07 Reading players', () => {
     await expectNoSeriousViolations(page);
     await check(page, 10, 10);
     expect(stub.submissions).toHaveLength(1);
+    expect(stub.lateHeartbeats).toBe(0);
     await expectNoSeriousViolations(page);
   });
 
