@@ -472,115 +472,1446 @@
       "sourceCode": "collins-vocab-grammar-2013"
     },
     {
-      "bundleSha256": "sha256:4e71e045c37790ab5bf302618d7be26021126e5704c843635dea4151f758b2b4",
+      "bundleSha256": "sha256:8202cea7120d686bc794330e95f0b1808d5c0e001fd81160d9afb8cd04a346f6",
       "counts": {
+        "GRAMMAR_EXERCISE": 190,
         "GRAMMAR_UNIT": 15
       },
       "files": [
         {
-          "bytes": 633,
+          "bytes": 5911,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u01.json",
           "seedId": "new-roundup-5/u01",
-          "sha256": "sha256:5f4b4c2f8f749891ec7576affc02041a3b120144312a2c4d6436fca2b27f5f5c"
+          "sha256": "sha256:7b314be55c70b66717c7f2c11e975de9c5d226a51fa10e7c8243b250e3d2099b"
         },
         {
-          "bytes": 627,
+          "bytes": 6863,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u02.json",
           "seedId": "new-roundup-5/u02",
-          "sha256": "sha256:bc677f88b23b3d0ca00b7fec9d25474799f6b1bd6d1684cb79c21b020b9a92f2"
+          "sha256": "sha256:66efb8d552997132156fbb490831abe6f03395e844e1b5224606466d3ec9137c"
         },
         {
-          "bytes": 657,
+          "bytes": 7157,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u03.json",
           "seedId": "new-roundup-5/u03",
-          "sha256": "sha256:b430b3ef33f46eaddfc42f55ea7f324c6328b41ea806dc0b5ce56a6a26d5d057"
+          "sha256": "sha256:4675242dd21a5bd1690f516c95593a13461672746fa5d82804cabdc2bb4f85a0"
         },
         {
-          "bytes": 692,
+          "bytes": 5215,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u04.json",
           "seedId": "new-roundup-5/u04",
-          "sha256": "sha256:61645690ae05657f527a43538fec4d2b2b4b1ff55efe71b45611500a538d4783"
+          "sha256": "sha256:3db1ef980ac4b0d7290d0d0085bd88a3c2674ed6344b6e450d15d78c9d8b7606"
         },
         {
-          "bytes": 629,
+          "bytes": 7579,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u05.json",
           "seedId": "new-roundup-5/u05",
-          "sha256": "sha256:526e9db9149fa149d5bc8892be48c23725b0c5ae2849058e504f9be4a264a2d0"
+          "sha256": "sha256:1168c431cf00e460d13d572cb860f160ede20a57c619a9c5b8b9721286abdfca"
         },
         {
-          "bytes": 655,
+          "bytes": 6204,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u06.json",
           "seedId": "new-roundup-5/u06",
-          "sha256": "sha256:d6f526b5685fcf6e78f3c7c011812a97fcd830bb7cdc3a909e1e73d1a16a6215"
+          "sha256": "sha256:668938a38e326a5afcede005159fa9ef43071a641c034b7dd6a75c03b31bf2f2"
         },
         {
-          "bytes": 656,
+          "bytes": 3859,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u07.json",
           "seedId": "new-roundup-5/u07",
-          "sha256": "sha256:9a34fa7194c16b328547d000367c18bd200fa0bb82e809eaea2b131ad89c6f96"
+          "sha256": "sha256:992e68b4189fcf15560873e9a08e4bf64691bfd66f719b11014666834bc59719"
         },
         {
-          "bytes": 621,
+          "bytes": 9644,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u08.json",
           "seedId": "new-roundup-5/u08",
-          "sha256": "sha256:0f975a37aa2c2294eb5c26d4c12bcc8182e27af9f594a0397a73cb54ce27450a"
+          "sha256": "sha256:6f8f9da41deb5c579991d2097063a3bbff05ac8f32e694925d9b4361572e994e"
         },
         {
-          "bytes": 663,
+          "bytes": 5070,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u09.json",
           "seedId": "new-roundup-5/u09",
-          "sha256": "sha256:96d972bb7bcd3545b3eccd637b44c222c5a4c4726844c5cb1c5e539121403d56"
+          "sha256": "sha256:605369d57d8aaee30e5a0b9f1c22d4943b84f1263f0f3b126fc1914080826048"
         },
         {
-          "bytes": 647,
+          "bytes": 4156,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u10.json",
           "seedId": "new-roundup-5/u10",
-          "sha256": "sha256:d4cb3450d2dd6587a7b88afdfb50fe751d46d2c4f121e04378d005fc6526000d"
+          "sha256": "sha256:71e1a5413bde4876e987dfe3c35f6375e0a1edaffc49fa4c3351b68982fe7da4"
         },
         {
-          "bytes": 678,
+          "bytes": 2540,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u11.json",
           "seedId": "new-roundup-5/u11",
-          "sha256": "sha256:74e47e66b154887ba930cbb8f9f497336a2931247cf8487b48eeb0cc7bd6a96a"
+          "sha256": "sha256:441b7b809681a66fbbaa50af38b662c74e2fb59a1f88ec9f833087d815e27626"
         },
         {
-          "bytes": 760,
+          "bytes": 7800,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u12.json",
           "seedId": "new-roundup-5/u12",
-          "sha256": "sha256:abc08a40f55edc6c085122f9021a077e3183d565ca9b43c6d44b60f26d1b67e1"
+          "sha256": "sha256:65150eeea817c62adfea308cc28fd660a67d54b55d0b6666d559fa2980b7cde7"
         },
         {
-          "bytes": 735,
+          "bytes": 6731,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u13.json",
           "seedId": "new-roundup-5/u13",
-          "sha256": "sha256:c07358550a8da1857961e78ec49e84c7874d82cf7b754917a3dbc6cbdb057990"
+          "sha256": "sha256:6d9f6a3df2bc77fbd8ce482471ebe2638fb408b2f396da5e221451c69e2d5b90"
         },
         {
-          "bytes": 632,
+          "bytes": 4673,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u14.json",
           "seedId": "new-roundup-5/u14",
-          "sha256": "sha256:25cd0e5df45fe359626f4cab7b971409f843fcc14b52069a0a4eb79fd8e696ea"
+          "sha256": "sha256:0a8eb848966d5547ad37a23a7d5ff38526a703f8888a08558add4ab17bf569b5"
         },
         {
-          "bytes": 676,
+          "bytes": 4951,
           "kind": "GRAMMAR_UNIT",
           "path": "new-roundup-5/grammar-units/u15.json",
           "seedId": "new-roundup-5/u15",
-          "sha256": "sha256:a644ad9814879f2534e0445f2bdf182d3157627f23fc853d32f9a23e10b96d1e"
+          "sha256": "sha256:7f8cdc7fea361556dff46680666d0fdc1336f098597edce7b724201a5d01f443"
+        },
+        {
+          "bytes": 13886,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-02-ex-1.json",
+          "seedId": "new-roundup-5/pc-02-ex-1",
+          "sha256": "sha256:43add3b89b1e937744491f1e554234b460351692ccc71b2e5aeeeb8a191e4006"
+        },
+        {
+          "bytes": 9563,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-02-ex-2.json",
+          "seedId": "new-roundup-5/pc-02-ex-2",
+          "sha256": "sha256:ee7579783de6608a9c1dd3b06c72d8747b310d2c8f28f9ea4977aecda3c3847e"
+        },
+        {
+          "bytes": 4918,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-02-ex-3.json",
+          "seedId": "new-roundup-5/pc-02-ex-3",
+          "sha256": "sha256:decdce9c6b9fd8d83932ebf7ff63f6d55f88537e0676873e134f8ed887259cac"
+        },
+        {
+          "bytes": 13802,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-03-ex-1.json",
+          "seedId": "new-roundup-5/pc-03-ex-1",
+          "sha256": "sha256:c0a48c7baba7de61d2dc0dec5fe80254009e02837831a8a3441152a4a1db9621"
+        },
+        {
+          "bytes": 10363,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-03-ex-2.json",
+          "seedId": "new-roundup-5/pc-03-ex-2",
+          "sha256": "sha256:2c1be0acb3166143119b0f4a5db0bafc217cc497629efde75b7fd2bfc9f9a586"
+        },
+        {
+          "bytes": 13647,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-05-ex-1.json",
+          "seedId": "new-roundup-5/pc-05-ex-1",
+          "sha256": "sha256:125586c139e26dd9898748d0a6159ee2509874fe1d929c3f22a229e1beb4fcdb"
+        },
+        {
+          "bytes": 10507,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/pc-05-ex-2.json",
+          "seedId": "new-roundup-5/pc-05-ex-2",
+          "sha256": "sha256:6d79007a73b5ef11f58e3092bd90273c7c99a1b60da030a6aaf7ad29be0f001d"
+        },
+        {
+          "bytes": 6236,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-01-ex-1.json",
+          "seedId": "new-roundup-5/quiz-01-ex-1",
+          "sha256": "sha256:b88d1fbecf7cd0474d97b2920962616ae01ea9775c01e3633c8318c0a8d71cef"
+        },
+        {
+          "bytes": 8734,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-02-ex-1.json",
+          "seedId": "new-roundup-5/quiz-02-ex-1",
+          "sha256": "sha256:43763439ccc5be4b3ac03f68e8ab68a43d9ebffcd0f50eb97430f4c453e64fe2"
+        },
+        {
+          "bytes": 18202,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-03-ex-1.json",
+          "seedId": "new-roundup-5/quiz-03-ex-1",
+          "sha256": "sha256:262698b369174cb9d527f342a979b9bdb6fb9af887b72924609bbe9050287fc3"
+        },
+        {
+          "bytes": 7848,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-05-ex-1.json",
+          "seedId": "new-roundup-5/quiz-05-ex-1",
+          "sha256": "sha256:e4859e973c4610f819e60158eb99a32f787b7a39572ba33c1b395ef62194c12a"
+        },
+        {
+          "bytes": 18128,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-06-ex-1.json",
+          "seedId": "new-roundup-5/quiz-06-ex-1",
+          "sha256": "sha256:3c079919a5eca9609fde7c91f24e41713683915024f9d7ce5321ce74b0334ed9"
+        },
+        {
+          "bytes": 7863,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-08-ex-1.json",
+          "seedId": "new-roundup-5/quiz-08-ex-1",
+          "sha256": "sha256:1ce77a89320922599b1490b004e390e7d5e54dafa07615d488e49660dcf2d335"
+        },
+        {
+          "bytes": 7123,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-12-ex-1.json",
+          "seedId": "new-roundup-5/quiz-12-ex-1",
+          "sha256": "sha256:2bd6f0ba23e2e3c0e8dbd406d0033fd803325c5e3bcf66b97b4c0c0af089bfaa"
+        },
+        {
+          "bytes": 4673,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-13-ex-1.json",
+          "seedId": "new-roundup-5/quiz-13-ex-1",
+          "sha256": "sha256:8e9c79f5e4c2634e4705e492c0203b437b1232c2165b193e041fc71a3adf365c"
+        },
+        {
+          "bytes": 17585,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-14-ex-1.json",
+          "seedId": "new-roundup-5/quiz-14-ex-1",
+          "sha256": "sha256:4b2491c981ef30da81916c1c6e4053cec28116adaf2570c50e06d12d37405ba9"
+        },
+        {
+          "bytes": 18228,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/quiz-15-ex-1.json",
+          "seedId": "new-roundup-5/quiz-15-ex-1",
+          "sha256": "sha256:51c9aa03ed31de73d74ede7d9947ba6964c686976608c03402bad8b72d63223e"
+        },
+        {
+          "bytes": 3291,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-01-ex-2.json",
+          "seedId": "new-roundup-5/test-01-ex-2",
+          "sha256": "sha256:f75edafebe7f6bf0933855f170f98fb10c9a199f1fb2082c35b038198a7002eb"
+        },
+        {
+          "bytes": 3346,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-01-ex-3.json",
+          "seedId": "new-roundup-5/test-01-ex-3",
+          "sha256": "sha256:e41c5bfb5189d92076c99b1101c83390c6b5c0d4079ab35eba47baeb4fabb392"
+        },
+        {
+          "bytes": 4856,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-01-ex-5.json",
+          "seedId": "new-roundup-5/test-01-ex-5",
+          "sha256": "sha256:f1fa885ca98ded87d97d6d1c342fbfcfbecb7317290c033acb9f1c4a432d4a68"
+        },
+        {
+          "bytes": 3691,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-01-ex-6.json",
+          "seedId": "new-roundup-5/test-01-ex-6",
+          "sha256": "sha256:d4c5ba3c742254be19834de3b177fb7a9a8a98d6c97959e0598590e3e40ab0cc"
+        },
+        {
+          "bytes": 4967,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-02-ex-6.json",
+          "seedId": "new-roundup-5/test-02-ex-6",
+          "sha256": "sha256:1c03ec7076824d1b00f84b15518b244af906169da5212abf99e19c57155137cd"
+        },
+        {
+          "bytes": 14149,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-03-ex-1.json",
+          "seedId": "new-roundup-5/test-03-ex-1",
+          "sha256": "sha256:cdeae081db4c7144aea1195424681d0c8d980584408ab84cacb801a74070de64"
+        },
+        {
+          "bytes": 14011,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-04-ex-1.json",
+          "seedId": "new-roundup-5/test-04-ex-1",
+          "sha256": "sha256:0942255b06416820ea9061140989a38df6ca602d5eebb17e278fc5b0567e0a5a"
+        },
+        {
+          "bytes": 3351,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-04-ex-2.json",
+          "seedId": "new-roundup-5/test-04-ex-2",
+          "sha256": "sha256:4e60caa1e6d5316c337c3a1a214473def79b3f88d00e0d97b5837dc7c1f6ad00"
+        },
+        {
+          "bytes": 3296,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-04-ex-3.json",
+          "seedId": "new-roundup-5/test-04-ex-3",
+          "sha256": "sha256:8af6714e12d0ec111d3463ac51454826a6ec962848bf08be23c5eab649f8fd30"
+        },
+        {
+          "bytes": 8077,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-04-ex-5.json",
+          "seedId": "new-roundup-5/test-04-ex-5",
+          "sha256": "sha256:7aacf09c563cdee9abd4ac4ffbdd194057899393d880c066920e33679e90dddd"
+        },
+        {
+          "bytes": 4768,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-04-ex-7.json",
+          "seedId": "new-roundup-5/test-04-ex-7",
+          "sha256": "sha256:74fdcd1361cfe3e3bc2d246caefefbaaa565da1f099fa2f3b72c6d2a876ee5bb"
+        },
+        {
+          "bytes": 14158,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-05-ex-1.json",
+          "seedId": "new-roundup-5/test-05-ex-1",
+          "sha256": "sha256:819d7ce1ca196f3e565e9b4956e945d447b0a8b0204b605c50f33f304dae035a"
+        },
+        {
+          "bytes": 2916,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/test-05-ex-6.json",
+          "seedId": "new-roundup-5/test-05-ex-6",
+          "sha256": "sha256:26b73c0af721404f7b1e94ccb445c186b0ce3bf4c854eccc78fb75546b0b1ea3"
+        },
+        {
+          "bytes": 2051,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-11.json",
+          "seedId": "new-roundup-5/u01-ex-11",
+          "sha256": "sha256:6eb46ffb9c390382cb79cd6f5c400b573ad427b71062b16cd7aaecd1f961ced4"
+        },
+        {
+          "bytes": 2984,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-13.json",
+          "seedId": "new-roundup-5/u01-ex-13",
+          "sha256": "sha256:1e3cf37ad1e6fb925dd0030db0c59affe1c9c519ab7dbbf6af1f6e9e4e55b9a8"
+        },
+        {
+          "bytes": 4091,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-14.json",
+          "seedId": "new-roundup-5/u01-ex-14",
+          "sha256": "sha256:d09ace3ec50c4fd4d0a9e77810125b42a463114d9eaa0fb4904a6d01fcd507f1"
+        },
+        {
+          "bytes": 7436,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-16.json",
+          "seedId": "new-roundup-5/u01-ex-16",
+          "sha256": "sha256:194f763eee94ef873a6239469aadef05ba15615538d8c73e66d452cb77aedeb6"
+        },
+        {
+          "bytes": 5686,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-17.json",
+          "seedId": "new-roundup-5/u01-ex-17",
+          "sha256": "sha256:f2293898898c2727dcc00adb63554ea59c0622df8e5efc055654b88bc6f5ecda"
+        },
+        {
+          "bytes": 4165,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-3.json",
+          "seedId": "new-roundup-5/u01-ex-3",
+          "sha256": "sha256:8cb99085534a548c817239024373156e56b2ed3e219650e17d3b7c3f897af553"
+        },
+        {
+          "bytes": 2543,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-4.json",
+          "seedId": "new-roundup-5/u01-ex-4",
+          "sha256": "sha256:35a8647c8676b522de6052e8f6ce572fff66bbdc482997d7456a2d32c90e46fa"
+        },
+        {
+          "bytes": 5494,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-5.json",
+          "seedId": "new-roundup-5/u01-ex-5",
+          "sha256": "sha256:a2489517c5c6de76438d5df0cfeab656d66225d36bb7fdec8397455b4971f9e6"
+        },
+        {
+          "bytes": 3337,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-6.json",
+          "seedId": "new-roundup-5/u01-ex-6",
+          "sha256": "sha256:ac7f3d76da04b98bff85bcb5efd3416ee65c6a7f2bcad50ce4248164fd7a9654"
+        },
+        {
+          "bytes": 2747,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-7.json",
+          "seedId": "new-roundup-5/u01-ex-7",
+          "sha256": "sha256:4bc3d41a50f5c73b6e8e7a4923bd5255a47e97daab234ec32daa9023e1e71f1c"
+        },
+        {
+          "bytes": 6505,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u01-ex-9.json",
+          "seedId": "new-roundup-5/u01-ex-9",
+          "sha256": "sha256:05ac0274f1738bc7a0427f861894321b51e002258a7e25e95f0f347193fe72d8"
+        },
+        {
+          "bytes": 3508,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-10.json",
+          "seedId": "new-roundup-5/u02-ex-10",
+          "sha256": "sha256:bacc69536def44b5198db8fe373bb57f93d7cbaf1cb92e7321500fd7f6f4eedd"
+        },
+        {
+          "bytes": 3218,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-11.json",
+          "seedId": "new-roundup-5/u02-ex-11",
+          "sha256": "sha256:828f9cc2c45c69bdd9b89d179c6a3d90969d8231f0f0bc1312d58712ee644534"
+        },
+        {
+          "bytes": 3271,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-12.json",
+          "seedId": "new-roundup-5/u02-ex-12",
+          "sha256": "sha256:ac6ce69900d4fed2122c16ff80bda4fefee84d9195421a301251e4b8a96726d6"
+        },
+        {
+          "bytes": 1625,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-20.json",
+          "seedId": "new-roundup-5/u02-ex-20",
+          "sha256": "sha256:1e148c02c298c897c08a520ca1ef633bec934186694552315f56bd333db3ccff"
+        },
+        {
+          "bytes": 4273,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-22.json",
+          "seedId": "new-roundup-5/u02-ex-22",
+          "sha256": "sha256:20a798f50327c88f24ccdfcd8801ca251648b70d5d3739d60059bf9e4b6f5a37"
+        },
+        {
+          "bytes": 3914,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-23.json",
+          "seedId": "new-roundup-5/u02-ex-23",
+          "sha256": "sha256:5580892ccc0aacc81dabaa4b8cf4252523212d2989e4fd2d622bf13bf650c145"
+        },
+        {
+          "bytes": 2467,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-24.json",
+          "seedId": "new-roundup-5/u02-ex-24",
+          "sha256": "sha256:60addf2507beba8f7b7400b0bcd3b7e757c5736dd1cd9e3847299484b905fed4"
+        },
+        {
+          "bytes": 4663,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-25.json",
+          "seedId": "new-roundup-5/u02-ex-25",
+          "sha256": "sha256:968b7597e0f20ab4bde9c6e74f50e1a65c4bca6791affebdc5b16f4d9128e746"
+        },
+        {
+          "bytes": 2700,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-4.json",
+          "seedId": "new-roundup-5/u02-ex-4",
+          "sha256": "sha256:c5b9e9a6dd2ff02f7ac2fa28252a0d556cdc15e4a28c3126bb163e8a26dd3710"
+        },
+        {
+          "bytes": 3806,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-6.json",
+          "seedId": "new-roundup-5/u02-ex-6",
+          "sha256": "sha256:c89a8638d3868baa78e605405111e5855fb48362e009707bd583e00c019808a5"
+        },
+        {
+          "bytes": 3247,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u02-ex-9.json",
+          "seedId": "new-roundup-5/u02-ex-9",
+          "sha256": "sha256:725f80620d8cf20a0b1c771bc18eb9eda1458f43bc5c03b2842491cc4d398615"
+        },
+        {
+          "bytes": 3679,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-1.json",
+          "seedId": "new-roundup-5/u03-ex-1",
+          "sha256": "sha256:12ac36cdb561d700997c71b32ae7a1b2b0e88c7a36020ceff216d0c17c3d8888"
+        },
+        {
+          "bytes": 2844,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-10.json",
+          "seedId": "new-roundup-5/u03-ex-10",
+          "sha256": "sha256:626c5afb31769a93bdd2e19765fb61d65c067c45719ee9cb71ae0decaebf2277"
+        },
+        {
+          "bytes": 3403,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-11.json",
+          "seedId": "new-roundup-5/u03-ex-11",
+          "sha256": "sha256:5c14fd676eabae1401bde375b5c138be5e31a45d20f400f4aeda7bdfa38c13a3"
+        },
+        {
+          "bytes": 1777,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-14.json",
+          "seedId": "new-roundup-5/u03-ex-14",
+          "sha256": "sha256:304eed4099b4fbc3902b55ef7bdf6e235d2e10afe2e83d6b348ef9f37bbe3399"
+        },
+        {
+          "bytes": 17734,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-15.json",
+          "seedId": "new-roundup-5/u03-ex-15",
+          "sha256": "sha256:daf28afb896e9311e3244337ae3254b39cb81f00335259bfd8e4443c1a0bc97f"
+        },
+        {
+          "bytes": 8420,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-16.json",
+          "seedId": "new-roundup-5/u03-ex-16",
+          "sha256": "sha256:e16be1f1341d5d5e5edf3731bf6cc86ec6cf3476651cbb4215cec96739ca097c"
+        },
+        {
+          "bytes": 2066,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-19.json",
+          "seedId": "new-roundup-5/u03-ex-19",
+          "sha256": "sha256:48dc0ebb9e9eb389ce2527a7912a3195da28282eb5013068f678cdedc6f7d85c"
+        },
+        {
+          "bytes": 3166,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-2.json",
+          "seedId": "new-roundup-5/u03-ex-2",
+          "sha256": "sha256:52e26411e4c4416cd40349f38c329ae757a832ac6cacfba263335a9f263133f8"
+        },
+        {
+          "bytes": 2980,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-20.json",
+          "seedId": "new-roundup-5/u03-ex-20",
+          "sha256": "sha256:d6698463d39f4d0db2bf9ee7368874ff0427dfa7517bfdfad1012c78b459c08b"
+        },
+        {
+          "bytes": 1630,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-4.json",
+          "seedId": "new-roundup-5/u03-ex-4",
+          "sha256": "sha256:79b4e8c72c8a80b2933644d40d0afe6331874a1555d22003287a1d32f68b01e0"
+        },
+        {
+          "bytes": 2748,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-5.json",
+          "seedId": "new-roundup-5/u03-ex-5",
+          "sha256": "sha256:6a06bd49ec0359a616b22f04223f3788fb8a546fe718558f24da54c1f1a58d76"
+        },
+        {
+          "bytes": 14336,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-6.json",
+          "seedId": "new-roundup-5/u03-ex-6",
+          "sha256": "sha256:80fe3c0fef4bd9bd32086f30968bfdc47896698732c923112895f8872c56b444"
+        },
+        {
+          "bytes": 3125,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-7.json",
+          "seedId": "new-roundup-5/u03-ex-7",
+          "sha256": "sha256:c56362610bb9190dc43b46ecfd7f9114d6c54c7650f200ee2f272dd3cc125c43"
+        },
+        {
+          "bytes": 5115,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-8.json",
+          "seedId": "new-roundup-5/u03-ex-8",
+          "sha256": "sha256:6c11459a86d8dc37118a89fa5c448dcc2dc1f5b79d3b45e631ecd80677dd5a3f"
+        },
+        {
+          "bytes": 3923,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u03-ex-9.json",
+          "seedId": "new-roundup-5/u03-ex-9",
+          "sha256": "sha256:18acddd1491013a3d9562bdd54a0a9b5ceb3899e3758a539d78b4c663e20d072"
+        },
+        {
+          "bytes": 6355,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-1.json",
+          "seedId": "new-roundup-5/u04-ex-1",
+          "sha256": "sha256:4ae1f1cbbe29a69fc51b6c58439853e3a52e1e2a1f477688782149eed7b3cb3a"
+        },
+        {
+          "bytes": 3168,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-10.json",
+          "seedId": "new-roundup-5/u04-ex-10",
+          "sha256": "sha256:ec92bdd2c9fbfc717871dfbc2690c13e05ddab1ace690ea747e22cc16ea5af68"
+        },
+        {
+          "bytes": 1684,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-11.json",
+          "seedId": "new-roundup-5/u04-ex-11",
+          "sha256": "sha256:dbe7aac5c6d9719ab5dde42ff41add7b3fae10018cc7a2ad8a2a7f4acf7ba768"
+        },
+        {
+          "bytes": 1603,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-13.json",
+          "seedId": "new-roundup-5/u04-ex-13",
+          "sha256": "sha256:ce1a6c982fa7619f4435a125901ea88579ab9e41e279380d40ec97abc688921c"
+        },
+        {
+          "bytes": 3647,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-14.json",
+          "seedId": "new-roundup-5/u04-ex-14",
+          "sha256": "sha256:94072971fa443b632bd31ac5bc2b7619f81fef7958071d2d2ce5c4924911ea8b"
+        },
+        {
+          "bytes": 3260,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-15.json",
+          "seedId": "new-roundup-5/u04-ex-15",
+          "sha256": "sha256:14c5c6e84c7b1ada48763d2aa57569d84b512a25b32a38ebf6f785cf357703d5"
+        },
+        {
+          "bytes": 4191,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-2.json",
+          "seedId": "new-roundup-5/u04-ex-2",
+          "sha256": "sha256:a386253575de97dcbd84cee2a475036480888d17ad648765e291134b8aa22cbf"
+        },
+        {
+          "bytes": 2126,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-3.json",
+          "seedId": "new-roundup-5/u04-ex-3",
+          "sha256": "sha256:9fb6b1deaabcdbcaa5112d48de670920c5ddd632d2ae9e38b6966ce102c62352"
+        },
+        {
+          "bytes": 2796,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-4.json",
+          "seedId": "new-roundup-5/u04-ex-4",
+          "sha256": "sha256:071d27048e6cc1e9833dbe913ffe3133326c0416222e1b8116fe45d47b5b7e71"
+        },
+        {
+          "bytes": 3886,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-6.json",
+          "seedId": "new-roundup-5/u04-ex-6",
+          "sha256": "sha256:adeb60a2b562af866b6c71608dda7039073bb1cc5e046e96fdf8b2b24ad24532"
+        },
+        {
+          "bytes": 8979,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-7.json",
+          "seedId": "new-roundup-5/u04-ex-7",
+          "sha256": "sha256:747dee1510fde1a9b3efaf24f88f31845c37d43e21335299129d039f7b60a495"
+        },
+        {
+          "bytes": 2585,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u04-ex-9.json",
+          "seedId": "new-roundup-5/u04-ex-9",
+          "sha256": "sha256:51152b20dc5b82d967968d6cbce3d2597b83bdef19f0f0487efc4a67241f064f"
+        },
+        {
+          "bytes": 5031,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-1.json",
+          "seedId": "new-roundup-5/u05-ex-1",
+          "sha256": "sha256:e1b4a094861c020bb7f24ef5407472a10a52536c2191931690e1f4359cf03537"
+        },
+        {
+          "bytes": 2997,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-11.json",
+          "seedId": "new-roundup-5/u05-ex-11",
+          "sha256": "sha256:4b3018df2fc2bff5715a8c8130c69f2471293483192cd3bb3bb5dd5ad907d8e0"
+        },
+        {
+          "bytes": 2588,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-12.json",
+          "seedId": "new-roundup-5/u05-ex-12",
+          "sha256": "sha256:de3a5cd48f92e731953ae03820ebd1b06475cbe4198c2d4e8437b86c6d904511"
+        },
+        {
+          "bytes": 4199,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-14.json",
+          "seedId": "new-roundup-5/u05-ex-14",
+          "sha256": "sha256:1e62883f55c457b525ba645dc3494a71e230ca52c6d2234e5366b0483d022b01"
+        },
+        {
+          "bytes": 3400,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-15.json",
+          "seedId": "new-roundup-5/u05-ex-15",
+          "sha256": "sha256:a78294984544864e40ae98dddba298923b6c53c83847d9a52436db4a68ff8b34"
+        },
+        {
+          "bytes": 3345,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-17.json",
+          "seedId": "new-roundup-5/u05-ex-17",
+          "sha256": "sha256:46278ba6039a02a74bd11e6028d62aaa441cfae6c04450494e069ee65513074c"
+        },
+        {
+          "bytes": 7691,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-20.json",
+          "seedId": "new-roundup-5/u05-ex-20",
+          "sha256": "sha256:5a5e0f99c4b4c8a3b184501d8ea7e73b5365feab4ff1c3b2999861de11208b30"
+        },
+        {
+          "bytes": 4290,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-3.json",
+          "seedId": "new-roundup-5/u05-ex-3",
+          "sha256": "sha256:9560f088d16a09add886e42d37a10c22478ac984f84edfe5110076bd630a30a6"
+        },
+        {
+          "bytes": 5093,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-4.json",
+          "seedId": "new-roundup-5/u05-ex-4",
+          "sha256": "sha256:cdc97864625a2fb6c25d5ae4b204fec7f93f43400ee28f0ced628ec64bf08ae0"
+        },
+        {
+          "bytes": 5298,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-6.json",
+          "seedId": "new-roundup-5/u05-ex-6",
+          "sha256": "sha256:ba47c17b1497395f4f29d5ab2fdd84a699d2f8ab94931642962085e4697467df"
+        },
+        {
+          "bytes": 1720,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-7.json",
+          "seedId": "new-roundup-5/u05-ex-7",
+          "sha256": "sha256:2f2c04fc4f7fa2083c30070d3881200d95ed151444a86300ebc6f4c6cc9f9032"
+        },
+        {
+          "bytes": 4451,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-8.json",
+          "seedId": "new-roundup-5/u05-ex-8",
+          "sha256": "sha256:2206b216e4678eb63b116cb8096a9e6392a17b1188cfd5dbaead2eea1e53db0b"
+        },
+        {
+          "bytes": 3445,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u05-ex-9.json",
+          "seedId": "new-roundup-5/u05-ex-9",
+          "sha256": "sha256:e398064d9e8866a8407391602fe0a26f1358702e1871ceceae091321f4ea134c"
+        },
+        {
+          "bytes": 7300,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-1.json",
+          "seedId": "new-roundup-5/u06-ex-1",
+          "sha256": "sha256:1765f40a479f4db787d934119e51a8f28dbb372ddf10c6745d2c7008464083ff"
+        },
+        {
+          "bytes": 1572,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-14.json",
+          "seedId": "new-roundup-5/u06-ex-14",
+          "sha256": "sha256:ebaf0163ed0d8910fac4cdb126a2c162b6ae8e1287d714879807e562859b5f83"
+        },
+        {
+          "bytes": 8770,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-15.json",
+          "seedId": "new-roundup-5/u06-ex-15",
+          "sha256": "sha256:3816e3c3496fa748143aadb0b04eb41ca308a71e77c7f9af16c2f1daecca4186"
+        },
+        {
+          "bytes": 3331,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-18.json",
+          "seedId": "new-roundup-5/u06-ex-18",
+          "sha256": "sha256:46a5fa4943f5fc184eb61dc06ed768c686086341673357258c74f01585e9ece4"
+        },
+        {
+          "bytes": 7792,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-19.json",
+          "seedId": "new-roundup-5/u06-ex-19",
+          "sha256": "sha256:94e0b8c0de1d53caf42a3727a03d20412ecff6fd03b5c8ae5c71ecff5b852c51"
+        },
+        {
+          "bytes": 5172,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-2.json",
+          "seedId": "new-roundup-5/u06-ex-2",
+          "sha256": "sha256:8cff3640eb3ad13d0dce29721eec14b47cd118dffcee353bc12ab6efc1732c7e"
+        },
+        {
+          "bytes": 1684,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-20.json",
+          "seedId": "new-roundup-5/u06-ex-20",
+          "sha256": "sha256:7384d9e397f6df48e0b02443ba1e915c4326a660cd0c4dcdf02d62a31867edda"
+        },
+        {
+          "bytes": 2032,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-21.json",
+          "seedId": "new-roundup-5/u06-ex-21",
+          "sha256": "sha256:6cb7fbb24289549d103b333bbb5f50c798c32177088228c8134fbbc77736f951"
+        },
+        {
+          "bytes": 5763,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-5.json",
+          "seedId": "new-roundup-5/u06-ex-5",
+          "sha256": "sha256:53e80d6a3435ab1fc45571e1013c23ca80cf69de159279505b330bbfbcc7df62"
+        },
+        {
+          "bytes": 5703,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-6.json",
+          "seedId": "new-roundup-5/u06-ex-6",
+          "sha256": "sha256:e9a285909ee8a1c54c960d42ba96fad8e542980a00af4600fbf4d35a078e39fb"
+        },
+        {
+          "bytes": 2954,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u06-ex-9.json",
+          "seedId": "new-roundup-5/u06-ex-9",
+          "sha256": "sha256:c36c1a0362ab6df17a262d972ea54ace3f28823730221119663876aa2549923f"
+        },
+        {
+          "bytes": 3036,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u07-ex-15.json",
+          "seedId": "new-roundup-5/u07-ex-15",
+          "sha256": "sha256:907abfbc9210a20bef42c74b80070734580ad0dda68894af85d270415f5dab80"
+        },
+        {
+          "bytes": 5214,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u07-ex-16.json",
+          "seedId": "new-roundup-5/u07-ex-16",
+          "sha256": "sha256:47eb43e4af72b3dbe48972f6b63e5b05aac5ec83766c04ace6b880f1dea5f005"
+        },
+        {
+          "bytes": 3480,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u07-ex-6.json",
+          "seedId": "new-roundup-5/u07-ex-6",
+          "sha256": "sha256:fec6ba5568d099f8725ab165d6499b09a946adc8d4b65441dac50ccc8cec8818"
+        },
+        {
+          "bytes": 4069,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u07-ex-8.json",
+          "seedId": "new-roundup-5/u07-ex-8",
+          "sha256": "sha256:0d4788ca5fe526e83a79c16741cf6d2d2b812188900cc28f9590cba18102e1b5"
+        },
+        {
+          "bytes": 5981,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-1.json",
+          "seedId": "new-roundup-5/u08-ex-1",
+          "sha256": "sha256:e66f577b520627e82642c389fb8a531a018a38c326edf7f8419bc7a95b6b67c9"
+        },
+        {
+          "bytes": 3030,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-10.json",
+          "seedId": "new-roundup-5/u08-ex-10",
+          "sha256": "sha256:9c59e37e0a9b282bbf9da967a26414677f0eb85eb796c59ab7b54034d947fe47"
+        },
+        {
+          "bytes": 3773,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-12.json",
+          "seedId": "new-roundup-5/u08-ex-12",
+          "sha256": "sha256:fc4b8954d5b1444bb9b67cedf0958fba1c55f3ad3f1f8edb2c7b714e89ab47c0"
+        },
+        {
+          "bytes": 4545,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-14.json",
+          "seedId": "new-roundup-5/u08-ex-14",
+          "sha256": "sha256:17d12c6df49d5d7c7b57d079b33a9d2f5e581d55e0cd4dbc7c3c1dc0b4b15237"
+        },
+        {
+          "bytes": 6215,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-17.json",
+          "seedId": "new-roundup-5/u08-ex-17",
+          "sha256": "sha256:b5bd9830b7ad1c4b7cef9665f005fa3b030f1d82f3d8f5933ef80b767d29d679"
+        },
+        {
+          "bytes": 3621,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-18.json",
+          "seedId": "new-roundup-5/u08-ex-18",
+          "sha256": "sha256:f66cc0cd6fd6e8d30256574430a4ff8037549eedb64de4bfab06c55ece2fca95"
+        },
+        {
+          "bytes": 1613,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-19.json",
+          "seedId": "new-roundup-5/u08-ex-19",
+          "sha256": "sha256:b0402ba4f201a4f355be985c02a9113b4b363b4415d29a1bb562804fcbb98637"
+        },
+        {
+          "bytes": 5036,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-2.json",
+          "seedId": "new-roundup-5/u08-ex-2",
+          "sha256": "sha256:ef99afd941bf0cabb3684f1cf44e9361b83afc868f4768cce27361aeda48e4c5"
+        },
+        {
+          "bytes": 3673,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-20.json",
+          "seedId": "new-roundup-5/u08-ex-20",
+          "sha256": "sha256:34d1398dab71d402846b9611ad0dd2cdc7b417ce4852a2a6bd27bdf08abd62b4"
+        },
+        {
+          "bytes": 3803,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-21.json",
+          "seedId": "new-roundup-5/u08-ex-21",
+          "sha256": "sha256:87b5217979cf0016bfb426eb99fe685bed20413bd75e1622361d0fc14beb9241"
+        },
+        {
+          "bytes": 3325,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-23.json",
+          "seedId": "new-roundup-5/u08-ex-23",
+          "sha256": "sha256:eb3d993c240e5bd737a66de69d251b7672256ed29d2ea466030727ab6e175f4a"
+        },
+        {
+          "bytes": 3911,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-25.json",
+          "seedId": "new-roundup-5/u08-ex-25",
+          "sha256": "sha256:2277a0c7b378e58ee3b6621b7c1e5ed230c8afa84f05f81b115cde2c32b4e429"
+        },
+        {
+          "bytes": 2364,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-26.json",
+          "seedId": "new-roundup-5/u08-ex-26",
+          "sha256": "sha256:8a1fd4ec305b6d5b8865bd693059deeae508f0bb757ec2d9cf7b596d982bd6e9"
+        },
+        {
+          "bytes": 3919,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-27.json",
+          "seedId": "new-roundup-5/u08-ex-27",
+          "sha256": "sha256:d58f0f958ad31074a301273090d56cbad6614dae1b8e597d89f95b8416077275"
+        },
+        {
+          "bytes": 4965,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-3.json",
+          "seedId": "new-roundup-5/u08-ex-3",
+          "sha256": "sha256:8bbec91cdce4d96e30311e6d85a08c77c7c6f47feb34e0a8445ae4bb4854077e"
+        },
+        {
+          "bytes": 5275,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-5.json",
+          "seedId": "new-roundup-5/u08-ex-5",
+          "sha256": "sha256:a5462dfb24f7a9306ed494ecb72e4f294ba20352edba3e1b5b22dba3cdc55b7e"
+        },
+        {
+          "bytes": 4273,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-6.json",
+          "seedId": "new-roundup-5/u08-ex-6",
+          "sha256": "sha256:62d30a6e37859855fde980731fb3fbd8c561fe150268f24f67c5458a4f0bed18"
+        },
+        {
+          "bytes": 4839,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-7.json",
+          "seedId": "new-roundup-5/u08-ex-7",
+          "sha256": "sha256:3a871410657edf65d281c180f1b3ced1a357402591c3e9029bffe1c529024834"
+        },
+        {
+          "bytes": 3022,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u08-ex-8.json",
+          "seedId": "new-roundup-5/u08-ex-8",
+          "sha256": "sha256:5ce5d842fca88aa98159d63af102a37d1b973915a94ee0c42f239d1ef715b309"
+        },
+        {
+          "bytes": 7170,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u09-ex-1.json",
+          "seedId": "new-roundup-5/u09-ex-1",
+          "sha256": "sha256:44bc96ae0cff77d88f2b10b7aee4a088df27673d0e8036d496ce8279fd3fc5d0"
+        },
+        {
+          "bytes": 1584,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u09-ex-15.json",
+          "seedId": "new-roundup-5/u09-ex-15",
+          "sha256": "sha256:db7cdc4023518107b38848c80e9607391bf3ca171c07758b059b722a55d93217"
+        },
+        {
+          "bytes": 3876,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u09-ex-7.json",
+          "seedId": "new-roundup-5/u09-ex-7",
+          "sha256": "sha256:fca2597196fe8ccce6bf977bc28c1df1bf9108b861a6447a08b7e8df6ca09b6d"
+        },
+        {
+          "bytes": 3499,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-1.json",
+          "seedId": "new-roundup-5/u10-ex-1",
+          "sha256": "sha256:a7d34c6b8ab0ad47de10d72214be937c89a309b8ca050d27eda50d8ffe8b10e8"
+        },
+        {
+          "bytes": 1624,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-14.json",
+          "seedId": "new-roundup-5/u10-ex-14",
+          "sha256": "sha256:dcb6f36dc33e8503bd6e3bdc5c431ff0663154421339815ade16ccfee247bd59"
+        },
+        {
+          "bytes": 5632,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-15.json",
+          "seedId": "new-roundup-5/u10-ex-15",
+          "sha256": "sha256:bcd31cc1dfe59dc2a5355efad1670bd350d65fc35235ad48db04c29caeb0f6b9"
+        },
+        {
+          "bytes": 8864,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-16.json",
+          "seedId": "new-roundup-5/u10-ex-16",
+          "sha256": "sha256:ddc3ba99dccc4669580e4e8389e5712216045298378432b9b7e79ae4c557c9ae"
+        },
+        {
+          "bytes": 7342,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-17.json",
+          "seedId": "new-roundup-5/u10-ex-17",
+          "sha256": "sha256:9ba5435de5f5a318f3aa50ed05964ad2f86c0ff6567b8229fc6e05665741662a"
+        },
+        {
+          "bytes": 3453,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-2.json",
+          "seedId": "new-roundup-5/u10-ex-2",
+          "sha256": "sha256:3c7b4d9e318fdc8524e4b622554b869a398cf7c27274aa0e81995252cb6e6f3e"
+        },
+        {
+          "bytes": 2862,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-3.json",
+          "seedId": "new-roundup-5/u10-ex-3",
+          "sha256": "sha256:4234db2b3e033e4a7bac2a353edc6da01917ee3276ff5ee1adcf054e7bba96e3"
+        },
+        {
+          "bytes": 8310,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-4.json",
+          "seedId": "new-roundup-5/u10-ex-4",
+          "sha256": "sha256:55f21befefb3d037b6020fd4b88926b2fc4a9738db1b6431c73307aad1e8343a"
+        },
+        {
+          "bytes": 4210,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u10-ex-5.json",
+          "seedId": "new-roundup-5/u10-ex-5",
+          "sha256": "sha256:88c6b4875cf8cef6ae5b161f33c1a5eeec3c741ef20876421ccbf95f0d733862"
+        },
+        {
+          "bytes": 1708,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u11-ex-1.json",
+          "seedId": "new-roundup-5/u11-ex-1",
+          "sha256": "sha256:b630f10a9cc07438ca936e1659f1bd9432830708959c367c1bddac799a00b55e"
+        },
+        {
+          "bytes": 7661,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-1.json",
+          "seedId": "new-roundup-5/u12-ex-1",
+          "sha256": "sha256:500c01922256451d6029d171f7e2fbecd1bdf0e066353131bc9aa59a5ef25793"
+        },
+        {
+          "bytes": 2387,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-10.json",
+          "seedId": "new-roundup-5/u12-ex-10",
+          "sha256": "sha256:965f9f4d6ca7cb94ae3747ecc8c8e9f099a81f46060027762c6e1ddbe1a6564f"
+        },
+        {
+          "bytes": 2938,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-13.json",
+          "seedId": "new-roundup-5/u12-ex-13",
+          "sha256": "sha256:d25d5b097d4f140a2eb6abc686a8d9299cd1e082b4f5cfd54de9b936ec1294cb"
+        },
+        {
+          "bytes": 6722,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-16.json",
+          "seedId": "new-roundup-5/u12-ex-16",
+          "sha256": "sha256:84e4509c4770a0b11263690e359e3452da6afdee9af21f251eebbf682a7573b4"
+        },
+        {
+          "bytes": 4250,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-17.json",
+          "seedId": "new-roundup-5/u12-ex-17",
+          "sha256": "sha256:9a446cc726298b900ef183a4aea8854858513dc17c61c5216041fa439af330e4"
+        },
+        {
+          "bytes": 8874,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-19.json",
+          "seedId": "new-roundup-5/u12-ex-19",
+          "sha256": "sha256:d07db9e2c6a19d8fdb4b3e94dac53494f1ab3a2bb73cb42873a1ed8da4b65281"
+        },
+        {
+          "bytes": 6508,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-2.json",
+          "seedId": "new-roundup-5/u12-ex-2",
+          "sha256": "sha256:997aa6e22a8c1e993e2f2939aee715bce0602e1fbc195c879af470250fa070ab"
+        },
+        {
+          "bytes": 2464,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-20.json",
+          "seedId": "new-roundup-5/u12-ex-20",
+          "sha256": "sha256:742e03b877c19c74c8ecc144faeeb1d349d8ce7957189b2047b75a795ac278ee"
+        },
+        {
+          "bytes": 1649,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-21.json",
+          "seedId": "new-roundup-5/u12-ex-21",
+          "sha256": "sha256:1d786f96ec648d4817f10efdc6a488d020380ce1048aa45e0a49344af36c8981"
+        },
+        {
+          "bytes": 3352,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-22.json",
+          "seedId": "new-roundup-5/u12-ex-22",
+          "sha256": "sha256:e5cbae55b14d87e30be28e633db1ac22f78e8bff31de38ac83e8bceabb4e6788"
+        },
+        {
+          "bytes": 3489,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-24.json",
+          "seedId": "new-roundup-5/u12-ex-24",
+          "sha256": "sha256:676884a8766c74bc2e7174ca5252b69cf2d32f071e532d7f853006bf1613635e"
+        },
+        {
+          "bytes": 3445,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-26.json",
+          "seedId": "new-roundup-5/u12-ex-26",
+          "sha256": "sha256:f694b83e31bc4c18421425b9b66bcf71ee84a6d146b5af9417c74f929364db2e"
+        },
+        {
+          "bytes": 3164,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-27.json",
+          "seedId": "new-roundup-5/u12-ex-27",
+          "sha256": "sha256:eba4346c1b7209ac809d86683c0759d4057f17b2d332b8b7825c18c2bdb23230"
+        },
+        {
+          "bytes": 4009,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-28.json",
+          "seedId": "new-roundup-5/u12-ex-28",
+          "sha256": "sha256:6ce0830b5295eb48932764020d1a3bac8e1bceacba149319ffee26d8c77be2e3"
+        },
+        {
+          "bytes": 2881,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-29.json",
+          "seedId": "new-roundup-5/u12-ex-29",
+          "sha256": "sha256:826e26676cc29d2ecdfc0023caa829c791bf1f6d89ba474cc4010df1ecc2f32f"
+        },
+        {
+          "bytes": 8980,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-5.json",
+          "seedId": "new-roundup-5/u12-ex-5",
+          "sha256": "sha256:53d0bab65476732d572806df10a05c0779f87052b65919c334633078424997a7"
+        },
+        {
+          "bytes": 3175,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-8.json",
+          "seedId": "new-roundup-5/u12-ex-8",
+          "sha256": "sha256:505878d4505d5ef19dc5cd8065184161e7f977ad5eb52833b0c93f68baafbf68"
+        },
+        {
+          "bytes": 3166,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u12-ex-9.json",
+          "seedId": "new-roundup-5/u12-ex-9",
+          "sha256": "sha256:7f9f5e483f1f0865da6504369bcf0c3a251176d2451836b545e85096ce62585c"
+        },
+        {
+          "bytes": 2648,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-1.json",
+          "seedId": "new-roundup-5/u13-ex-1",
+          "sha256": "sha256:0a5fe6b9d1d2884b5aed5a54cd59a8f55766217348f31144c616a0191c619a52"
+        },
+        {
+          "bytes": 4592,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-10.json",
+          "seedId": "new-roundup-5/u13-ex-10",
+          "sha256": "sha256:3db420be7a36fa210ec6f7a2d5ea9a7b869a37bdb8c19415172cc4dbad5d8e92"
+        },
+        {
+          "bytes": 2478,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-12.json",
+          "seedId": "new-roundup-5/u13-ex-12",
+          "sha256": "sha256:5825bf4b1dcb94e811d116c128aff33f14886bf5666f17b37973a103edb90678"
+        },
+        {
+          "bytes": 3478,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-13.json",
+          "seedId": "new-roundup-5/u13-ex-13",
+          "sha256": "sha256:794fab396d11456cd60875b65c25f5dcdad9d710213fa2511799202a7334f410"
+        },
+        {
+          "bytes": 4002,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-15.json",
+          "seedId": "new-roundup-5/u13-ex-15",
+          "sha256": "sha256:475691ccbac0cd2b7a24dfaa48707f90547a451217cd117c9c6cd9adaa6fba36"
+        },
+        {
+          "bytes": 3167,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-16.json",
+          "seedId": "new-roundup-5/u13-ex-16",
+          "sha256": "sha256:5a84afab97b53253b05b4a5ed5fc352874bfd0fe1dabce453ed968fee5bd9214"
+        },
+        {
+          "bytes": 3277,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-17.json",
+          "seedId": "new-roundup-5/u13-ex-17",
+          "sha256": "sha256:1e1ca9ca3d168cad8520c41ced85142361b15afeb4e334a90aa962d10634b9bf"
+        },
+        {
+          "bytes": 3615,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-19.json",
+          "seedId": "new-roundup-5/u13-ex-19",
+          "sha256": "sha256:8ba75dfda037fb24390043b1e2803063c3e034a4153dda96c2b83988ab29c6de"
+        },
+        {
+          "bytes": 2853,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-2.json",
+          "seedId": "new-roundup-5/u13-ex-2",
+          "sha256": "sha256:98ce7c798e1175fe7b3dae2b030b3dba16f17711e7e65ed7e830f19152a17672"
+        },
+        {
+          "bytes": 5655,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-22.json",
+          "seedId": "new-roundup-5/u13-ex-22",
+          "sha256": "sha256:29ac17093eec8989d8ea4fc20cf820f17d1edf706f7720b061a15273f8bbcf78"
+        },
+        {
+          "bytes": 3214,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-4.json",
+          "seedId": "new-roundup-5/u13-ex-4",
+          "sha256": "sha256:77e5293680f68e348da4d5aaa5a0b39754c7e4551f9ba136d9e940e6022cc0b4"
+        },
+        {
+          "bytes": 1700,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-6.json",
+          "seedId": "new-roundup-5/u13-ex-6",
+          "sha256": "sha256:023fa1a52f2aa5bfdb239f935a4856374c2d1bea915f993192a59056be2fcacb"
+        },
+        {
+          "bytes": 2865,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-7.json",
+          "seedId": "new-roundup-5/u13-ex-7",
+          "sha256": "sha256:4bce73e8c2f335b400a82c1c2cbc1a8b77a33531a3f6459127eae2e43f7065f3"
+        },
+        {
+          "bytes": 3700,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-8.json",
+          "seedId": "new-roundup-5/u13-ex-8",
+          "sha256": "sha256:687103b79f0dc5340453950c825fb2705ccaf8ebd3abb70833862b676457a995"
+        },
+        {
+          "bytes": 2394,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u13-ex-9.json",
+          "seedId": "new-roundup-5/u13-ex-9",
+          "sha256": "sha256:5df00520456b1fd78027c8219ef5197aa54127e08124133a6c4823b09afd8f92"
+        },
+        {
+          "bytes": 1959,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-10.json",
+          "seedId": "new-roundup-5/u14-ex-10",
+          "sha256": "sha256:ea20ce84769ca60b7c25d5061c59a635eb12d611e94bac046b526dfb65954b44"
+        },
+        {
+          "bytes": 2290,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-11.json",
+          "seedId": "new-roundup-5/u14-ex-11",
+          "sha256": "sha256:ae852be7f196d2d3a5f2fe6df879f92a7b5042656532e83de34a452744a1e366"
+        },
+        {
+          "bytes": 1974,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-12.json",
+          "seedId": "new-roundup-5/u14-ex-12",
+          "sha256": "sha256:28d4518db55d85b5bd2b2eb477cf8a0d5d1330e2964509fe8173db4c8ea7c647"
+        },
+        {
+          "bytes": 4940,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-13.json",
+          "seedId": "new-roundup-5/u14-ex-13",
+          "sha256": "sha256:4f12157ea990a906d3ad843c3fdcd27e1d7778602a55280a7fd69954e7d10897"
+        },
+        {
+          "bytes": 5747,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-14.json",
+          "seedId": "new-roundup-5/u14-ex-14",
+          "sha256": "sha256:cdc97563ae2265470634ead65ff969c72dea9a0ebc2f965cb67fd759cf1a079a"
+        },
+        {
+          "bytes": 2394,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-15.json",
+          "seedId": "new-roundup-5/u14-ex-15",
+          "sha256": "sha256:01d1e0f2da55a954e00ad1783d069f225480e3906073978f93660e3c0e4fba98"
+        },
+        {
+          "bytes": 6395,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-2.json",
+          "seedId": "new-roundup-5/u14-ex-2",
+          "sha256": "sha256:83cea24057a6949b7cfcd7d92452744063d413c5996d96801b09d403aab6bbe3"
+        },
+        {
+          "bytes": 3060,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-3.json",
+          "seedId": "new-roundup-5/u14-ex-3",
+          "sha256": "sha256:28c80783aa22a62db2bd045dffabf215d84814a10fe22f8b0094e36d8473aeab"
+        },
+        {
+          "bytes": 3342,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-4.json",
+          "seedId": "new-roundup-5/u14-ex-4",
+          "sha256": "sha256:04f55d0d110990cc1df97e6fe90f7ec70a647863859698b83777ed88d0a2ef9f"
+        },
+        {
+          "bytes": 3032,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-6.json",
+          "seedId": "new-roundup-5/u14-ex-6",
+          "sha256": "sha256:65362d44d4ec6c2bc5753054dffa2fb61c93224ca500e88adc124cbd76bce5d9"
+        },
+        {
+          "bytes": 2241,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-8.json",
+          "seedId": "new-roundup-5/u14-ex-8",
+          "sha256": "sha256:81f6234c98dc303b27385b15798e7d7e9678ad0e14ada5066b8e84268e2cc7ea"
+        },
+        {
+          "bytes": 2277,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u14-ex-9.json",
+          "seedId": "new-roundup-5/u14-ex-9",
+          "sha256": "sha256:d327d566cfecfd410b0840328d9dba1e227b38e5709a5febb6bc210aad4230a2"
+        },
+        {
+          "bytes": 3750,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u15-ex-10.json",
+          "seedId": "new-roundup-5/u15-ex-10",
+          "sha256": "sha256:129ebec9400f62f85a0bf8e93838551346aef390b7ea533226b12f4b3f99681f"
+        },
+        {
+          "bytes": 3221,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u15-ex-12.json",
+          "seedId": "new-roundup-5/u15-ex-12",
+          "sha256": "sha256:95ac256a6abcf55e3e6a7b74776ef35d1c8490a14da1930e8a4a6c7e65a0e94d"
+        },
+        {
+          "bytes": 3262,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u15-ex-13.json",
+          "seedId": "new-roundup-5/u15-ex-13",
+          "sha256": "sha256:48a7847bfd5d9dfbc806cce46a78b6e478cb0c0d9d14c9081e2c46389ed17074"
+        },
+        {
+          "bytes": 6197,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u15-ex-2.json",
+          "seedId": "new-roundup-5/u15-ex-2",
+          "sha256": "sha256:fe98e902322f71573206189a7ea643a5b458afdf4c962cfb9c1d36c3d97fa0ad"
+        },
+        {
+          "bytes": 3182,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u15-ex-8.json",
+          "seedId": "new-roundup-5/u15-ex-8",
+          "sha256": "sha256:8f1f993ff39234f108c2d82a881790823ee2108a4ef07eaaaeefab3cc79db292"
+        },
+        {
+          "bytes": 1776,
+          "kind": "ITEM_SET",
+          "path": "new-roundup-5/item-sets/u15-ex-9.json",
+          "seedId": "new-roundup-5/u15-ex-9",
+          "sha256": "sha256:c5f8212cdfc8b0706c58f7fc7a9233834882e20e6dabe24fec6008087da1c8e3"
         }
       ],
       "sourceCode": "new-roundup-5"
