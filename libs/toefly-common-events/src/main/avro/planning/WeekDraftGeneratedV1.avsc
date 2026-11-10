@@ -1,0 +1,152 @@
+{
+  "type": "record",
+  "name": "WeekDraftGeneratedV1",
+  "namespace": "com.toefly.events.planning",
+  "doc": "A draft of a week was composed (toefly.planning.week-draft-generated.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "weekId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Week."
+    },
+    {
+      "name": "planId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Plan."
+    },
+    {
+      "name": "weekNo",
+      "type": "int",
+      "doc": "Week number."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "WeekStatus",
+        "namespace": "com.toefly.events.common",
+        "doc": "Status of a week.",
+        "symbols": [
+          "UNKNOWN",
+          "DRAFT",
+          "AWAITING_TUTOR_APPROVAL",
+          "PUBLISHED",
+          "IN_PROGRESS",
+          "COMPLETED"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "PUBLISHED for a learner without a tutor, AWAITING_TUTOR_APPROVAL otherwise."
+    },
+    {
+      "name": "approvalDeadline",
+      "type": [
+        "null",
+        {
+          "type": "long",
+          "logicalType": "timestamp-millis"
+        }
+      ],
+      "default": null,
+      "doc": "Moment of the automatic publication; null without a tutor."
+    },
+    {
+      "name": "weakTaskTypes",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "enum",
+          "name": "TaskType",
+          "namespace": "com.toefly.events.common",
+          "doc": "Task type (docs/00-README.md section 5.1).",
+          "symbols": [
+            "UNKNOWN",
+            "COMPLETE_THE_WORDS",
+            "READ_DAILY_LIFE",
+            "READ_ACADEMIC_PASSAGE",
+            "LISTEN_CHOOSE_RESPONSE",
+            "LISTEN_CONVERSATION",
+            "LISTEN_ANNOUNCEMENT",
+            "LISTEN_ACADEMIC_TALK",
+            "BUILD_A_SENTENCE",
+            "WRITE_EMAIL",
+            "WRITE_ACADEMIC_DISCUSSION",
+            "LISTEN_AND_REPEAT",
+            "TAKE_AN_INTERVIEW",
+            "GRAMMAR_EXERCISE",
+            "VOCAB_EXERCISE",
+            "LEGACY_READING",
+            "LEGACY_LISTENING"
+          ],
+          "default": "UNKNOWN"
+        }
+      },
+      "doc": "Weak task types that got more sets.",
+      "default": []
+    },
+    {
+      "name": "taskCount",
+      "type": "int",
+      "doc": "Tasks in the draft."
+    },
+    {
+      "name": "estimatedMinutes",
+      "type": "double",
+      "doc": "Total estimated minutes of the draft."
+    }
+  ]
+}
