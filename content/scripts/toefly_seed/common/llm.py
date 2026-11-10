@@ -45,6 +45,8 @@ PROVIDERS = {
                         "mistral-small-latest"),
     "openrouter": Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", None),
 }
+# answers transcribed by hand from the page image when every model misread it; they are reused like a model's
+MANUAL_MODEL = "manual-transcription"
 _resting: dict[str, float] = {}  # provider name -> time.time() when it may be asked again
 
 
@@ -120,7 +122,8 @@ def _retry_after(header: str | None, body: str) -> float:
 def ask(prompt: str, image: bytes | None = None, *, max_tokens: int = 4000) -> str:
     """One deterministic (temperature 0) request; an identical request is answered from the cache."""
     configured = endpoints()
-    known = [e.model for e in configured] + [m.strip() for p in PROVIDERS.values() for m in (p.model or "").split(",")]
+    known = [MANUAL_MODEL] + [e.model for e in configured] + [
+        m.strip() for p in PROVIDERS.values() for m in (p.model or "").split(",")]
     for model in dict.fromkeys(m for m in known if m):
         cached = _cache_file(model, prompt, image)
         if cached.exists():
