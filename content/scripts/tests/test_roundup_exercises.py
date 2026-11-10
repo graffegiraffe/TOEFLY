@@ -101,3 +101,19 @@ def test_english_in_use_and_misread_headings_never_give_a_unit_its_keys(monkeypa
     keys = rx.read_keys(None, 1, 2)
 
     assert keys == {("UNIT", 2, "1"): {1: "u"}, ("ENGLISH_IN_USE", 2, "1"): {1: "e"}}
+
+
+def test_headings_of_the_text_layer_name_the_sections_the_model_starts(monkeypatch):
+    page = {"sections": [
+        {"kind": "UNIT", "number": None, "continued": True, "exercises": {"9": [{"n": 2, "answer": "c"}]}},
+        {"kind": "UNIT", "number": 4, "continued": False, "exercises": {"1": [{"n": 2, "answer": "e"}]}},
+        {"kind": "UNIT", "number": 3, "continued": False, "exercises": {"1": [{"n": 2, "answer": "u"}]}}]}
+    prompts = []
+    monkeypatch.setattr(rx, "render", lambda pdf, page: b"")
+    monkeypatch.setattr(rx, "headings", lambda pdf, page, titles: [("ENGLISH_IN_USE", 4), ("UNIT", 5)])
+    monkeypatch.setattr(llm, "ask_json", lambda prompt, image: prompts.append(prompt) or page)
+
+    keys = rx.read_keys(None, 1, 1, {4: "Infinitive", 5: "Modal Verbs"})
+
+    assert keys == {("ENGLISH_IN_USE", 4, "1"): {2: "e"}, ("UNIT", 5, "1"): {2: "u"}}  # the first had no section
+    assert "ENGLISH_IN_USE 4, UNIT 5" in prompts[0]
