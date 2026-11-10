@@ -1,0 +1,102 @@
+{
+  "type": "record",
+  "name": "AbilityUpdatedV1",
+  "namespace": "com.toefly.events.practice",
+  "doc": "The Rasch ability of a learner in a section changed (toefly.practice.ability-updated.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "section",
+      "type": {
+        "type": "enum",
+        "name": "Section",
+        "namespace": "com.toefly.events.common",
+        "doc": "Exam section.",
+        "symbols": [
+          "UNKNOWN",
+          "READING",
+          "LISTENING",
+          "WRITING",
+          "SPEAKING"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Section of the estimate: READING, LISTENING or WRITING."
+    },
+    {
+      "name": "attemptId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Attempt whose scoring caused the update."
+    },
+    {
+      "name": "thetaBefore",
+      "type": "double",
+      "doc": "Theta before the update, logits in [-4, 4]."
+    },
+    {
+      "name": "thetaAfter",
+      "type": "double",
+      "doc": "Theta after the update, logits in [-4, 4]."
+    },
+    {
+      "name": "standardError",
+      "type": "double",
+      "doc": "1 / sqrt(information) after the update, logits."
+    },
+    {
+      "name": "n",
+      "type": "int",
+      "doc": "Items counted in the estimate so far."
+    }
+  ]
+}
