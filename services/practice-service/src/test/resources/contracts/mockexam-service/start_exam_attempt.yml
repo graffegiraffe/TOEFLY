@@ -1,0 +1,35 @@
+name: start_exam_attempt
+description: mockexam-service starts the EXAM attempt of a module (x-toefly-leaf-exception content-service)
+request:
+  method: POST
+  url: /internal/v1/attempts
+  headers:
+    Authorization: Bearer service-token
+    Content-Type: application/json
+    Idempotency-Key: 5b0f3c1e-9a3d-4c2b-8f6e-0d1e2f3a4b5c
+  body:
+    userId: 0b6f1c0e-3b0c-4f3e-9d57-6a3f1d1d7a11
+    itemSetId: 9dccd964-64be-519d-80a2-02fb1164a73a
+    examSessionId: 2f1e0d9c-8b7a-4c6d-9e5f-1a2b3c4d5e6f
+    moduleId: 3a4b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d
+    deadlineAt: "2030-01-01T00:00:00Z"
+response:
+  status: 201
+  body:
+    userId: 0b6f1c0e-3b0c-4f3e-9d57-6a3f1d1d7a11
+    itemSetId: 9dccd964-64be-519d-80a2-02fb1164a73a
+    examSessionId: 2f1e0d9c-8b7a-4c6d-9e5f-1a2b3c4d5e6f
+    mode: EXAM
+    status: IN_PROGRESS
+    paused: false
+  matchers:
+    body:
+      - path: $.attemptId
+        type: by_regex
+        predefined: uuid
+      - path: $.deadlineAt
+        type: by_regex
+        predefined: iso_date_time
+      - path: $.items
+        type: by_type
+        minOccurrence: 2

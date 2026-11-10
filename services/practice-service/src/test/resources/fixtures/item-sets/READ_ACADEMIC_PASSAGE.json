@@ -1,0 +1,132 @@
+{
+ "id": "dae68c1f-f9be-5526-9b61-e6f325de8cef",
+ "version": 1,
+ "taskType": "READ_ACADEMIC_PASSAGE",
+ "section": "READING",
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 6.0,
+ "etsNormSeconds": 360,
+ "payload": {
+  "stimulus": {
+   "title": "Coral reefs",
+   "domain": "LIFE_SCIENCE",
+   "paragraphs": [
+    "Coral reefs grow slowly over centuries. Tiny animals build them from calcium.",
+    "Warm water can harm the reefs. Scientists watch them closely."
+   ],
+   "wordCount": 120
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "The word grow is closest in meaning to",
+    "options": [
+     {
+      "key": "A",
+      "text": "shrink",
+      "rationale": "A is wrong: shrink."
+     },
+     {
+      "key": "B",
+      "text": "break",
+      "rationale": "B is wrong: break."
+     },
+     {
+      "key": "C",
+      "text": "increase",
+      "rationale": "C is right: increase."
+     },
+     {
+      "key": "D",
+      "text": "stop",
+      "rationale": "D is wrong: stop."
+     }
+    ],
+    "answerKey": "C",
+    "explanation": {
+     "summary": "The text supports option C."
+    },
+    "subskill": "VOCABULARY",
+    "targetWord": {
+     "paragraph": 0,
+     "charStart": 12,
+     "charEnd": 16,
+     "text": "grow"
+    }
+   },
+   {
+    "ordinal": 2,
+    "prompt": "Where would the sentence fit best?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Position A",
+      "rationale": "A is wrong: position a."
+     },
+     {
+      "key": "B",
+      "text": "Position B",
+      "rationale": "B is wrong: position b."
+     },
+     {
+      "key": "C",
+      "text": "Position C",
+      "rationale": "C is wrong: position c."
+     },
+     {
+      "key": "D",
+      "text": "Position D",
+      "rationale": "D is right: position d."
+     }
+    ],
+    "answerKey": "D",
+    "explanation": {
+     "summary": "The text supports option D."
+    },
+    "subskill": "INSERT_SENTENCE",
+    "insertion": {
+     "sentence": "This makes them fragile.",
+     "markers": [
+      {
+       "key": "A",
+       "paragraph": 0,
+       "afterSentence": 0
+      },
+      {
+       "key": "B",
+       "paragraph": 0,
+       "afterSentence": 1
+      },
+      {
+       "key": "C",
+       "paragraph": 1,
+       "afterSentence": 0
+      },
+      {
+       "key": "D",
+       "paragraph": 1,
+       "afterSentence": 1
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "C"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "D"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+name: time_tracked
+description: analytics-service adds the active time of a closed attempt to the learner's day
+input:
+  triggeredBy: timeTracked()
+outputMessage:
+  sentTo: toefly.practice.time-tracked.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/practice-service
+    content-type: application/avro
+    ce_type: toefly.practice.time-tracked.v1
+  body:
+    taskType: READ_DAILY_LIFE
+    section: READING
+    weekSection: READING
+    itemCount: 2
+  matchers:
+    body:
+      - path: $.attemptId
+        type: by_regex
+        predefined: uuid
+      - path: $.activeSeconds
+        type: by_regex
+        predefined: number
+      - path: $.localDate
+        type: by_type

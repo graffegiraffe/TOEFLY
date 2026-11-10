@@ -1,0 +1,76 @@
+{
+ "id": "3018ed13-42a9-53f6-a15b-0a42750da54c",
+ "version": 1,
+ "taskType": "VOCAB_EXERCISE",
+ "section": null,
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 1.5,
+ "etsNormSeconds": 90,
+ "payload": {
+  "stimulus": {
+   "instructions": "Choose or write the right word.",
+   "unitRef": {
+    "framework": "CUSTOM"
+   }
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "exerciseType": "DEFINITION_MATCHING",
+    "word": "vivid",
+    "options": [
+     {
+      "key": "A",
+      "text": "bright and clear",
+      "rationale": "Right meaning."
+     },
+     {
+      "key": "B",
+      "text": "slow",
+      "rationale": "Unrelated."
+     },
+     {
+      "key": "C",
+      "text": "empty",
+      "rationale": "Opposite idea."
+     },
+     {
+      "key": "D",
+      "text": "loud",
+      "rationale": "About sound."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "Vivid means bright and clear."
+    }
+   },
+   {
+    "ordinal": 2,
+    "exerciseType": "WORD_FORMATION",
+    "sentence": "Her ___ was clear.",
+    "baseWord": "decide",
+    "answerKey": "decision",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "The noun of decide is decision."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "TEXT",
+   "text": "decision"
+  }
+ ]
+}

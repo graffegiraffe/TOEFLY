@@ -1,0 +1,30 @@
+name: attempt_started
+description: planning-service marks the week task in progress when a learner starts an attempt
+input:
+  triggeredBy: attemptStarted()
+outputMessage:
+  sentTo: toefly.practice.attempt-started.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/practice-service
+    content-type: application/avro
+    ce_type: toefly.practice.attempt-started.v1
+  body:
+    taskType: READ_DAILY_LIFE
+    section: READING
+    mode: PRACTICE
+    itemSetVersion: 1
+    itemCount: 2
+    estimatedSeconds: 120
+    retry: false
+  matchers:
+    body:
+      - path: $.attemptId
+        type: by_regex
+        predefined: uuid
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.itemSetId
+        type: by_regex
+        predefined: uuid

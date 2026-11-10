@@ -1,0 +1,114 @@
+{
+ "id": "392bcc5c-de17-5e36-bf9c-af6a0bb44f5b",
+ "version": 1,
+ "taskType": "LISTEN_ACADEMIC_TALK",
+ "section": "LISTENING",
+ "examFormat": "TOEFL_2026",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 1.3333333333333333,
+ "etsNormSeconds": 80,
+ "payload": {
+  "stimulus": {
+   "contextLine": "Listen to a short talk.",
+   "audio": {
+    "url": "https://example.invalid/a.mp3",
+    "durationSeconds": 20,
+    "origin": "HOSTED_MP3",
+    "accent": "US"
+   },
+   "speakers": [
+    {
+     "id": "s1",
+     "role": "Professor"
+    }
+   ],
+   "transcript": [
+    {
+     "speaker": "s1",
+     "text": "Bees help plants grow by carrying pollen."
+    }
+   ],
+   "wordCount": 40
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "What do bees carry?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Water",
+      "rationale": "A is wrong: water."
+     },
+     {
+      "key": "B",
+      "text": "Leaves",
+      "rationale": "B is wrong: leaves."
+     },
+     {
+      "key": "C",
+      "text": "Pollen",
+      "rationale": "C is right: pollen."
+     },
+     {
+      "key": "D",
+      "text": "Stones",
+      "rationale": "D is wrong: stones."
+     }
+    ],
+    "answerKey": "C",
+    "explanation": {
+     "summary": "The text supports option C."
+    },
+    "subskill": "DETAIL"
+   },
+   {
+    "ordinal": 2,
+    "prompt": "What is the talk about?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Bees and plants",
+      "rationale": "A is right: bees and plants."
+     },
+     {
+      "key": "B",
+      "text": "Rain",
+      "rationale": "B is wrong: rain."
+     },
+     {
+      "key": "C",
+      "text": "Rocks",
+      "rationale": "C is wrong: rocks."
+     },
+     {
+      "key": "D",
+      "text": "Cars",
+      "rationale": "D is wrong: cars."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The text supports option A."
+    },
+    "subskill": "MAIN_IDEA"
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "C"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  }
+ ]
+}

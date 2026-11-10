@@ -1,0 +1,25 @@
+name: attempt_submitted
+description: analytics-service counts submitted attempts and their active time
+input:
+  triggeredBy: attemptSubmitted()
+outputMessage:
+  sentTo: toefly.practice.attempt-submitted.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/practice-service
+    content-type: application/avro
+    ce_type: toefly.practice.attempt-submitted.v1
+  body:
+    taskType: READ_DAILY_LIFE
+    mode: PRACTICE
+    answeredCount: 0
+    totalCount: 2
+    autoSubmitted: false
+  matchers:
+    body:
+      - path: $.attemptId
+        type: by_regex
+        predefined: uuid
+      - path: $.activeSeconds
+        type: by_regex
+        predefined: number

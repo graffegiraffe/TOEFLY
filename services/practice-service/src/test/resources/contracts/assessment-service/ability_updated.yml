@@ -1,0 +1,26 @@
+name: ability_updated
+description: assessment-service recalculates the Reading and Listening band estimate from theta
+input:
+  triggeredBy: abilityUpdated()
+outputMessage:
+  sentTo: toefly.practice.ability-updated.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/practice-service
+    content-type: application/avro
+    ce_type: toefly.practice.ability-updated.v1
+  body:
+    section: READING
+    thetaBefore: 0.0
+    n: 2
+  matchers:
+    body:
+      - path: $.attemptId
+        type: by_regex
+        predefined: uuid
+      - path: $.thetaAfter
+        type: by_regex
+        predefined: number
+      - path: $.standardError
+        type: by_regex
+        predefined: number

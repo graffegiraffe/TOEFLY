@@ -1,0 +1,121 @@
+{
+ "id": "a91ce889-2595-5d1a-86b1-d573c6db6af3",
+ "version": 1,
+ "taskType": "LEGACY_READING",
+ "section": "READING",
+ "examFormat": "LEGACY",
+ "status": "APPROVED",
+ "topic": "Test",
+ "itemCount": 2,
+ "estimatedMinutes": 2.5,
+ "etsNormSeconds": 150,
+ "payload": {
+  "stimulus": {
+   "title": "Deserts",
+   "domain": "PHYSICAL_SCIENCE",
+   "paragraphs": [
+    "Deserts receive little rain.",
+    "Many animals there are active at night."
+   ],
+   "wordCount": 100
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "What do deserts receive little of?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Rain",
+      "rationale": "A is right: rain."
+     },
+     {
+      "key": "B",
+      "text": "Sand",
+      "rationale": "B is wrong: sand."
+     },
+     {
+      "key": "C",
+      "text": "Sun",
+      "rationale": "C is wrong: sun."
+     },
+     {
+      "key": "D",
+      "text": "Wind",
+      "rationale": "D is wrong: wind."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The text supports option A."
+    },
+    "selection": "SINGLE",
+    "subskill": "FACTUAL"
+   },
+   {
+    "ordinal": 2,
+    "selection": "MULTI",
+    "subskill": "PROSE_SUMMARY",
+    "prompt": "Choose three ideas.",
+    "introSentence": "Deserts are dry.",
+    "options": [
+     {
+      "key": "A",
+      "text": "Idea A",
+      "rationale": "Idea A rationale."
+     },
+     {
+      "key": "B",
+      "text": "Idea B",
+      "rationale": "Idea B rationale."
+     },
+     {
+      "key": "C",
+      "text": "Idea C",
+      "rationale": "Idea C rationale."
+     },
+     {
+      "key": "D",
+      "text": "Idea D",
+      "rationale": "Idea D rationale."
+     },
+     {
+      "key": "E",
+      "text": "Idea E",
+      "rationale": "Idea E rationale."
+     },
+     {
+      "key": "F",
+      "text": "Idea F",
+      "rationale": "Idea F rationale."
+     }
+    ],
+    "answerKeys": [
+     "A",
+     "C",
+     "E"
+    ],
+    "maxPoints": 2,
+    "explanation": {
+     "summary": "A, C and E summarize the passage."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A",
+    "C",
+    "E"
+   ]
+  }
+ ]
+}
