@@ -1,0 +1,1316 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY practice-service API
+  version: 1.0.0
+  summary: Попытки по ItemSet, ответы, разбор закрытых заданий, трекер времени, θ ученика.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`; операции с тегом
+    `InternalAttempts` — только для сервисов (`/internal/v1`, scope `internal`).
+    Состояние `Attempt` восстанавливается из event store (`attempt_event`), ETag — номер версии потока.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: Attempts, description: 'Попытки, ответы, сдача и разбор' }
+  - { name: Time, description: 'Активное время и сводки' }
+  - { name: Abilities, description: 'Оценка способности θ' }
+  - { name: Admin, description: 'Операции администратора' }
+  - { name: InternalAttempts, description: 'Внутренний API для mockexam-service (x-toefly-internal)' }
+paths:
+  /api/v1/attempts:
+    post:
+      tags: [Attempts]
+      operationId: startAttempt
+      summary: Начать попытку по ItemSet
+      description: |
+        Создаёт `Attempt` в режиме `PRACTICE` со статусом `IN_PROGRESS`. Состав ItemSet фиксируется в событии
+        `AttemptStarted` (последующее скрытие ItemSet не прерывает начатую попытку). Попытки режима `EXAM`
+        создаёт только `mockexam-service` через внутренний API.
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartAttemptRequest' }
+      responses:
+        '201':
+          description: Попытка создана.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            ETag: { $ref: '#/components/headers/ETag' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Attempt' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+    get:
+      tags: [Attempts]
+      operationId: listAttempts
+      summary: Список попыток
+      description: Попытки текущего ученика; репетитор указывает `studentId` (проверка по `tutor_student_link`).
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/StudentId' }
+        - name: itemSetId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: weekTaskId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: mode
+          in: query
+          schema: { $ref: '#/components/schemas/AttemptMode' }
+        - name: status
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { $ref: '#/components/schemas/AttemptStatus' }
+        - name: section
+          in: query
+          schema: { $ref: '#/components/schemas/Section' }
+        - name: from
+          in: query
+          description: Нижняя граница `startedAt` (включительно).
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          description: Верхняя граница `startedAt` (исключительно).
+          schema: { type: string, format: date-time }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [-startedAt, startedAt], default: -startedAt }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница попыток.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttemptSummaryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/attempts/{attemptId}:
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    get:
+      tags: [Attempts]
+      operationId: getAttempt
+      summary: Попытка
+      description: Вопросы без ключей, сохранённые ответы и состояние таймера. Для `IN_PROGRESS` поддерживает `If-None-Match`.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      responses:
+        '200':
+          description: Попытка.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Attempt' }
+        '304': { description: Не изменялась. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/attempts/{attemptId}/answers/{itemId}:
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+      - { $ref: '#/components/parameters/ItemId' }
+    put:
+      tags: [Attempts]
+      operationId: recordAnswer
+      summary: Записать или изменить ответ
+      description: |
+        Идемпотентна по смыслу (последний ответ выигрывает). Клиент вызывает с debounce 2 с; офлайн-очередь
+        повторяет запросы с актуальным `If-Match`. В режиме `EXAM` ответ после `deadlineAt` отклоняется.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordAnswerRequest' }
+      responses:
+        '200':
+          description: Ответ сохранён.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AnswerState' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    delete:
+      tags: [Attempts]
+      operationId: clearAnswer
+      summary: Очистить ответ
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      responses:
+        '204':
+          description: Ответ очищен.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/attempts/{attemptId}/heartbeats:
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    post:
+      tags: [Attempts]
+      operationId: sendAttemptHeartbeat
+      summary: Активное время попытки
+      description: |
+        Клиент отправляет каждые 15 с при активности и при паузе/возобновлении. Сервер суммирует
+        `activeSecondsDelta` в `TimeEntry`, отбрасывает повторы по `sequence` и ограничивает суммарное
+        активное время реальным временем с момента старта.
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HeartbeatRequest' }
+      responses:
+        '204': { description: Принято. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/attempts/{attemptId}/submission:
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    post:
+      tags: [Attempts]
+      operationId: submitAttempt
+      summary: Сдать попытку и получить разбор
+      description: |
+        Фиксирует ответы, проверяет закрытые Item, неотвеченные засчитывает как неверные, обновляет θ и
+        возвращает разбор (p95 ≤ 1 с). События `attempt-submitted`, `attempt-scored`, `ability-updated`,
+        `time-tracked` пишутся в outbox в той же транзакции. Повтор с тем же `Idempotency-Key` возвращает тот же разбор.
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitAttemptRequest' }
+      responses:
+        '200':
+          description: Попытка сдана и проверена.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttemptReview' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/attempts/{attemptId}/abandonment:
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    post:
+      tags: [Attempts]
+      operationId: abandonAttempt
+      summary: Бросить попытку
+      description: Переводит `IN_PROGRESS` в `ABANDONED`; WeekTask возвращается в `PENDING` (по событию `attempt-started` без последующего `attempt-scored`).
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200':
+          description: Попытка брошена.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Attempt' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/attempts/{attemptId}/review:
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    get:
+      tags: [Attempts]
+      operationId: getAttemptReview
+      summary: Разбор попытки
+      description: Баллы, верные ответы, объяснения и объяснения каждого дистрактора. Для попыток `EXAM` доступен только после завершения всей сессии.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      responses:
+        '200':
+          description: Разбор.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttemptReview' }
+        '304': { description: Не изменялся. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/time-heartbeats:
+    post:
+      tags: [Time]
+      operationId: sendTimeHeartbeat
+      summary: Активное время вне попыток
+      description: Юнит грамматики или лексики, материал репетитора, внешний ресурс, повторение словаря. Повторы по `sequence` отбрасываются.
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TimeHeartbeatRequest' }
+      responses:
+        '204': { description: Принято. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/time-summaries:
+    get:
+      tags: [Time]
+      operationId: getTimeSummary
+      summary: Время против норм ETS
+      description: Активное время по дням, неделям, секциям или типам заданий и оценочное время (норма ETS) для сравнения.
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/StudentId' }
+        - name: from
+          in: query
+          required: true
+          description: Начало периода (включительно), дата ученика.
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          required: true
+          description: Конец периода (исключительно), дата ученика.
+          schema: { type: string, format: date }
+        - name: groupBy
+          in: query
+          schema: { type: string, enum: [DAY, WEEK, SECTION, TASK_TYPE], default: DAY }
+      responses:
+        '200':
+          description: Сводка.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TimeSummary' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/abilities:
+    get:
+      tags: [Abilities]
+      operationId: listAbilities
+      summary: θ по секциям
+      description: Текущая оценка способности ученика по модели Раша для каждой секции (только `TOEFL_2026`).
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/StudentId' }
+      responses:
+        '200':
+          description: Оценки способности.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AbilityList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/v1/admin/projections/attempt-view/rebuild:
+    post:
+      tags: [Admin]
+      operationId: rebuildAttemptView
+      summary: Перестроить проекцию attempt_view
+      description: Перечитывает `attempt_event` и пересобирает `attempt_view`; чтения продолжают работать со старой проекцией до переключения.
+      x-toefly-roles: [ADMIN]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '202':
+          description: Перестроение запущено.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectionRebuildJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/attempts:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    post:
+      tags: [InternalAttempts]
+      operationId: startExamAttempt
+      summary: Начать попытку EXAM для модуля экзамена
+      description: |
+        Вызывается `mockexam-service`. Единственная внутренняя операция сервиса с исходящим синхронным вызовом:
+        ItemSet с ключами читается из кэша Caffeine или у `content-service`. Это отступление от правила одного
+        перехода (04-architecture.md, раздел 4.3), оформленное как исключение `x-toefly-leaf-exception`.
+      x-toefly-internal: true
+      x-toefly-leaf-exception: content-service
+      x-toefly-roles: [SVC]
+      x-toefly-idempotent: true
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartExamAttemptRequest' }
+      responses:
+        '201':
+          description: Попытка создана.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Attempt' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/attempts/{attemptId}/answers/{itemId}:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+      - { $ref: '#/components/parameters/ItemId' }
+    put:
+      tags: [InternalAttempts]
+      operationId: recordExamAnswer
+      summary: Записать ответ в попытке EXAM
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - name: If-Match
+          in: header
+          required: false
+          description: Необязателен для внутреннего вызова (ответы модуля пишет один клиент последовательно).
+          schema: { type: string, pattern: '^"[0-9]+"$' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordAnswerRequest' }
+      responses:
+        '200':
+          description: Ответ сохранён.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AnswerState' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/attempts/{attemptId}/submission:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    post:
+      tags: [InternalAttempts]
+      operationId: submitExamAttempt
+      summary: Сдать попытку EXAM и получить результат модуля
+      description: Возвращает только сводку баллов для роутинга; разбор попытки `EXAM` открывается после завершения сессии.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      x-toefly-idempotent: true
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitAttemptRequest' }
+      responses:
+        '200':
+          description: Попытка сдана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttemptScoreSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/users/{userId}/attempts:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalAttempts]
+      operationId: listUserAttemptsInternal
+      summary: Попытки пользователя (для инструментов агента)
+      description: Вызывается `tutor-agent-service`; допустим scope `internal` или JWT с `sub == userId`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - name: section
+          in: query
+          schema: { $ref: '#/components/schemas/Section' }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: Последние попытки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttemptSummaryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/attempts/{attemptId}/review:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/AttemptId' }
+    get:
+      tags: [InternalAttempts]
+      operationId: getAttemptReviewInternal
+      summary: Разбор попытки (для инструментов агента)
+      description: Разбор попытки `PRACTICE`; для `EXAM` — только после завершения сессии. Допустим scope `internal` или JWT владельца.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Разбор.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttemptReview' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/users/{userId}/abilities:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalAttempts]
+      operationId: listUserAbilitiesInternal
+      summary: θ пользователя по секциям
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Оценки способности.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AbilityList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /internal/v1/users/{userId}/export:
+    servers:
+      - url: http://practice-service.toefly.svc.cluster.local:8084
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalAttempts]
+      operationId: exportPracticeUserData
+      summary: Фрагмент экспорта GDPR
+      description: Вызывается `profile-service` из фонового задания экспорта; только scope `internal`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+      responses:
+        '200':
+          description: Данные пользователя в `practice-service`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PracticeUserDataExport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+    serviceAuth:
+      type: oauth2
+      description: Client credentials клиента `svc-<service>`.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes:
+            internal: Внутренние вызовы сервис-сервис
+  parameters:
+    AttemptId:
+      name: attemptId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID операции; повтор с тем же ключом и телом возвращает сохранённый ответ (хранится 24 ч).
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Сильный ETag ресурса (номер версии агрегата), например `"7"`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: ETag из предыдущего ответа; при совпадении — `304`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Непрозрачный курсор из `page.nextCursor`; привязан к сортировке и фильтрам.
+      schema: { type: string, maxLength: 1024 }
+    StudentId:
+      name: studentId
+      in: query
+      required: false
+      description: Идентификатор ученика; только для `TUTOR` (ученик репетитора). Для `STUDENT` игнорируется или должен совпадать с `sub`.
+      schema: { type: string, format: uuid }
+  headers:
+    ETag:
+      description: Сильный ETag — номер версии ресурса.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Location:
+      description: Адрес созданного ресурса.
+      schema: { type: string, format: uri-reference }
+    IdempotentReplayed:
+      description: "`true`, если ответ воспроизведён по `Idempotency-Key`."
+      schema: { type: boolean }
+    RetryAfter:
+      description: Секунды до повтора.
+      schema: { type: integer, minimum: 0 }
+  responses:
+    BadRequest:
+      description: "`400` — `validation-failed`, `malformed-request`, `invalid-cursor`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://toefly.app/problems/validation-failed
+            title: Validation failed
+            status: 400
+            detail: Request body is invalid.
+            instance: /api/v1/resource
+            code: VALIDATION_FAILED
+            requestId: f1c2d3e4-0a1b-4c5d-8e9f-001122334455
+            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+            errors:
+              - { pointer: /answer/optionIds, code: REQUIRED, message: must not be empty }
+    Unauthorized:
+      description: "`401 unauthenticated` — нет или просрочен токен."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403` — `forbidden`, `entitlement-required`, `quota-exceeded`, `consent-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found` — ресурс не найден или недоступен пользователю."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409` — доменный конфликт состояния (`conflict`, `request-in-progress` и специфичные типы операции)."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionFailed:
+      description: "`412 version-mismatch` — `If-Match` не совпал; в ответе актуальный `ETag` и поле `currentVersion`."
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422` — `business-rule-violated` (поле `rule`) или `idempotency-key-reuse`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428` — `precondition-required` (нет `If-Match`) или `idempotency-key-required` (нет `Idempotency-Key`)."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: "`429 rate-limited`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+        X-RateLimit-Remaining: { schema: { type: integer, minimum: 0 }, description: Остаток токенов в корзине. }
+        X-RateLimit-Replenish-Rate: { schema: { type: integer, minimum: 0 }, description: Пополнение в секунду. }
+        X-RateLimit-Burst-Capacity: { schema: { type: integer, minimum: 0 }, description: Ёмкость корзины. }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    InternalError:
+      description: "`500 internal-error`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: "`503` — `dependency-unavailable` (поле `dependency`) или `ai-unavailable`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri, description: "`https://toefly.app/problems/<slug>`." }
+        title: { type: string, description: Стабильный английский заголовок типа. }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string, description: Локализованное описание без персональных данных. }
+        instance: { type: string, format: uri-reference }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$', description: Стабильный машинный код. }
+        requestId: { type: string }
+        traceId: { type: string, pattern: '^[0-9a-f]{32}$' }
+        errors:
+          type: array
+          items: { $ref: '#/components/schemas/ProblemError' }
+      additionalProperties: true
+    ProblemError:
+      type: object
+      required: [pointer, code]
+      properties:
+        pointer: { type: string, description: JSON Pointer (RFC 6901) на поле запроса. }
+        code: { type: string }
+        message: { type: string }
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'], description: "`null`, если страниц больше нет." }
+        hasMore: { type: boolean }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    Section:
+      type: string
+      enum: [READING, LISTENING, WRITING, SPEAKING]
+    AttemptMode:
+      type: string
+      enum: [PRACTICE, EXAM]
+    AttemptStatus:
+      type: string
+      enum: [IN_PROGRESS, SUBMITTED, SCORED, ABANDONED]
+    TaskType:
+      type: string
+      enum:
+        - COMPLETE_THE_WORDS
+        - READ_DAILY_LIFE
+        - READ_ACADEMIC_PASSAGE
+        - LISTEN_CHOOSE_RESPONSE
+        - LISTEN_CONVERSATION
+        - LISTEN_ANNOUNCEMENT
+        - LISTEN_ACADEMIC_TALK
+        - BUILD_A_SENTENCE
+        - WRITE_EMAIL
+        - WRITE_ACADEMIC_DISCUSSION
+        - LISTEN_AND_REPEAT
+        - TAKE_AN_INTERVIEW
+        - GRAMMAR_EXERCISE
+        - VOCAB_EXERCISE
+        - LEGACY_READING
+        - LEGACY_LISTENING
+    WeekTaskKind:
+      type: string
+      enum: [ITEM_SET, GRAMMAR_UNIT, VOCABULARY_UNIT, VOCABULARY_REVIEW, TUTOR_MATERIAL, EXTERNAL_RESOURCE, MOCK_EXAM]
+    ExplanationLanguage:
+      type: string
+      enum: [en, ru]
+    StartAttemptRequest:
+      type: object
+      required: [itemSetId]
+      properties:
+        itemSetId: { type: string, format: uuid }
+        mode:
+          allOf:
+            - { $ref: '#/components/schemas/AttemptMode' }
+          default: PRACTICE
+          description: Публичный API принимает только `PRACTICE`; `EXAM` → `422 business-rule-violated` (`rule=exam-attempt-via-exam-session`).
+        weekTaskId:
+          type: [string, 'null']
+          format: uuid
+          description: Задание недели, к которому относится попытка; `null` для свободной практики и повтора.
+        timeZone:
+          type: [string, 'null']
+          maxLength: 64
+          description: Часовой пояс IANA клиента (`Europe/Minsk`); задаёт `localDate` записи времени (03 §13.3). По умолчанию UTC.
+      additionalProperties: false
+    Attempt:
+      type: object
+      required: [attemptId, userId, itemSetId, taskType, mode, status, startedAt, activeSeconds, estimatedSeconds, paused, timingMultiplier, items]
+      properties:
+        attemptId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        section:
+          oneOf:
+            - { $ref: '#/components/schemas/Section' }
+            - { type: 'null' }
+          description: "`null` для грамматики и лексики."
+        mode: { $ref: '#/components/schemas/AttemptMode' }
+        status: { $ref: '#/components/schemas/AttemptStatus' }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        examSessionId: { type: [string, 'null'], format: uuid }
+        startedAt: { type: string, format: date-time }
+        submittedAt: { type: [string, 'null'], format: date-time }
+        scoredAt: { type: [string, 'null'], format: date-time }
+        deadlineAt:
+          type: [string, 'null']
+          format: date-time
+          description: Серверный дедлайн; только для `EXAM`.
+        estimatedSeconds: { type: integer, minimum: 0, description: 'Норма ETS для набора, секунды.' }
+        activeSeconds: { type: integer, minimum: 0 }
+        paused: { type: boolean, description: Всегда `false` для `EXAM`. }
+        timingMultiplier: { type: number, enum: [1.0, 1.5, 2.0], description: Множитель времени из настроек доступности. }
+        stimulus:
+          type: [object, 'null']
+          additionalProperties: true
+          description: Стимул (текст, аудио, изображение) по JSON-схеме типа задания из 03-domain-model.md; ключей ответов нет. Расшифровка аудио (`transcript`) добавляется только после проверки попытки.
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AttemptItem' }
+        version: { type: integer, minimum: 0, description: Версия потока событий; совпадает с `ETag`. }
+    AttemptItem:
+      type: object
+      required: [itemId, ordinal, content]
+      properties:
+        itemId: { type: string, format: uuid }
+        ordinal: { type: integer, minimum: 1 }
+        content:
+          type: object
+          additionalProperties: true
+          description: Вопрос и варианты по JSON-схеме типа задания; идентификаторы вариантов — `optionId`. Ключей и объяснений нет.
+        answer:
+          oneOf:
+            - { $ref: '#/components/schemas/AnswerValue' }
+            - { type: 'null' }
+        answeredAt: { type: [string, 'null'], format: date-time }
+    OptionId:
+      type: string
+      minLength: 1
+      maxLength: 64
+    AnswerValue:
+      description: Ответ на Item; вид определяется `type`.
+      oneOf:
+        - { $ref: '#/components/schemas/ChoiceAnswer' }
+        - { $ref: '#/components/schemas/TextAnswer' }
+        - { $ref: '#/components/schemas/SequenceAnswer' }
+        - { $ref: '#/components/schemas/MappingAnswer' }
+      discriminator:
+        propertyName: type
+        mapping:
+          CHOICE: '#/components/schemas/ChoiceAnswer'
+          TEXT: '#/components/schemas/TextAnswer'
+          SEQUENCE: '#/components/schemas/SequenceAnswer'
+          MAPPING: '#/components/schemas/MappingAnswer'
+    ChoiceAnswer:
+      type: object
+      description: Выбор варианта (один или несколько для legacy-вопросов).
+      required: [type, optionIds]
+      properties:
+        type: { type: string, const: CHOICE }
+        optionIds:
+          type: array
+          minItems: 1
+          maxItems: 8
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/OptionId' }
+      additionalProperties: false
+    TextAnswer:
+      type: object
+      description: Текст пропуска (`COMPLETE_THE_WORDS`) или короткий ответ упражнения.
+      required: [type, text]
+      properties:
+        type: { type: string, const: TEXT }
+        text: { type: string, maxLength: 200 }
+      additionalProperties: false
+    SequenceAnswer:
+      type: object
+      description: Порядок фрагментов по слотам (`BUILD_A_SENTENCE`); пустой слот — `null`.
+      required: [type, fragmentIds]
+      properties:
+        type: { type: string, const: SEQUENCE }
+        fragmentIds:
+          type: array
+          minItems: 1
+          maxItems: 24
+          items:
+            oneOf:
+              - { $ref: '#/components/schemas/OptionId' }
+              - { type: 'null' }
+      additionalProperties: false
+    MappingAnswer:
+      type: object
+      description: Сопоставление (legacy-вопросы «таблица»/«соответствие»); для `GRAMMAR_EXERCISE` `ERROR_CORRECTION` — одна пара «ключ фрагмента с ошибкой → исправление».
+      required: [type, pairs]
+      properties:
+        type: { type: string, const: MAPPING }
+        pairs:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            type: object
+            required: [key, value]
+            properties:
+              key: { $ref: '#/components/schemas/OptionId' }
+              value: { $ref: '#/components/schemas/OptionId' }
+            additionalProperties: false
+      additionalProperties: false
+    RecordAnswerRequest:
+      type: object
+      required: [answer]
+      properties:
+        answer: { $ref: '#/components/schemas/AnswerValue' }
+        answeredInMs:
+          type: integer
+          minimum: 0
+          maximum: 3600000
+          description: Время, проведённое на Item (для аналитики).
+        clientTimestamp: { type: string, format: date-time }
+      additionalProperties: false
+    AnswerState:
+      type: object
+      required: [itemId, answered, attemptVersion, recordedAt]
+      properties:
+        itemId: { type: string, format: uuid }
+        answered: { type: boolean }
+        answer:
+          oneOf:
+            - { $ref: '#/components/schemas/AnswerValue' }
+            - { type: 'null' }
+        attemptVersion: { type: integer, minimum: 0 }
+        recordedAt: { type: string, format: date-time }
+        deadlineAt: { type: [string, 'null'], format: date-time }
+    HeartbeatRequest:
+      type: object
+      required: [sequence, state, activeSecondsDelta]
+      properties:
+        sequence:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Монотонный номер на клиенте; повтор или меньший номер игнорируется.
+        state:
+          type: string
+          enum: [ACTIVE, PAUSED, RESUMED]
+          description: "`PAUSED`/`RESUMED` запрещены в `EXAM` (`409 conflict`)."
+        activeSecondsDelta: { type: integer, minimum: 0, maximum: 30 }
+        currentItemId: { type: [string, 'null'], format: uuid }
+        audioReplays:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          description: Число повторных прослушиваний аудио в попытке с её начала (Practice); сервер хранит максимум.
+      additionalProperties: false
+    SubmitAttemptRequest:
+      type: object
+      properties:
+        finalAnswers:
+          type: array
+          maxItems: 64
+          description: Ответы, не успевшие синхронизироваться (офлайн); применяются перед проверкой.
+          items:
+            type: object
+            required: [itemId, answer]
+            properties:
+              itemId: { type: string, format: uuid }
+              answer: { $ref: '#/components/schemas/AnswerValue' }
+            additionalProperties: false
+        clientSubmittedAt: { type: string, format: date-time }
+        reason:
+          type: string
+          enum: [USER, TIMEOUT]
+          default: USER
+      additionalProperties: false
+    AttemptReview:
+      type: object
+      required: [attemptId, itemSetId, taskType, mode, status, score, activeSeconds, estimatedSeconds, items, explanationPending]
+      properties:
+        attemptId: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        section:
+          oneOf:
+            - { $ref: '#/components/schemas/Section' }
+            - { type: 'null' }
+        mode: { $ref: '#/components/schemas/AttemptMode' }
+        status: { $ref: '#/components/schemas/AttemptStatus' }
+        score: { $ref: '#/components/schemas/Score' }
+        activeSeconds: { type: integer, minimum: 0 }
+        estimatedSeconds: { type: integer, minimum: 0 }
+        submittedAt: { type: string, format: date-time }
+        scoredAt: { type: string, format: date-time }
+        explanationLanguage: { $ref: '#/components/schemas/ExplanationLanguage' }
+        explanationPending:
+          type: boolean
+          description: "`true`, если часть объяснений ещё генерируется (недоступен `ai-gateway`); показывается статическое объяснение."
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ItemReview' }
+        audioReplays: { type: integer, minimum: 0, description: 'Повторные прослушивания аудио («You replayed the audio 2 times»).' }
+        abilityChange:
+          oneOf:
+            - { $ref: '#/components/schemas/AbilityChange' }
+            - { type: 'null' }
+          description: Изменение θ секции этой попыткой; `null`, если попытка не учитывается в θ (03 §7.4).
+        version: { type: integer, minimum: 0 }
+    AbilityChange:
+      type: object
+      required: [section, thetaBefore, thetaAfter, standardError]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        thetaBefore: { type: number }
+        thetaAfter: { type: number }
+        standardError: { type: number, minimum: 0 }
+    Score:
+      type: object
+      required: [correct, total]
+      properties:
+        correct: { type: integer, minimum: 0 }
+        total: { type: integer, minimum: 1 }
+        unanswered: { type: integer, minimum: 0 }
+    ItemReview:
+      type: object
+      required: [itemId, ordinal, correct, correctAnswer]
+      properties:
+        itemId: { type: string, format: uuid }
+        ordinal: { type: integer, minimum: 1 }
+        correct: { type: boolean }
+        userAnswer:
+          oneOf:
+            - { $ref: '#/components/schemas/AnswerValue' }
+            - { type: 'null' }
+        correctAnswer: { $ref: '#/components/schemas/AnswerValue' }
+        explanation: { $ref: '#/components/schemas/Explanation' }
+        distractorExplanations:
+          type: array
+          description: Объяснение для каждого неверного варианта.
+          items:
+            type: object
+            required: [optionId, text]
+            properties:
+              optionId: { $ref: '#/components/schemas/OptionId' }
+              text: { type: string }
+              source: { $ref: '#/components/schemas/ExplanationSource' }
+            additionalProperties: false
+        audioTranscriptSpan:
+          type: [object, 'null']
+          description: Фрагмент расшифровки с ответом (Listening).
+          properties:
+            fromMs: { type: integer, minimum: 0 }
+            toMs: { type: integer, minimum: 0 }
+          additionalProperties: false
+    ExplanationSource:
+      type: string
+      enum: [STATIC, AI]
+    Explanation:
+      type: object
+      required: [text, source]
+      properties:
+        text: { type: string }
+        source: { $ref: '#/components/schemas/ExplanationSource' }
+    TimeHeartbeatRequest:
+      type: object
+      required: [sequence, kind, activeSecondsDelta]
+      properties:
+        sequence: { type: integer, format: int64, minimum: 1 }
+        kind:
+          allOf:
+            - { $ref: '#/components/schemas/WeekTaskKind' }
+          description: Допустимы все значения, кроме `ITEM_SET` и `MOCK_EXAM` (их время считают попытки).
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        refId:
+          type: [string, 'null']
+          maxLength: 200
+          description: Идентификатор юнита, материала или URL ресурса.
+        activeSecondsDelta: { type: integer, minimum: 0, maximum: 30 }
+      additionalProperties: false
+    TimeSummary:
+      type: object
+      required: [from, to, groupBy, totals, buckets]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        groupBy: { type: string, enum: [DAY, WEEK, SECTION, TASK_TYPE] }
+        totals: { $ref: '#/components/schemas/TimeTotals' }
+        buckets:
+          type: array
+          items:
+            type: object
+            required: [key, activeSeconds, estimatedSeconds]
+            properties:
+              key: { type: string, description: "Дата, номер недели, `Section` или `TaskType` в зависимости от `groupBy`." }
+              activeSeconds: { type: integer, minimum: 0 }
+              estimatedSeconds: { type: integer, minimum: 0, description: Норма ETS по выполненным заданиям. }
+              attempts: { type: integer, minimum: 0 }
+    TimeTotals:
+      type: object
+      required: [activeSeconds, estimatedSeconds]
+      properties:
+        activeSeconds: { type: integer, minimum: 0 }
+        estimatedSeconds: { type: integer, minimum: 0 }
+    AbilityList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AbilityEstimate' }
+    AbilityEstimate:
+      type: object
+      required: [section, theta, standardError, itemsObserved, updatedAt]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        theta: { type: number, description: 'Оценка θ (logit, модель Раша 1PL).' }
+        standardError: { type: number, minimum: 0 }
+        itemsObserved: { type: integer, minimum: 0 }
+        updatedAt: { type: string, format: date-time }
+    AttemptSummary:
+      type: object
+      required: [attemptId, itemSetId, taskType, mode, status, startedAt]
+      properties:
+        attemptId: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        section:
+          oneOf:
+            - { $ref: '#/components/schemas/Section' }
+            - { type: 'null' }
+        mode: { $ref: '#/components/schemas/AttemptMode' }
+        status: { $ref: '#/components/schemas/AttemptStatus' }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        startedAt: { type: string, format: date-time }
+        submittedAt: { type: [string, 'null'], format: date-time }
+        score:
+          oneOf:
+            - { $ref: '#/components/schemas/Score' }
+            - { type: 'null' }
+        activeSeconds: { type: integer, minimum: 0 }
+    AttemptSummaryPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AttemptSummary' }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    ProjectionRebuildJob:
+      type: object
+      required: [jobId, projection, status, startedAt]
+      properties:
+        jobId: { type: string, format: uuid }
+        projection: { type: string, const: attempt-view }
+        status: { type: string, enum: [RUNNING, COMPLETED, FAILED] }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: [string, 'null'], format: date-time }
+        processedEvents: { type: integer, format: int64, minimum: 0 }
+    StartExamAttemptRequest:
+      type: object
+      required: [userId, itemSetId, examSessionId, moduleId, deadlineAt]
+      properties:
+        userId: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        examSessionId: { type: string, format: uuid }
+        moduleId: { type: string, format: uuid }
+        deadlineAt: { type: string, format: date-time }
+        timingMultiplier: { type: number, enum: [1.0, 1.5, 2.0], default: 1.0 }
+      additionalProperties: false
+    AttemptScoreSummary:
+      type: object
+      required: [attemptId, status, score, items]
+      properties:
+        attemptId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/AttemptStatus' }
+        score: { $ref: '#/components/schemas/Score' }
+        items:
+          type: array
+          items:
+            type: object
+            required: [itemId, correct]
+            properties:
+              itemId: { type: string, format: uuid }
+              correct: { type: boolean }
+            additionalProperties: false
+    PracticeUserDataExport:
+      type: object
+      description: Фрагмент экспорта GDPR (схема `PracticeUserDataExport`).
+      required: [userId, generatedAt, attempts, abilities, timeEntries]
+      properties:
+        userId: { type: string, format: uuid }
+        generatedAt: { type: string, format: date-time }
+        attempts:
+          type: array
+          items: { $ref: '#/components/schemas/AttemptSummary' }
+        abilities:
+          type: array
+          items: { $ref: '#/components/schemas/AbilityEstimate' }
+        timeEntries:
+          type: array
+          items:
+            type: object
+            required: [date, activeSeconds]
+            properties:
+              date: { type: string, format: date }
+              kind:
+                oneOf:
+                  - { $ref: '#/components/schemas/WeekTaskKind' }
+                  - { type: 'null' }
+              activeSeconds: { type: integer, minimum: 0 }
+            additionalProperties: false
