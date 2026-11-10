@@ -1,0 +1,272 @@
+{
+  "type": "record",
+  "name": "WeekCompletedV1",
+  "namespace": "com.toefly.events.planning",
+  "doc": "A week closed: 70% done after day 7, day 10 ended or the learner finished early (toefly.planning.week-completed.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "weekId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Week."
+    },
+    {
+      "name": "planId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Plan."
+    },
+    {
+      "name": "weekNo",
+      "type": {
+        "type": "int"
+      },
+      "doc": "Week number (1 to 16, more when the plan is extended)."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "WeekStatus",
+        "namespace": "com.toefly.events.common",
+        "doc": "Status of a week.",
+        "symbols": [
+          "UNKNOWN",
+          "DRAFT",
+          "AWAITING_TUTOR_APPROVAL",
+          "PUBLISHED",
+          "IN_PROGRESS",
+          "COMPLETED"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Always COMPLETED."
+    },
+    {
+      "name": "startDate",
+      "type": {
+        "type": "int",
+        "logicalType": "date"
+      },
+      "doc": "Day 1 of the week in the learner's time zone."
+    },
+    {
+      "name": "endDate",
+      "type": {
+        "type": "int",
+        "logicalType": "date"
+      },
+      "doc": "Last actual day of the week; the next week starts on the day after."
+    },
+    {
+      "name": "closedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment of the close, UTC."
+    },
+    {
+      "name": "dayCount",
+      "type": {
+        "type": "int"
+      },
+      "doc": "Actual length: 7 to 10 days."
+    },
+    {
+      "name": "extended",
+      "type": {
+        "type": "boolean"
+      },
+      "doc": "The week ran past day 7."
+    },
+    {
+      "name": "finishedEarly",
+      "type": {
+        "type": "boolean"
+      },
+      "doc": "Closed with Finish week early."
+    },
+    {
+      "name": "closedBy",
+      "type": {
+        "type": "enum",
+        "name": "WeekCloseReason",
+        "namespace": "com.toefly.events.common",
+        "doc": "Reason a week closed.",
+        "symbols": [
+          "UNKNOWN",
+          "PROGRESS_70",
+          "DAY_10",
+          "EARLY"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "PROGRESS_70 (70% after day 7), DAY_10 (end of day 10) or EARLY."
+    },
+    {
+      "name": "progressPercent",
+      "type": {
+        "type": "double"
+      },
+      "doc": "Final progress, 0 to 100."
+    },
+    {
+      "name": "tasksTotal",
+      "type": {
+        "type": "int"
+      },
+      "doc": "Tasks without the ones skipped for TUTOR, REBALANCE or NO_ENTITLEMENT."
+    },
+    {
+      "name": "tasksDone",
+      "type": {
+        "type": "int"
+      },
+      "doc": "Done tasks."
+    },
+    {
+      "name": "tasksSkipped",
+      "type": {
+        "type": "int"
+      },
+      "doc": "Skipped or excluded tasks."
+    },
+    {
+      "name": "mockExamWeek",
+      "type": {
+        "type": "boolean"
+      },
+      "doc": "The week had a mock exam."
+    },
+    {
+      "name": "tutorId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "doc": "Tutor of the learner; null without a tutor.",
+      "default": null
+    },
+    {
+      "name": "sections",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "SectionProgressV1",
+          "namespace": "com.toefly.events.planning",
+          "doc": "Result of the week in one section.",
+          "fields": [
+            {
+              "name": "section",
+              "type": {
+                "type": "enum",
+                "name": "WeekSection",
+                "namespace": "com.toefly.events.common",
+                "doc": "Section of the week.",
+                "symbols": [
+                  "UNKNOWN",
+                  "READING",
+                  "LISTENING",
+                  "WRITING",
+                  "SPEAKING",
+                  "VOCABULARY",
+                  "GRAMMAR",
+                  "RESOURCES"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Section of the week."
+            },
+            {
+              "name": "tasksTotal",
+              "type": {
+                "type": "int"
+              },
+              "doc": "Tasks of the section without excluded ones."
+            },
+            {
+              "name": "tasksDone",
+              "type": {
+                "type": "int"
+              },
+              "doc": "Done tasks."
+            },
+            {
+              "name": "minutesPlanned",
+              "type": {
+                "type": "int"
+              },
+              "doc": "Planned estimated minutes."
+            },
+            {
+              "name": "minutesDone",
+              "type": {
+                "type": "int"
+              },
+              "doc": "Estimated minutes of done tasks."
+            }
+          ]
+        }
+      },
+      "doc": "Results by section.",
+      "default": []
+    }
+  ]
+}

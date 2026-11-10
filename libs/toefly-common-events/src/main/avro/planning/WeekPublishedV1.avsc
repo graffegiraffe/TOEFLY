@@ -1,0 +1,224 @@
+{
+  "type": "record",
+  "name": "WeekPublishedV1",
+  "namespace": "com.toefly.events.planning",
+  "doc": "A week is visible to the learner (toefly.planning.week-published.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "weekId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Week."
+    },
+    {
+      "name": "planId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Plan."
+    },
+    {
+      "name": "weekNo",
+      "type": "int",
+      "doc": "Week number."
+    },
+    {
+      "name": "day1",
+      "type": {
+        "type": "int",
+        "logicalType": "date"
+      },
+      "doc": "Day 1 in the learner's time zone."
+    },
+    {
+      "name": "autoPublished",
+      "type": "boolean",
+      "doc": "Published by the 48-hour timer, not by the tutor."
+    },
+    {
+      "name": "lockedByEntitlement",
+      "type": "boolean",
+      "doc": "Needs UNLIMITED_WEEKS before the learner can open it."
+    },
+    {
+      "name": "tasks",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "PublishedWeekTaskV1",
+          "namespace": "com.toefly.events.planning",
+          "doc": "A task of the published week.",
+          "fields": [
+            {
+              "name": "weekTaskId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              },
+              "doc": "Week task."
+            },
+            {
+              "name": "kind",
+              "type": {
+                "type": "enum",
+                "name": "WeekTaskKind",
+                "namespace": "com.toefly.events.common",
+                "doc": "Kind of a week task.",
+                "symbols": [
+                  "UNKNOWN",
+                  "ITEM_SET",
+                  "GRAMMAR_UNIT",
+                  "VOCABULARY_UNIT",
+                  "VOCABULARY_REVIEW",
+                  "TUTOR_MATERIAL",
+                  "EXTERNAL_RESOURCE",
+                  "MOCK_EXAM"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Kind of the task."
+            },
+            {
+              "name": "weekSection",
+              "type": {
+                "type": "enum",
+                "name": "WeekSection",
+                "namespace": "com.toefly.events.common",
+                "doc": "Section of the week.",
+                "symbols": [
+                  "UNKNOWN",
+                  "READING",
+                  "LISTENING",
+                  "WRITING",
+                  "SPEAKING",
+                  "VOCABULARY",
+                  "GRAMMAR",
+                  "RESOURCES"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Section of the week."
+            },
+            {
+              "type": [
+                "null",
+                {
+                  "type": "enum",
+                  "name": "TaskType",
+                  "namespace": "com.toefly.events.common",
+                  "doc": "Task type (docs/00-README.md section 5.1).",
+                  "symbols": [
+                    "UNKNOWN",
+                    "COMPLETE_THE_WORDS",
+                    "READ_DAILY_LIFE",
+                    "READ_ACADEMIC_PASSAGE",
+                    "LISTEN_CHOOSE_RESPONSE",
+                    "LISTEN_CONVERSATION",
+                    "LISTEN_ANNOUNCEMENT",
+                    "LISTEN_ACADEMIC_TALK",
+                    "BUILD_A_SENTENCE",
+                    "WRITE_EMAIL",
+                    "WRITE_ACADEMIC_DISCUSSION",
+                    "LISTEN_AND_REPEAT",
+                    "TAKE_AN_INTERVIEW",
+                    "GRAMMAR_EXERCISE",
+                    "VOCAB_EXERCISE",
+                    "LEGACY_READING",
+                    "LEGACY_LISTENING"
+                  ],
+                  "default": "UNKNOWN"
+                }
+              ],
+              "default": null,
+              "doc": "Task type; null for units, resources and reviews.",
+              "name": "taskType"
+            },
+            {
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "logicalType": "uuid"
+                }
+              ],
+              "default": null,
+              "doc": "Item set, grammar or vocabulary unit; null for resources and reviews.",
+              "name": "refId"
+            },
+            {
+              "name": "localDate",
+              "type": {
+                "type": "int",
+                "logicalType": "date"
+              },
+              "doc": "Planned day in the learner's time zone."
+            },
+            {
+              "name": "estimatedMinutes",
+              "type": "double",
+              "doc": "Estimated minutes."
+            },
+            {
+              "name": "isRepeat",
+              "type": "boolean",
+              "doc": "An item set the learner did before (no fresh set was left)."
+            }
+          ]
+        }
+      },
+      "doc": "Tasks of the week."
+    }
+  ]
+}

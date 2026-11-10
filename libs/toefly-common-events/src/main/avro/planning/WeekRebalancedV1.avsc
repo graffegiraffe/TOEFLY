@@ -1,0 +1,121 @@
+{
+  "type": "record",
+  "name": "WeekRebalancedV1",
+  "namespace": "com.toefly.events.planning",
+  "doc": "The rest of a lagging week was rebuilt (toefly.planning.week-rebalanced.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "weekId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Week."
+    },
+    {
+      "name": "weekNo",
+      "type": "int",
+      "doc": "Week number."
+    },
+    {
+      "name": "lagDays",
+      "type": "double",
+      "doc": "Overdue minutes divided by minutes per day at the moment of the rebalance."
+    },
+    {
+      "name": "skipped",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      },
+      "doc": "Tasks excluded with the reason REBALANCE."
+    },
+    {
+      "name": "redistributedTo",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "RedistributedTaskV1",
+          "namespace": "com.toefly.events.planning",
+          "doc": "A pending task moved to another day.",
+          "fields": [
+            {
+              "name": "weekTaskId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              },
+              "doc": "Week task."
+            },
+            {
+              "name": "localDate",
+              "type": {
+                "type": "int",
+                "logicalType": "date"
+              },
+              "doc": "New day in the learner's time zone."
+            }
+          ]
+        }
+      },
+      "doc": "Pending tasks with their new days."
+    },
+    {
+      "name": "manual",
+      "type": "boolean",
+      "doc": "Requested by the learner or the tutor, not by the nightly check."
+    }
+  ]
+}

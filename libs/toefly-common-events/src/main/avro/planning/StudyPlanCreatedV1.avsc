@@ -1,0 +1,107 @@
+{
+  "type": "record",
+  "name": "StudyPlanCreatedV1",
+  "namespace": "com.toefly.events.planning",
+  "doc": "A study plan up to the exam was built (toefly.planning.study-plan-created.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "planId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Plan."
+    },
+    {
+      "name": "weeksTotal",
+      "type": "int",
+      "doc": "Weeks in the plan, 1 to 16."
+    },
+    {
+      "name": "startDate",
+      "type": {
+        "type": "int",
+        "logicalType": "date"
+      },
+      "doc": "Day 1 of week 1 in the learner's time zone."
+    },
+    {
+      "name": "examDate",
+      "type": [
+        "null",
+        {
+          "type": "int",
+          "logicalType": "date"
+        }
+      ],
+      "default": null,
+      "doc": "Exam date; null when the exam is not booked."
+    },
+    {
+      "name": "minutesPerDay",
+      "type": "int",
+      "doc": "Planned minutes per day."
+    },
+    {
+      "name": "timezone",
+      "type": "string",
+      "doc": "IANA time zone of the plan days."
+    },
+    {
+      "name": "mockExamWeeks",
+      "type": {
+        "type": "array",
+        "items": "int"
+      },
+      "doc": "Week numbers with a mock exam (4, 8 and the last one)."
+    }
+  ]
+}
