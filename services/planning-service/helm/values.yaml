@@ -1,0 +1,12 @@
+# Values of planning-service for the shared chart infra/helm/toefly-service-lib (phase 13 fills in the rest).
+image:
+  repository: ghcr.io/OWNER/toefly-planning-service
+  digest: ""
+service:
+  port: 8087
+database:
+  name: planning_db
+  role: planning_app
+resources:
+  requests: { cpu: 50m, memory: 320Mi }
+  limits: { memory: 448Mi }
