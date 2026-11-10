@@ -935,7 +935,7 @@ components:
         content:
           type: object
           additionalProperties: true
-          description: Вопрос и варианты по JSON-схеме типа задания; идентификаторы вариантов — `optionId`. Ключей и объяснений нет.
+          description: Вопрос и варианты по JSON-схеме типа задания; идентификаторы вариантов — `optionId`. Ключей и объяснений нет. Для `COMPLETE_THE_WORDS` вместо `suffix` — `missingLetters` (число ячеек пропуска).
         answer:
           oneOf:
             - { $ref: '#/components/schemas/AnswerValue' }
