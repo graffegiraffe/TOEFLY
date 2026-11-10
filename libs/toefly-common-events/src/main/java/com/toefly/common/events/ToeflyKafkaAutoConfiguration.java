@@ -1,22 +1,37 @@
 package com.toefly.common.events;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.kafka.autoconfigure.DefaultKafkaConsumerFactoryCustomizer;
+import org.springframework.boot.kafka.autoconfigure.DefaultKafkaProducerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.dao.TransientDataAccessException;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.retrytopic.RetryTopicConfiguration;
 import org.springframework.kafka.retrytopic.RetryTopicConfigurationBuilder;
 import org.springframework.kafka.retrytopic.SameIntervalTopicReuseStrategy;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
+import org.springframework.kafka.support.serializer.DelegatingByTypeSerializer;
 import org.springframework.kafka.support.serializer.DeserializationException;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.web.client.ResourceAccessException;
 
-/** Retry topics, DLQ and in-memory backoff shared by every TOEFLY consumer. */
+/**
+ * Retry topics, DLQ and in-memory backoff shared by every TOEFLY consumer. A record the deserializer cannot read
+ * becomes a {@link DeserializationException} and goes to {@code <topic>.dlq} with its original bytes, instead of
+ * failing on the same offset forever.
+ */
 @AutoConfiguration(afterName = "org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration")
 @EnableConfigurationProperties(ToeflyEventsProperties.class)
 public class ToeflyKafkaAutoConfiguration {
@@ -52,5 +67,63 @@ public class ToeflyKafkaAutoConfiguration {
                 .notRetryOn(NOT_RETRYABLE)
                 .doNotAutoCreateRetryTopics()
                 .create(template);
+    }
+
+    /** Wraps the configured key and value deserializers, so a failure reaches the error handler with the record. */
+    @Bean
+    DefaultKafkaConsumerFactoryCustomizer toeflyErrorHandlingDeserializer() {
+        return factory -> {
+            if (factory.getKeyDeserializer() != null || factory.getValueDeserializer() != null) {
+                return; // deserializer instances are the service's own choice
+            }
+            Map<String, Object> configs = factory.getConfigurationProperties();
+            Map<String, Object> updates = new HashMap<>();
+            wrap(
+                    configs,
+                    updates,
+                    ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                    ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS);
+            wrap(
+                    configs,
+                    updates,
+                    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                    ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS);
+            factory.updateConfigs(updates);
+        };
+    }
+
+    private static void wrap(Map<String, Object> configs, Map<String, Object> updates, String key, String delegateKey) {
+        Object configured = configs.get(key);
+        if (configured == null || isErrorHandling(configured)) {
+            return;
+        }
+        updates.put(key, ErrorHandlingDeserializer.class);
+        updates.put(delegateKey, configured);
+    }
+
+    private static boolean isErrorHandling(Object configured) {
+        String name = configured instanceof Class<?> type ? type.getName() : configured.toString();
+        return name.equals(ErrorHandlingDeserializer.class.getName());
+    }
+
+    /**
+     * The template of retry topics and the DLQ also writes the raw bytes of an unreadable record; the default
+     * {@code StringSerializer} would fail on them and leave the record where it is.
+     */
+    @Bean
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    DefaultKafkaProducerFactoryCustomizer toeflyDeadLetterSerializer() {
+        return factory -> {
+            Object configured = factory.getConfigurationProperties().get(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG);
+            boolean defaultString = configured == null
+                    || configured == StringSerializer.class
+                    || StringSerializer.class.getName().equals(configured);
+            if (factory.getValueSerializer() != null || !defaultString) {
+                return;
+            }
+            ((DefaultKafkaProducerFactory) factory)
+                    .setValueSerializer(new DelegatingByTypeSerializer(
+                            Map.of(byte[].class, new ByteArraySerializer(), String.class, new StringSerializer())));
+        };
     }
 }
