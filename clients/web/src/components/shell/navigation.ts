@@ -43,15 +43,7 @@ export const ADMIN_NAV: NavItem[] = [{ to: '/admin/content', labelKey: 'nav.admi
 
 export const SETTINGS_NAV: NavItem = { to: '/settings', labelKey: 'nav.settings', icon: Settings };
 
-export const PLACEHOLDER_SECTIONS = [
-  'today',
-  'weeks',
-  'practice',
-  'grammar',
-  'vocabulary',
-  'progress',
-  'ai-tutor',
-] as const;
+export const PLACEHOLDER_SECTIONS = ['today', 'weeks', 'grammar', 'vocabulary', 'progress', 'ai-tutor'] as const;
 
 export function navFor(roles: readonly string[]): { primary: NavItem[]; tutor: NavItem[]; admin: NavItem[] } {
   return {
