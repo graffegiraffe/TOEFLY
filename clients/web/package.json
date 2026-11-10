@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@12.16.1",
   "scripts": {
-    "generate": "openapi-generator-cli generate -i ../../services/profile-service/src/main/openapi/profile-service.yaml -g typescript-fetch -o src/api/generated --additional-properties=supportsES6=true,withInterfaces=true,useSingleRequestParameter=true,stringEnums=true && openapi-generator-cli generate -i ../../services/content-service/src/main/openapi/content-service.yaml -g typescript-fetch -o src/api/generated/content --additional-properties=supportsES6=true,withInterfaces=true,useSingleRequestParameter=true,stringEnums=true && node scripts/mark-generated.mjs",
+    "generate": "openapi-generator-cli generate -i ../../services/profile-service/src/main/openapi/profile-service.yaml -g typescript-fetch -o src/api/generated --additional-properties=supportsES6=true,withInterfaces=true,useSingleRequestParameter=true,stringEnums=true && openapi-generator-cli generate -i ../../services/content-service/src/main/openapi/content-service.yaml -g typescript-fetch -o src/api/generated/content --additional-properties=supportsES6=true,withInterfaces=true,useSingleRequestParameter=true,stringEnums=true && openapi-generator-cli generate -i ../../services/practice-service/src/main/openapi/practice-service.yaml -g typescript-fetch -o src/api/generated/practice --additional-properties=supportsES6=true,withInterfaces=true,useSingleRequestParameter=true,stringEnums=true && node scripts/mark-generated.mjs",
     "dev": "vite",
     "build": "pnpm run generate && pnpm run routes && tsc -b && vite build",
     "typecheck": "pnpm run generate && pnpm run routes && tsc -b",
