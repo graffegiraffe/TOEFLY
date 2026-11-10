@@ -7,6 +7,8 @@ summary in the model's own words, checked for copied 8-grams against the transcr
 """
 
 import re
+import subprocess
+import sys
 
 from ..common import llm
 from ..common.envelope import Report, envelope
@@ -109,17 +111,69 @@ def read_pages(pdf, first: int, last: int, topics: list[str]) -> tuple[list[dict
     return list(merged.values()), "\n".join(rules)
 
 
-def read_keys(pdf, first: int, last: int) -> dict[tuple[str, int, str], dict[int, str]]:
+HEADING = re.compile(r"^(English in Use|Progress Check|Revision|Test|Quiz)\s+(\d{1,2})\b")
+KINDS = {"English in Use": "ENGLISH_IN_USE", "Progress Check": "PROGRESS_CHECK", "Revision": "REVISION",
+         "Test": "TEST", "Quiz": "QUIZ"}
+
+
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z]+", text.lower())
+
+
+def headings(pdf, page: int, titles: dict[int, str]) -> list[tuple[str, int]]:
+    """Section headings of a key page in reading order (left column, then right), read from the OCR text layer.
+
+    A unit heading is a line "5 Modal Verbs" whose words start the title of unit 5; other numbered lines are answers.
+    """
+    info = subprocess.run(["pdfinfo", "-f", str(page + 1), "-l", str(page + 1), str(pdf)], capture_output=True,
+                          text=True, check=True).stdout
+    width, height = (float(v) for v in re.search(r"size:\s+([\d.]+) x ([\d.]+)", info).groups())
+    found: list[tuple[str, int]] = []
+    for x in (0, width / 2):
+        text = subprocess.run(["pdftotext", "-f", str(page + 1), "-l", str(page + 1), "-x", str(int(x)), "-y", "0",
+                               "-W", str(int(width / 2)), "-H", str(int(height)), str(pdf), "-"],
+                              capture_output=True, text=True, check=True).stdout
+        for line in (l.strip() for l in text.splitlines()):
+            m = HEADING.match(line)
+            if m:
+                found.append((KINDS[m.group(1)], int(m.group(2))))
+                continue
+            m = re.match(r"^(\d{1,2})\s+(.+)$", line)
+            if m and int(m.group(1)) in titles:
+                title = _words(titles[int(m.group(1))])[:2]
+                if title and _words(m.group(2))[: len(title)] == title:
+                    found.append(("UNIT", int(m.group(1))))
+    return found
+
+
+def read_keys(pdf, first: int, last: int,
+              titles: dict[int, str] | None = None) -> dict[tuple[str, int, str], dict[int, str]]:
     """(kind, number, exercise) -> {item: answer}; a section continued from the previous page keeps its address.
 
-    A heading the book does not have (Unit 16 of 15 units, an unknown kind) drops its answers and those continued
-    after it, so that they never become the key of another exercise.
+    With ``titles`` the headings come from the text layer (``headings``): the model is told them, and when it starts
+    as many sections as there are headings, kind and number are taken from the text, not from the model. A heading
+    the book does not have (Unit 16 of 15 units, an unknown kind) drops its answers and those continued after it, so
+    that they never become the key of another exercise.
     """
     keys: dict[tuple[str, int, str], dict[int, str]] = {}
     current: tuple[str, int] | None = None
     for page in range(first, last + 1):
-        data = llm.ask_json(KEY_PROMPT, render(pdf, page))
-        for section in data.get("sections", []):
+        prompt, found = KEY_PROMPT, None
+        if titles is not None:
+            found = headings(pdf, page, titles)
+            names = ", ".join(f"{k} {n}" for k, n in found) or "none"
+            prompt += (f"\nThe section headings on this page, in reading order, are: {names}. Start a section only "
+                       "at one of them; every other answer continues the section before it.")
+        data = llm.ask_json(prompt, render(pdf, page))
+        sections = data.get("sections", [])
+        started = [s for s in sections if not s.get("continued")]
+        if found is not None and len(started) == len(found):
+            for section, (kind, number) in zip(started, found):
+                section["kind"], section["number"] = kind, number
+        elif found is not None:
+            print(f"keys: page {page + 1}: {len(started)} sections read, {len(found)} headings in the text",
+                  file=sys.stderr, flush=True)
+        for section in sections:
             if not section.get("continued") and section.get("kind") and section.get("number") is not None:
                 try:
                     current = (str(section["kind"]), int(section["number"]))

@@ -112,7 +112,7 @@ def extract_file(path: Path, report: Report, *, with_exercises: bool = True,
     keys: dict = {}
     if with_exercises:
         for first, last in (rx.TB_UNIT_KEY_PAGES, rx.TB_TEST_KEY_PAGES, rx.TB_QUIZ_KEY_PAGES):
-            keys.update(rx.read_keys(teacher, first, last))
+            keys.update(rx.read_keys(teacher, first, last, titles))
     for number in range(1, 16):
         slug = f"u{number:02d}"
         title = titles.get(number)
