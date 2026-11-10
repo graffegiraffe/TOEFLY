@@ -117,3 +117,9 @@ def test_headings_of_the_text_layer_name_the_sections_the_model_starts(monkeypat
 
     assert keys == {("ENGLISH_IN_USE", 4, "1"): {2: "e"}, ("UNIT", 5, "1"): {2: "u"}}  # the first had no section
     assert "ENGLISH_IN_USE 4, UNIT 5" in prompts[0]
+
+
+def test_the_speaker_label_of_a_dialogue_key_is_not_part_of_the_answer():
+    item = rx.build_item({"n": 2, "text": "A: Did you go?\nB: No. I ___ (finish) it.", "blanks": 1}, "B: had finished", "T")
+    assert item["answerKey"] == "had finished"
+    assert rx.build_item({"n": 3, "text": "A: ___ B: ___", "blanks": 1}, "A: some B: any", "T") is None

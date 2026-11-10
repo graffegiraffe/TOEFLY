@@ -205,6 +205,13 @@ def _answers(answer: str) -> list[str] | None:
     """Alternatives of a closed answer, None for an open (suggested) or multi-gap answer."""
     if answer.upper().startswith("SUGGESTED") or "|" in answer:
         return None
+    # "B: had finished": the label names the line of a dialogue the gap is in; two labels mean two gaps. The label
+    # still counts towards the length, so that a whole reply ("B: I have been there twice.") stays an open answer.
+    if len(answer.split()) > MAX_GAP_WORDS:
+        return None
+    answer = re.sub(r"^\s*[AB]:\s*", "", answer)
+    if re.search(r"(^|\s)[AB]:\s", answer):
+        return None
     parts = [normalise(p) for p in answer.split(" / ")]
     if not all(parts) or any(len(p.split()) > MAX_GAP_WORDS for p in parts):
         return None
