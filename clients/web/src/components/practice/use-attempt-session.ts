@@ -35,10 +35,13 @@ export function useAttemptSession(attempt: Attempt) {
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const replays = useRef(0);
   const sequence = useRef(0);
+  // after the submission the attempt takes no more heartbeats (the server answers 409)
+  const submitted = useRef(false);
   const currentItem = useRef<string | null>(attempt.items[0]?.itemId ?? null);
 
   const beat = useCallback(
     (state: HeartbeatRequestStateEnum) => {
+      if (submitted.current) return;
       sequence.current = Math.max(sequence.current + 1, Date.now());
       const delta = tracker.take();
       void sendHeartbeat(attemptId, {
@@ -155,6 +158,7 @@ export function useAttemptSession(attempt: Attempt) {
       .map(([itemId, answer]) => ({ itemId, answer }));
     beat(HeartbeatRequestStateEnum.Active);
     const review = await submitAttempt(attemptId, submitKey.current, finalAnswers);
+    submitted.current = true;
     sync.forget();
     return review;
   }, [attemptId, beat, sync]);
