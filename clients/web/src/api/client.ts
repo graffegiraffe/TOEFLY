@@ -12,9 +12,15 @@ import {
   AdminApi as ContentAdminApi,
   AdminUnitsApi as ContentAdminUnitsApi,
   Configuration as ContentConfiguration,
+  ItemSetsApi as ContentItemSetsApi,
   ReportsApi as ContentReportsApi,
   SourcesApi as ContentSourcesApi,
 } from './generated/content';
+import {
+  AbilitiesApi as PracticeAbilitiesApi,
+  AttemptsApi as PracticeAttemptsApi,
+  Configuration as PracticeConfiguration,
+} from './generated/practice';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -47,7 +53,16 @@ const contentConfiguration = new ContentConfiguration({
   middleware: [csrfMiddleware],
 });
 
+const practiceConfiguration = new PracticeConfiguration({
+  basePath: API_URL,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
 export const api = {
+  attempts: new PracticeAttemptsApi(practiceConfiguration),
+  abilities: new PracticeAbilitiesApi(practiceConfiguration),
+  contentItemSets: new ContentItemSetsApi(contentConfiguration),
   contentAdmin: new ContentAdminApi(contentConfiguration),
   contentAdminUnits: new ContentAdminUnitsApi(contentConfiguration),
   contentReports: new ContentReportsApi(contentConfiguration),
