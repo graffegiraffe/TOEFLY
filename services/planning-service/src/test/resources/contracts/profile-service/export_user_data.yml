@@ -1,0 +1,19 @@
+name: export_user_data
+description: profile-service collects the plan and the weeks into the data export of the user
+request:
+  method: GET
+  url: /internal/v1/users/7d0d2c6a-6b1f-4a47-9f0e-2f4a3e9b5c21/export
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    userId: 7d0d2c6a-6b1f-4a47-9f0e-2f4a3e9b5c21
+  matchers:
+    body:
+      - path: $.studyPlan.planId
+        type: by_regex
+        predefined: uuid
+      - path: $.weeks
+        type: by_type
+        minOccurrence: 1

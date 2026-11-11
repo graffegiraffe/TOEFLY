@@ -1,0 +1,24 @@
+name: week_draft_generated
+description: classroom-service shows the draft of the next week to the tutor
+input:
+  triggeredBy: weekDraftGenerated()
+outputMessage:
+  sentTo: toefly.planning.week-draft-generated.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/planning-service
+    content-type: application/avro
+    ce_type: toefly.planning.week-draft-generated.v1
+  body:
+    weekNo: 1
+    status: PUBLISHED
+    approvalDeadline: null
+  matchers:
+    body:
+      - path: $.weekId
+        type: by_regex
+        predefined: uuid
+      - path: $.taskCount
+        type: by_type
+      - path: $.estimatedMinutes
+        type: by_type

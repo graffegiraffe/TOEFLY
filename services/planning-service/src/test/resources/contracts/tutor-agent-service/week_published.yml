@@ -1,0 +1,26 @@
+name: week_published
+description: tutor-agent-service reads what the learner does this week
+input:
+  triggeredBy: weekPublished()
+outputMessage:
+  sentTo: toefly.planning.week-published.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/planning-service
+    content-type: application/avro
+    ce_type: toefly.planning.week-published.v1
+  body:
+    weekNo: 1
+    autoPublished: false
+    lockedByEntitlement: false
+  matchers:
+    body:
+      - path: $.weekId
+        type: by_regex
+        predefined: uuid
+      - path: $.tasks
+        type: by_type
+        minOccurrence: 1
+      - path: $.tasks[0].weekTaskId
+        type: by_regex
+        predefined: uuid
