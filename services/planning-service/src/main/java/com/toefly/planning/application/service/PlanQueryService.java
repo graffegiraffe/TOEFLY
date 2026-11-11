@@ -6,6 +6,7 @@ import com.toefly.planning.application.port.out.WeekRepository;
 import com.toefly.planning.domain.plan.LearnerCalendar;
 import com.toefly.planning.domain.plan.StudyPlan;
 import com.toefly.planning.domain.week.Week;
+import com.toefly.planning.domain.week.WeekRuleException;
 import com.toefly.planning.domain.week.WeekTask;
 import com.toefly.planning.domain.week.WeekTaskStatus;
 import java.time.Clock;
@@ -77,6 +78,14 @@ public class PlanQueryService implements PlanQueryUseCase {
     @Override
     public Optional<WeekView> weekById(UUID weekId) {
         return weeks.findById(weekId).flatMap(this::view);
+    }
+
+    @Override
+    public WeekView weekOfTask(UUID userId, UUID taskId) {
+        return weeks.findByTask(taskId)
+                .filter(week -> week.userId().equals(userId))
+                .flatMap(this::view)
+                .orElseThrow(() -> new WeekRuleException("not-found", "No task " + taskId));
     }
 
     @Override
