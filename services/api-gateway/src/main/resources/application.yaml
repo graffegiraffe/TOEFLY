@@ -53,6 +53,10 @@ spring:
               uri: ${toefly.gateway.services.practice-service}
               predicates:
                 - Path=/api/v1/attempts,/api/v1/attempts/**,/api/v1/time-heartbeats,/api/v1/time-summaries,/api/v1/abilities,/api/v1/admin/projections/**
+            - id: planning-service
+              uri: ${toefly.gateway.services.planning-service}
+              predicates:
+                - Path=/api/v1/study-plans,/api/v1/study-plans/**,/api/v1/weeks/**,/api/v1/today,/api/v1/week-tasks/**,/api/v1/students/*/study-plan,/api/v1/students/*/weeks,/api/v1/tutor/pending-approvals
 
 server:
   port: 8080
@@ -74,6 +78,7 @@ toefly:
       profile-service: http://localhost:8081
       content-service: http://localhost:8082
       practice-service: http://localhost:8084
+      planning-service: http://localhost:8087
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
     rate-limits:
