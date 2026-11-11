@@ -1,0 +1,41 @@
+# Composition of a week (docs/02-functional-requirements.md §4.0, docs/03-domain-model.md §10.1).
+toefly:
+  planning:
+    composition:
+      base-minutes-per-day: 60
+      base-counts:
+        COMPLETE_THE_WORDS: 3
+        READ_DAILY_LIFE: 2
+        READ_ACADEMIC_PASSAGE: 2
+        LISTEN_CHOOSE_RESPONSE: 2
+        LISTEN_CONVERSATION: 2
+        LISTEN_ANNOUNCEMENT: 2
+        LISTEN_ACADEMIC_TALK: 2
+        BUILD_A_SENTENCE: 2
+        WRITE_EMAIL: 1
+        WRITE_ACADEMIC_DISCUSSION: 1
+        LISTEN_AND_REPEAT: 2
+        TAKE_AN_INTERVIEW: 2
+      minutes:
+        COMPLETE_THE_WORDS: 3.0
+        READ_DAILY_LIFE: 2.5
+        READ_ACADEMIC_PASSAGE: 6.0
+        LISTEN_CHOOSE_RESPONSE: 2.5
+        LISTEN_CONVERSATION: 2.0
+        LISTEN_ANNOUNCEMENT: 2.0
+        LISTEN_ACADEMIC_TALK: 3.5
+        BUILD_A_SENTENCE: 6.0
+        WRITE_EMAIL: 7.0
+        WRITE_ACADEMIC_DISCUSSION: 10.0
+        LISTEN_AND_REPEAT: 3.0
+        TAKE_AN_INTERVIEW: 4.0
+        GRAMMAR_EXERCISE: 8.0
+        VOCAB_EXERCISE: 8.0
+      weak-factor: 1.5
+      budget-max-factor: 1.1
+      budget-min-factor: 0.9
+      unit-minutes: 60
+      vocabulary-review-minutes: 5
+      resource-minutes: 15
+      mock-exam-minutes: 90
+      minimal-mode-minutes: 15

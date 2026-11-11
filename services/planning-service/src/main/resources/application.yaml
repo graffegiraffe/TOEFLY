@@ -1,6 +1,8 @@
 spring:
   application:
     name: planning-service
+  config:
+    import: classpath:week-composition.yaml
   datasource:
     url: jdbc:postgresql://localhost:${TOEFLY_POSTGRES_PORT:5432}/planning_db
     username: planning_app
@@ -26,6 +28,18 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+      client:
+        registration:
+          svc-planning-service:
+            provider: keycloak
+            client-id: svc-planning-service
+            client-secret: ${SVC_PLANNING_SERVICE_SECRET:svc-planning-service-local}
+            authorization-grant-type: client_credentials
+            scope: internal
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/toefly/protocol/openid-connect/token
   mvc:
     problemdetails:
       enabled: true
@@ -37,6 +51,38 @@ toefly:
   events:
     registry-url: http://localhost:8380/apis/registry/v3
     auto-register: false
+  planning:
+    content-url: http://localhost:8082
+    # Closed types only: the open Writing and Speaking types wait for phases 5b and 6 (docs/12, phase 4, decision 2).
+    available-task-types:
+      - COMPLETE_THE_WORDS
+      - READ_DAILY_LIFE
+      - READ_ACADEMIC_PASSAGE
+      - LISTEN_CHOOSE_RESPONSE
+      - LISTEN_CONVERSATION
+      - LISTEN_ANNOUNCEMENT
+      - LISTEN_ACADEMIC_TALK
+      - BUILD_A_SENTENCE
+      - GRAMMAR_EXERCISE
+    vocabulary-review-enabled: false
+    mock-exam-enabled: false
+    exam-format: TOEFL_2026
+    rollover:
+      enabled: true
+      interval: PT5M
+    resources:
+      - url: https://www.toeflresources.com/toefl-reading/
+        title: "toeflresources.com: Reading section"
+        sections: [READING]
+      - url: https://www.toeflresources.com/listening/
+        title: "toeflresources.com: Listening section"
+        sections: [LISTENING]
+      - url: https://www.toeflresources.com/writing-section/
+        title: "toeflresources.com: Writing section"
+        sections: [WRITING]
+      - url: https://www.toeflresources.com/speaking-section/
+        title: "toeflresources.com: Speaking section"
+        sections: [SPEAKING]
 
 management:
   opentelemetry:
@@ -61,6 +107,9 @@ spring:
 toefly:
   events:
     auto-register: true
+  planning:
+    rollover:
+      interval: PT1M
 
 ---
 spring:

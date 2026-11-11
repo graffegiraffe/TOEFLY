@@ -115,10 +115,19 @@ final class CatalogSetSupply implements SetSupply {
                 repeat);
     }
 
-    /** {@code "Academic passage: Desert plants"}; the event of content-service carries only the topic. */
+    static final int TOPIC_LENGTH = 60;
+
+    /**
+     * {@code "Academic passage: Desert plants"}; the event of content-service carries only the topic, which for
+     * Listening is the start of the transcript, so a long topic is cut at a word.
+     */
     static String title(CatalogEntry entry) {
         String topic = entry.topic().isBlank() ? "practice set" : entry.topic().strip();
-        String title = entry.taskType().label() + ": " + Character.toUpperCase(topic.charAt(0)) + topic.substring(1);
-        return title.length() <= 200 ? title : title.substring(0, 199) + "…";
+        if (topic.length() > TOPIC_LENGTH) {
+            int cut = topic.lastIndexOf(' ', TOPIC_LENGTH);
+            topic = topic.substring(0, cut > TOPIC_LENGTH / 2 ? cut : TOPIC_LENGTH)
+                            .replaceAll("[,.;:!?]+$", "") + "…";
+        }
+        return entry.taskType().label() + ": " + Character.toUpperCase(topic.charAt(0)) + topic.substring(1);
     }
 }

@@ -21,6 +21,9 @@ public interface PlanQueryUseCase {
 
     Optional<WeekView> weekById(UUID weekId);
 
+    /** The week of a task of the learner; 404 for another learner's task. */
+    WeekView weekOfTask(UUID userId, UUID taskId);
+
     Optional<WeekView> currentWeek(UUID userId);
 
     Today today(UUID userId, @Nullable LocalDate date);

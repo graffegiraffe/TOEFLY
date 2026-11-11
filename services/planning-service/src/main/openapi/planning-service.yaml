@@ -367,6 +367,36 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /weeks/{weekId}/completion:
+    parameters:
+      - { $ref: '#/components/parameters/WeekId' }
+    post:
+      tags: [Weeks]
+      operationId: finishWeekEarly
+      summary: Закончить неделю досрочно
+      description: |
+        «Finish week early» (AC-04.06.3): при 100% до конца Day 7 закрывает неделю (`week-completed`, `closedBy = EARLY`)
+        и публикует следующую неделю с Day 1 = завтра. Иначе `409 week-not-completable`.
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200':
+          description: Закрытая неделя.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Week' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /weeks/{weekId}/approval:
     parameters:
       - { $ref: '#/components/parameters/WeekId' }

@@ -97,6 +97,10 @@
                             <apiPackage>com.toefly.planning.adapter.in.web.api</apiPackage>
                             <modelPackage>com.toefly.planning.adapter.in.web.dto</modelPackage>
                             <generateSupportingFiles>false</generateSupportingFiles>
+                            <!-- Bean Validation has no @Size for java.net.URI; a URI stays a String with its maxLength. -->
+                            <typeMappings>
+                                <typeMapping>URI=String</typeMapping>
+                            </typeMappings>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
                                 <useSpringBoot4>true</useSpringBoot4>
