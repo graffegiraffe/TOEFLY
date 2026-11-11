@@ -1,0 +1,24 @@
+name: week_rebalanced
+description: notification-service tells the learner and the tutor that the week was rebuilt
+input:
+  triggeredBy: weekRebalanced()
+outputMessage:
+  sentTo: toefly.planning.week-rebalanced.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/planning-service
+    content-type: application/avro
+    ce_type: toefly.planning.week-rebalanced.v1
+  body:
+    weekNo: 1
+    manual: false
+  matchers:
+    body:
+      - path: $.weekId
+        type: by_regex
+        predefined: uuid
+      - path: $.lagDays
+        type: by_type
+      - path: $.skipped
+        type: by_type
+        minOccurrence: 1

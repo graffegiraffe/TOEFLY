@@ -1,0 +1,28 @@
+name: week_completed
+description: tutor-agent-service writes the weekly review and drafts the next week
+input:
+  triggeredBy: weekCompleted()
+outputMessage:
+  sentTo: toefly.planning.week-completed.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/planning-service
+    content-type: application/avro
+    ce_type: toefly.planning.week-completed.v1
+  body:
+    weekNo: 1
+    status: COMPLETED
+    closedBy: EARLY
+    finishedEarly: true
+    extended: false
+    tutorId: null
+  matchers:
+    body:
+      - path: $.weekId
+        type: by_regex
+        predefined: uuid
+      - path: $.progressPercent
+        type: by_type
+      - path: $.sections
+        type: by_type
+        minOccurrence: 1

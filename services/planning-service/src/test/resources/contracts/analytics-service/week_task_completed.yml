@@ -1,0 +1,26 @@
+name: week_task_completed
+description: analytics-service counts done tasks for the streak and the dashboard
+input:
+  triggeredBy: weekTaskCompleted()
+outputMessage:
+  sentTo: toefly.planning.week-task-completed.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/planning-service
+    content-type: application/avro
+    ce_type: toefly.planning.week-task-completed.v1
+  body:
+    weekNo: 1
+    kind: EXTERNAL_RESOURCE
+    weekSection: RESOURCES
+    taskType: null
+    attemptId: null
+  matchers:
+    body:
+      - path: $.weekTaskId
+        type: by_regex
+        predefined: uuid
+      - path: $.estimatedMinutes
+        type: by_type
+      - path: $.progressPercent
+        type: by_type

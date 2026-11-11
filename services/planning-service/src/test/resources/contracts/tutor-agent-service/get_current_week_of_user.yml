@@ -1,0 +1,23 @@
+name: get_current_week_of_user
+description: tutor-agent-service reads the current week of a learner to answer in context
+request:
+  method: GET
+  url: /internal/v1/users/7d0d2c6a-6b1f-4a47-9f0e-2f4a3e9b5c21/weeks/current
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    weekNo: 1
+    status: PUBLISHED
+  matchers:
+    body:
+      - path: $.weekId
+        type: by_regex
+        predefined: uuid
+      - path: $.sections
+        type: by_type
+        minOccurrence: 1
+      - path: $.days
+        type: by_type
+        minOccurrence: 7

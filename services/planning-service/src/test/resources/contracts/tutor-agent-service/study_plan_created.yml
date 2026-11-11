@@ -1,0 +1,24 @@
+name: study_plan_created
+description: tutor-agent-service starts the learner model when the plan up to the exam exists
+input:
+  triggeredBy: studyPlanCreated()
+outputMessage:
+  sentTo: toefly.planning.study-plan-created.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/planning-service
+    content-type: application/avro
+    ce_type: toefly.planning.study-plan-created.v1
+  body:
+    weeksTotal: 8
+    minutesPerDay: 60
+    timezone: Europe/Minsk
+    mockExamWeeks: [4, 8]
+  matchers:
+    body:
+      - path: $.planId
+        type: by_regex
+        predefined: uuid
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
