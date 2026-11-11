@@ -21,6 +21,13 @@ import {
   AttemptsApi as PracticeAttemptsApi,
   Configuration as PracticeConfiguration,
 } from './generated/practice';
+import {
+  Configuration as PlanningConfiguration,
+  StudyPlansApi as PlanningStudyPlansApi,
+  TodayApi as PlanningTodayApi,
+  WeekTasksApi as PlanningWeekTasksApi,
+  WeeksApi as PlanningWeeksApi,
+} from './generated/planning';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -59,7 +66,18 @@ const practiceConfiguration = new PracticeConfiguration({
   middleware: [csrfMiddleware],
 });
 
+// planning-service.yaml keeps its paths relative to the server /api/v1 (docs/05 §7.2).
+const planningConfiguration = new PlanningConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
 export const api = {
+  studyPlans: new PlanningStudyPlansApi(planningConfiguration),
+  weeks: new PlanningWeeksApi(planningConfiguration),
+  today: new PlanningTodayApi(planningConfiguration),
+  weekTasks: new PlanningWeekTasksApi(planningConfiguration),
   attempts: new PracticeAttemptsApi(practiceConfiguration),
   abilities: new PracticeAbilitiesApi(practiceConfiguration),
   contentItemSets: new ContentItemSetsApi(contentConfiguration),
