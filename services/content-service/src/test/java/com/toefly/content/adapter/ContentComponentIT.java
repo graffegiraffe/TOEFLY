@@ -14,6 +14,7 @@ import com.toefly.common.test.OutboxAssertions;
 import com.toefly.common.test.PostgresTestcontainersConfiguration;
 import com.toefly.common.test.contract.ContractCoverage;
 import com.toefly.common.test.contract.ContractTests;
+import com.toefly.common.test.contract.MockMvcExchanger;
 import com.toefly.common.test.contract.OutboxMessageReceiver;
 import com.toefly.content.application.port.in.ImportReport;
 import com.toefly.content.application.port.in.ImportSeedUseCase;
@@ -376,6 +377,15 @@ class ContentComponentIT {
     void contractsCoverTopics() {
         ContractCoverage.assertMessagesCover(
                 CONTRACTS, List.of("toefly.content.item-set-published.v1", "toefly.content.item-set-hidden.v1"));
+    }
+
+    @TestFactory
+    @Order(22)
+    @DisplayName("ADR-0031 the unit lists fulfil the contracts of planning-service (docs/12 phase 4, decision 10)")
+    Stream<DynamicTest> restContracts() {
+        return ContractTests.rest(
+                CONTRACTS.resolve("planning-service"),
+                MockMvcExchanger.of(mvc, JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE")));
     }
 
     void itemSetPublished() throws Exception {
