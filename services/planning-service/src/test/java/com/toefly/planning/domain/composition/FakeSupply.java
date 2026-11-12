@@ -31,6 +31,11 @@ final class FakeSupply implements SetSupply {
     }
 
     @Override
+    public int freshLeft(TaskType type) {
+        return (int) sets.get(type).stream().filter(set -> !set.repeat()).count();
+    }
+
+    @Override
     public void giveBack(ItemSetCandidate candidate) {
         sets.get(candidate.taskType()).addFirst(candidate);
     }

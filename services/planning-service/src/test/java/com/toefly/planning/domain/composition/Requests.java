@@ -40,6 +40,7 @@ final class Requests {
     static CompositionRequest request(int weekNo, int minutes, List<TaskType> weak, Set<TaskType> types, boolean mock) {
         return new CompositionRequest(
                 weekNo,
+                1,
                 minutes,
                 weak,
                 types,
