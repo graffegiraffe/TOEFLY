@@ -1,0 +1,18 @@
+name: list_round_up_units
+description: planning-service reads the approved Round-Up units in order to plan the grammar track (docs/12 phase 4, decision 10)
+request:
+  method: GET
+  url: /api/v1/grammar-units?framework=ROUND_UP_5
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    items:
+      - unitNo: 1
+        title: Present forms
+  matchers:
+    body:
+      - path: $.items[0].id
+        type: by_regex
+        predefined: uuid
