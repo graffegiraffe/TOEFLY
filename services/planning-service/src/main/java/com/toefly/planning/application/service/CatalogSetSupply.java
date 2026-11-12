@@ -72,6 +72,13 @@ final class CatalogSetSupply implements SetSupply {
     }
 
     @Override
+    public int freshLeft(TaskType type) {
+        return (int) queues.computeIfAbsent(type, this::load).stream()
+                .filter(candidate -> !candidate.repeat() && !taken.contains(candidate.itemSetId()))
+                .count();
+    }
+
+    @Override
     public void giveBack(ItemSetCandidate candidate) {
         if (taken.remove(candidate.itemSetId())) {
             queues.computeIfAbsent(candidate.taskType(), this::load).addFirst(candidate);

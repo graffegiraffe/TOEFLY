@@ -71,6 +71,7 @@ class WeekPlanner {
                 plan.userId().getMostSignificantBits() ^ weekNo);
         CompositionRequest request = new CompositionRequest(
                 weekNo,
+                plan.weeksTotal() - weekNo + 1,
                 plan.minutesPerDay(),
                 weak,
                 settings.availableTypes(),

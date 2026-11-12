@@ -152,11 +152,60 @@ class WeekComposerTest {
     }
 
     @Test
-    @DisplayName("AC-04.01.4: without fresh sets a done set comes back as a repeat")
+    @DisplayName("docs/03 §10.2: the fill step takes at most the share of the bank for one of the weeks left")
+    void fillSharesTheBank() {
+        CompositionRequest base = request(1, 60, List.of(), CLOSED, false);
+        CompositionRequest request = withSupply(base, 8, new FakeSupply(20, false));
+        Map<TaskType, Long> counts = WeekComposer.compose(request, RULES).stream()
+                .filter(task -> task.taskType() != null && CLOSED.contains(task.taskType()))
+                .collect(Collectors.groupingBy(WeekTask::taskType, Collectors.counting()));
+        Map<TaskType, Long> full = WeekComposer.compose(withSupply(base, 1, new FakeSupply(20, false)), RULES).stream()
+                .filter(task -> task.taskType() != null && CLOSED.contains(task.taskType()))
+                .collect(Collectors.groupingBy(WeekTask::taskType, Collectors.counting()));
+        // 20 fresh sets over 8 weeks: ceil(20 / 8) = 3 a type; the base week (at most 3 a type at 60 min) stays
+        assertThat(counts.values()).allSatisfy(count -> assertThat(count).isLessThanOrEqualTo(3));
+        // a plan of one week may take the whole bank up to 14 a type
+        assertThat(full.values().stream().mapToLong(Long::longValue).sum())
+                .isGreaterThan(
+                        counts.values().stream().mapToLong(Long::longValue).sum());
+    }
+
+    @Test
+    @DisplayName("docs/03 §10.2: with the bank used up the week stays shorter than the budget instead of repeats")
+    void noFillFromRepeats() {
+        CompositionRequest request = withSupply(
+                request(2, 60, List.of(), EnumSet.of(TaskType.READ_DAILY_LIFE), false), 7, new FakeSupply(30, true));
+        List<WeekTask> tasks = WeekComposer.compose(request, RULES);
+        assertThat(tasks)
+                .filteredOn(task -> task.taskType() == TaskType.READ_DAILY_LIFE)
+                .hasSize(2);
+        assertThat(total(tasks)).isLessThan(60 * 7 * 0.9);
+    }
+
+    private static CompositionRequest withSupply(CompositionRequest base, int weeksLeft, SetSupply supply) {
+        return new CompositionRequest(
+                base.weekNo(),
+                weeksLeft,
+                base.minutesPerDay(),
+                base.weakTypes(),
+                base.availableTypes(),
+                base.vocabularyReview(),
+                base.mockExam(),
+                base.roundUpUnit(),
+                base.collinsGrammarUnit(),
+                base.collinsVocabularyUnit(),
+                base.resources(),
+                base.recentTypeCounts(),
+                supply);
+    }
+
+    @Test
+    @DisplayName("AC-04.01.4: without fresh sets a done set comes back as a repeat of the base week, not as a fill")
     void repeats() {
         CompositionRequest base = request(3, 60, List.of(), EnumSet.of(TaskType.READ_DAILY_LIFE), false);
         CompositionRequest request = new CompositionRequest(
                 base.weekNo(),
+                base.weeksLeft(),
                 base.minutesPerDay(),
                 base.weakTypes(),
                 base.availableTypes(),
@@ -171,7 +220,7 @@ class WeekComposerTest {
         List<WeekTask> tasks = WeekComposer.compose(request, RULES);
         assertThat(tasks)
                 .filteredOn(task -> task.taskType() == TaskType.READ_DAILY_LIFE)
-                .hasSize(3)
+                .hasSize(2)
                 .allSatisfy(task -> {
                     assertThat(task.repeat()).isTrue();
                     assertThat(task.rationale()).startsWith("Repeat");

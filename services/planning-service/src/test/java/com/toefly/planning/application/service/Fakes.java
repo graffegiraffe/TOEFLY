@@ -275,20 +275,22 @@ final class Fakes {
 
         Catalog() {
             for (TaskType type : TaskType.values()) {
-                IntStream.range(0, 40).forEach(i -> {
-                    UUID id = UUID.randomUUID();
-                    entries.put(
-                            id,
-                            new CatalogEntry(
-                                    id,
-                                    1,
-                                    type,
-                                    type.legacy() ? "TOEFL_LEGACY" : "TOEFL_2026",
-                                    (i % 9 - 4) * 0.3,
-                                    CompositionRules.standard().minutesOf(type),
-                                    "topic " + i,
-                                    null));
-                });
+                IntStream.range(0, 120)
+                        .forEach(
+                                i -> { // enough that the share of the bank (docs/03 §10.2) does not bind
+                                    UUID id = UUID.randomUUID();
+                                    entries.put(
+                                            id,
+                                            new CatalogEntry(
+                                                    id,
+                                                    1,
+                                                    type,
+                                                    type.legacy() ? "TOEFL_LEGACY" : "TOEFL_2026",
+                                                    (i % 9 - 4) * 0.3,
+                                                    CompositionRules.standard().minutesOf(type),
+                                                    "topic " + i,
+                                                    null));
+                                });
             }
         }
 

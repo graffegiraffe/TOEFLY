@@ -46,11 +46,17 @@ public final class WeekComposer {
     private final CompositionRules rules;
     private final List<Entry> entries = new ArrayList<>();
     private final Set<TaskType> weak;
+    private final Map<TaskType, Integer> share = new EnumMap<>(TaskType.class);
 
     private WeekComposer(CompositionRequest request, CompositionRules rules) {
         this.request = request;
         this.rules = rules;
         this.weak = Set.copyOf(request.weakTypes());
+        // The bank is shared among the weeks left before any set is taken (docs/03 §10.2, share[t]).
+        for (TaskType type : request.availableTypes()) {
+            int fresh = request.supply().freshLeft(type);
+            share.put(type, (fresh + request.weeksLeft() - 1) / request.weeksLeft());
+        }
     }
 
     /** Pending tasks of the week without days; {@code Week.publish} spreads them over the days. */
@@ -374,11 +380,14 @@ public final class WeekComposer {
                 if (total() >= budgetMin() - 1e-9) {
                     return;
                 }
-                if (exhausted.contains(type) || typeCounts().getOrDefault(type, 0) >= MAX_PER_TYPE) {
+                int count = typeCounts().getOrDefault(type, 0);
+                if (exhausted.contains(type) || count >= MAX_PER_TYPE || count >= share.getOrDefault(type, 0)) {
                     continue;
                 }
                 Optional<ItemSetCandidate> set = request.supply().next(type);
-                if (set.isEmpty()) {
+                if (set.isEmpty() || set.get().repeat()) {
+                    // A repeat only stands in for a missing set of the base week (AC-04.01.4), never fills time.
+                    set.ifPresent(request.supply()::giveBack);
                     exhausted.add(type);
                     continue;
                 }
