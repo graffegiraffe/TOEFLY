@@ -92,6 +92,7 @@ final class Gateway {
                 new JsonOutputSchemaAdapter(),
                 cache,
                 journal,
+                new ProviderLimits(quotas),
                 clock);
     }
 

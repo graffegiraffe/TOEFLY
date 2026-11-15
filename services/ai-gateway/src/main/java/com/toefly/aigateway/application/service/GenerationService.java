@@ -73,6 +73,7 @@ class GenerationService implements CompleteUseCase {
     private final OutputSchemaPort schemas;
     private final ResponseCachePort cache;
     private final CallJournal journal;
+    private final ProviderLimits limits;
     private final Clock clock;
 
     GenerationService(
@@ -86,6 +87,7 @@ class GenerationService implements CompleteUseCase {
             OutputSchemaPort schemas,
             ResponseCachePort cache,
             CallJournal journal,
+            ProviderLimits limits,
             Clock clock) {
         this.prompts = prompts;
         this.routing = routing;
@@ -97,6 +99,7 @@ class GenerationService implements CompleteUseCase {
         this.schemas = schemas;
         this.cache = cache;
         this.journal = journal;
+        this.limits = limits;
         this.clock = clock;
     }
 
@@ -285,6 +288,7 @@ class GenerationService implements CompleteUseCase {
                 deltas.accept(rest);
             }
         }
+        limits.apply(model, result.reportedLimits());
         String content = result.content() == null ? "" : result.content();
         if (version.outputSchema() == null) {
             return new Generated(null, session.unmask(content), content, result.usage());

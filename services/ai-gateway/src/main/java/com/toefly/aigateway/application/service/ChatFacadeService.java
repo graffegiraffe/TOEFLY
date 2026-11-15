@@ -60,6 +60,7 @@ class ChatFacadeService implements ChatFacadeUseCase {
     private final ConversationMaskingPort conversations;
     private final OutputSchemaPort json;
     private final CallJournal journal;
+    private final ProviderLimits limits;
     private final Clock clock;
 
     ChatFacadeService(
@@ -71,6 +72,7 @@ class ChatFacadeService implements ChatFacadeUseCase {
             ConversationMaskingPort conversations,
             OutputSchemaPort json,
             CallJournal journal,
+            ProviderLimits limits,
             Clock clock) {
         this.routing = routing;
         this.providers = providers;
@@ -80,6 +82,7 @@ class ChatFacadeService implements ChatFacadeUseCase {
         this.conversations = conversations;
         this.json = json;
         this.journal = journal;
+        this.limits = limits;
         this.clock = clock;
     }
 
@@ -188,6 +191,7 @@ class ChatFacadeService implements ChatFacadeUseCase {
             }
         }
         ChatResult result = answer.value();
+        limits.apply(answer.model(), result.reportedLimits());
         String verdict = input == null ? null : "input:" + input.verdict() + input.categories();
         if (policy.checksOutput()
                 && result.content() != null
