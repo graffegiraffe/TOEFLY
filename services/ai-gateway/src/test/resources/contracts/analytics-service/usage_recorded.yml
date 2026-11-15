@@ -1,0 +1,38 @@
+name: usage_recorded
+description: analytics-service builds the AI cost dashboard per user, feature, model and day
+input:
+  triggeredBy: usageRecorded()
+outputMessage:
+  sentTo: toefly.ai-gateway.usage-recorded.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/ai-gateway
+    content-type: application/avro
+    ce_type: toefly.ai-gateway.usage-recorded.v1
+  body:
+    callerService: ai-gateway-test
+    useCase: TUTOR_CHAT
+    provider: GROQ
+    model: openai/gpt-oss-20b
+    promptKey: system.ping
+    promptVersion: 1
+    cacheHit: false
+    fallbackDepth: 0
+    degraded: false
+    outcome: SUCCESS
+  matchers:
+    body:
+      - path: $.eventId
+        type: by_regex
+        predefined: uuid
+      - path: $.aiCallId
+        type: by_regex
+        regex: "aic_[0-9A-Z]{26}"
+      - path: $.inputTokens
+        type: by_type
+      - path: $.outputTokens
+        type: by_type
+      - path: $.shadowCostMicroUsd
+        type: by_type
+      - path: $.latencyMs
+        type: by_type
