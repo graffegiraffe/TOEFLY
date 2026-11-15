@@ -1,0 +1,179 @@
+# Routes of docs/06-ai-agent.md §2.4. In the cluster the ConfigMap ai-gateway-routes overrides this file
+# (toefly.ai.routes-config) and is re-read when it changes. Candidates are PROVIDER:model, tried in order.
+routes:
+  - useCase: TUTOR_CHAT
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.4
+    maxOutputTokens: 700
+    reasoningEffort: low
+    cacheable: false
+    timeout: PT20S
+  - useCase: TUTOR_ROUTER
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.0
+    maxOutputTokens: 120
+    reasoningEffort: low
+    cacheable: false
+    timeout: PT20S
+  - useCase: TUTOR_ESCALATION
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.3
+    maxOutputTokens: 1200
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT30S
+  - useCase: HINT
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.3
+    maxOutputTokens: 300
+    reasoningEffort: low
+    cacheable: false
+    timeout: PT20S
+  - useCase: WRITING_GRADING
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.1
+    maxOutputTokens: 1800
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT60S
+  - useCase: WRITING_GRADING
+    passTag: B
+    candidates: ["GROQ:qwen/qwen3.8-27b", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.1
+    maxOutputTokens: 1800
+    cacheable: false
+    timeout: PT60S
+  - useCase: SPEAKING_CONTENT_GRADING
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.1
+    maxOutputTokens: 900
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT60S
+  - useCase: SPEAKING_CONTENT_GRADING
+    passTag: B
+    candidates: ["GROQ:qwen/qwen3.8-27b", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.1
+    maxOutputTokens: 900
+    cacheable: false
+    timeout: PT60S
+  - useCase: REPEAT_MEANING_CHECK
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.0
+    maxOutputTokens: 80
+    reasoningEffort: low
+    cacheable: true
+    timeout: PT20S
+  - useCase: MISTAKE_EXPLANATION
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.2
+    maxOutputTokens: 900
+    reasoningEffort: medium
+    cacheable: true
+    timeout: PT20S
+  - useCase: TRANSLATION_RU
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.0
+    maxOutputTokens: 900
+    reasoningEffort: low
+    cacheable: true
+    timeout: PT20S
+  - useCase: PLAN_GENERATION
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.2
+    maxOutputTokens: 1500
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT60S
+  - useCase: WEEK_GENERATION
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.2
+    maxOutputTokens: 2000
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT60S
+  - useCase: WEEKLY_REVIEW
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.4
+    maxOutputTokens: 1500
+    reasoningEffort: low
+    cacheable: false
+    timeout: PT60S
+  - useCase: REENGAGEMENT
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.7
+    maxOutputTokens: 200
+    reasoningEffort: low
+    cacheable: false
+    timeout: PT20S
+  - useCase: ITEM_GENERATION
+    candidates: ["OLLAMA:gpt-oss:20b", "GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b"]
+    temperature: 0.8
+    maxOutputTokens: 3000
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT60S
+  - useCase: INTERVIEW_SCRIPT
+    candidates: ["OLLAMA:gpt-oss:20b", "GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b"]
+    temperature: 0.8
+    maxOutputTokens: 3000
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT60S
+  - useCase: ITEM_SOLVING
+    candidates: ["GROQ:qwen/qwen3.8-27b", "GROQ:openai/gpt-oss-120b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.0
+    maxOutputTokens: 600
+    reasoningEffort: high
+    cacheable: true
+    timeout: PT60S
+  - useCase: ITEM_VALIDATION
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.0
+    maxOutputTokens: 600
+    reasoningEffort: low
+    cacheable: true
+    timeout: PT60S
+  - useCase: MATERIAL_EXTRACTION
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
+    temperature: 0.2
+    maxOutputTokens: 3000
+    reasoningEffort: medium
+    cacheable: false
+    timeout: PT90S
+  - useCase: EVAL_JUDGE
+    candidates: ["GROQ:qwen/qwen3.8-27b", "GROQ:openai/gpt-oss-120b"]
+    temperature: 0.0
+    maxOutputTokens: 500
+    cacheable: true
+    timeout: PT60S
+  - useCase: GUARD
+    candidates: ["OLLAMA:llama-guard3:1b"]
+    temperature: 0.0
+    maxOutputTokens: 20
+    cacheable: false
+    timeout: PT30S
+  - useCase: EMBEDDING
+    candidates: ["OLLAMA:nomic-embed-text"]
+    temperature: 0.0
+    maxOutputTokens: 0
+    cacheable: true
+    timeout: PT30S
+  - useCase: TRANSCRIPTION
+    candidates: ["GROQ:whisper-large-v3-turbo", "GROQ:whisper-large-v3"]
+    temperature: 0.0
+    maxOutputTokens: 0
+    cacheable: false
+    timeout: PT60S
+  - useCase: PRONUNCIATION
+    candidates: ["AZURE_SPEECH:pronunciation-assessment"]
+    temperature: 0.0
+    maxOutputTokens: 0
+    cacheable: false
+    timeout: PT60S
+  - useCase: TTS
+    candidates: ["AZURE_SPEECH:neural-tts"]
+    temperature: 0.0
+    maxOutputTokens: 0
+    cacheable: true
+    timeout: PT30S

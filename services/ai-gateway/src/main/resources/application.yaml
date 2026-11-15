@@ -1,0 +1,150 @@
+spring:
+  application:
+    name: ai-gateway
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:${TOEFLY_POSTGRES_PORT:5432}/ai_gateway_db
+    username: ai_gateway_app
+    password: ai_gateway_app
+  flyway:
+    locations: classpath:db/migration,classpath:db/common
+  data:
+    redis:
+      host: localhost
+      port: ${TOEFLY_VALKEY_PORT:6379}
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ai-gateway
+      auto-offset-reset: earliest
+      isolation-level: read_committed
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      properties:
+        apicurio.registry.url: ${toefly.events.registry-url}
+        apicurio.registry.use-specific-avro-reader: true
+        apicurio.registry.fault-tolerant-refresh: true
+    listener:
+      ack-mode: record
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+  mvc:
+    problemdetails:
+      enabled: true
+    async:
+      request-timeout: 200s
+
+server:
+  port: 8095
+
+toefly:
+  events:
+    registry-url: http://localhost:8380/apis/registry/v3
+    auto-register: false
+  ai:
+    routes-config: ${TOEFLY_AI_ROUTES:}
+    groq:
+      base-url: https://api.groq.com
+      api-key: ${GROQ_API_KEY:}
+      timeout: PT60S
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+    azure-speech:
+      key: ${AZURE_SPEECH_KEY:}
+      region: ${AZURE_SPEECH_REGION:westeurope}
+    guard:
+      model: llama-guard3:1b
+    pii:
+      ner-enabled: true
+      ner-model: llama3.2:3b
+      session-ttl: PT24H
+      session-key: ${AI_PII_SESSION_KEY:}
+    cache:
+      valkey-ttl: P7D
+    call-log:
+      payload-retention: P30D
+      row-retention: P90D
+    prompts:
+      location: classpath:prompts
+      require-evals: true
+      activate-on-sync: false
+    resilience:
+      open-for: PT60S
+      retry-jitter: PT0.3S
+      concurrency:
+        OLLAMA: 2
+        "[AZURE_SPEECH:pronunciation-assessment]": 1
+    quotas:
+      reserve-floor:
+        grading: 0.10
+        background: 0.30
+      max-queued-grading-per-user: 2
+      # GroqCloud free tier on 2026-11-01 (docs/06-ai-agent.md §2.5); the provider headers may lower them.
+      models:
+        - model: GROQ:openai/gpt-oss-120b
+          limits: { RPM: 30, RPD: 1000, TPM: 8000, TPD: 200000 }
+        - model: GROQ:openai/gpt-oss-20b
+          limits: { RPM: 30, RPD: 1000, TPM: 8000, TPD: 200000 }
+        - model: GROQ:qwen/qwen3.8-27b
+          limits: { RPM: 30, RPD: 1000, TPM: 8000, TPD: 200000 }
+        - model: GROQ:whisper-large-v3-turbo
+          limits: { RPM: 20, RPD: 2000, ASH: 7200, ASD: 28800 }
+        - model: GROQ:whisper-large-v3
+          limits: { RPM: 20, RPD: 2000, ASH: 7200, ASD: 28800 }
+        - model: AZURE_SPEECH:pronunciation-assessment
+          limits: { MONTHLY_AUDIO_SECONDS: 18000 }
+        - model: AZURE_SPEECH:neural-tts
+          limits: { RPM: 20, MONTHLY_CHARACTERS: 500000 }
+    # Paid prices for the shadow cost (docs/06-ai-agent.md §10, §8.4).
+    prices:
+      - { model: "GROQ:openai/gpt-oss-120b", input-per-million: 0.15, output-per-million: 0.60 }
+      - { model: "GROQ:openai/gpt-oss-20b", input-per-million: 0.075, output-per-million: 0.30 }
+      - { model: "GROQ:qwen/qwen3.8-27b", input-per-million: 0.80, output-per-million: 4.00 }
+      - { model: "GROQ:whisper-large-v3-turbo", per-audio-hour: 0.04 }
+      - { model: "GROQ:whisper-large-v3", per-audio-hour: 0.111 }
+      - { model: "AZURE_SPEECH:pronunciation-assessment", per-audio-hour: 1.0 }
+      - { model: "AZURE_SPEECH:neural-tts", per-million-chars: 15.0 }
+
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+toefly:
+  events:
+    auto-register: true
+  ai:
+    prompts:
+      require-evals: false
+      activate-on-sync: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+logging:
+  structured:
+    format:
+      console: ecs
