@@ -47,6 +47,7 @@ class ChatFacadeServiceTest {
             conversations,
             new JsonOutputSchemaAdapter(),
             gateway.journal,
+            new ProviderLimits(gateway.quotas),
             gateway.clock);
 
     FacadeCommand turn(List<ChatMessage> messages) {

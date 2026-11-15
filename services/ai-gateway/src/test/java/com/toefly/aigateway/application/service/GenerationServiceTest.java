@@ -198,4 +198,25 @@ class GenerationServiceTest {
         assertThat(shown).hasToString("Nice to meet you, Alina! Let's practise.");
         assertThat(result.text()).isEqualTo("Nice to meet you, Alina! Let's practise.");
     }
+
+    @Test
+    void lowerLimitAnnouncedByTheProviderIsApplied() {
+        gateway.quotas.save(Fakes.tpm(Gateway.BIG, 8000));
+        gateway.groq.fallback = r -> new com.toefly.aigateway.application.port.out.ChatResult(
+                "{\"score\":3,\"comment\":\"ok\"}",
+                List.of(),
+                "stop",
+                com.toefly.aigateway.domain.call.TokenUsage.tokens(10, 5),
+                Map.of("TPM", 6000L));
+
+        gateway.generation.complete(
+                Gateway.command(KEY, AiUseCase.WRITING_GRADING, Map.of("studentText", "Essay."), List.of()));
+
+        assertThat(gateway.quotas
+                        .find(Gateway.BIG)
+                        .limit(com.toefly.aigateway.domain.quota.QuotaDimension.TPM)
+                        .orElseThrow()
+                        .capacity())
+                .isEqualTo(6000);
+    }
 }
