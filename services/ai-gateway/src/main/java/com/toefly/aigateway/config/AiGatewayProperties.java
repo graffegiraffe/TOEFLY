@@ -77,7 +77,7 @@ public record AiGatewayProperties(
 
     public record Pii(
             @DefaultValue("true") boolean nerEnabled,
-            @DefaultValue("llama3.2:3b") String nerModel,
+            @DefaultValue("qwen2.5:1.5b") String nerModel,
             @DefaultValue("PT24H") Duration sessionTtl,
             @DefaultValue("") String sessionKey) {}
 

@@ -62,7 +62,7 @@ toefly:
       model: llama-guard3:1b
     pii:
       ner-enabled: true
-      ner-model: llama3.2:3b
+      ner-model: qwen2.5:1.5b
       session-ttl: PT24H
       session-key: ${AI_PII_SESSION_KEY:}
     cache:
