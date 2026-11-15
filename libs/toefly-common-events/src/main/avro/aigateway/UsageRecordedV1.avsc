@@ -1,0 +1,31 @@
+{
+  "type": "record",
+  "name": "UsageRecordedV1",
+  "namespace": "com.toefly.events.aigateway",
+  "doc": "One AI call was accounted, including cache hits and refusals (toefly.ai-gateway.usage-recorded.v1).",
+  "fields": [
+    {"name": "eventId", "type": {"type": "string", "logicalType": "uuid"}, "doc": "CloudEvents id; the idempotency key of consumers."},
+    {"name": "occurredAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Moment the call finished, UTC milliseconds; equals ce_time."},
+    {"name": "userId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "Learner the call was made for; null for system calls."},
+    {"name": "correlationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "End-to-end chain identifier; equals ce_correlationid."},
+    {"name": "causationId", "type": ["null", {"type": "string", "logicalType": "uuid"}], "default": null, "doc": "ce_id of the event that caused this one; equals ce_causationid."},
+    {"name": "aiCallId", "type": "string", "doc": "Journal id aic_<ULID>; the partition key of system calls."},
+    {"name": "callerService", "type": "string", "doc": "Service that asked for the call."},
+    {"name": "feature", "type": ["null", "string"], "default": null, "doc": "Product feature the call is accounted to, e.g. AI_WRITING_CHECK."},
+    {"name": "useCase", "type": "string", "doc": "AiUseCase of the call."},
+    {"name": "provider", "type": {"type": "enum", "name": "AiProvider", "namespace": "com.toefly.events.common", "symbols": ["GROQ", "AZURE_SPEECH", "OLLAMA"]}, "doc": "Provider that answered, or the last one tried."},
+    {"name": "model", "type": "string", "doc": "Provider model id."},
+    {"name": "promptKey", "type": ["null", "string"], "default": null, "doc": "Prompt of the registry, if any."},
+    {"name": "promptVersion", "type": ["null", "int"], "default": null, "doc": "Version of that prompt."},
+    {"name": "inputTokens", "type": "int", "default": 0, "doc": "Input tokens reported by the provider."},
+    {"name": "outputTokens", "type": "int", "default": 0, "doc": "Output tokens reported by the provider."},
+    {"name": "audioSeconds", "type": "double", "default": 0, "doc": "Seconds of audio processed."},
+    {"name": "characters", "type": "int", "default": 0, "doc": "Characters synthesised."},
+    {"name": "shadowCostMicroUsd", "type": "long", "doc": "Cost at the provider's paid prices, millionths of a dollar."},
+    {"name": "cacheHit", "type": "boolean", "doc": "The answer came from the response cache."},
+    {"name": "fallbackDepth", "type": "int", "doc": "0 for the first candidate of the route, 1 and more for the fallbacks."},
+    {"name": "degraded", "type": "boolean", "doc": "A reserve model answered a grading use case."},
+    {"name": "latencyMs", "type": "int", "doc": "Time from admission to the answer."},
+    {"name": "outcome", "type": {"type": "enum", "name": "AiCallOutcome", "symbols": ["SUCCESS", "CACHE_HIT", "QUOTA_EXHAUSTED", "PROVIDER_ERROR", "OUTPUT_INVALID", "GUARD_BLOCKED"]}, "doc": "How the call ended."}
+  ]
+}
