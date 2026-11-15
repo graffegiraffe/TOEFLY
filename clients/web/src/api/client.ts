@@ -28,6 +28,7 @@ import {
   WeekTasksApi as PlanningWeekTasksApi,
   WeeksApi as PlanningWeeksApi,
 } from './generated/planning';
+import { AdminAiApi as AiAdminApi, Configuration as AiGatewayConfiguration } from './generated/aigateway';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -73,7 +74,15 @@ const planningConfiguration = new PlanningConfiguration({
   middleware: [csrfMiddleware],
 });
 
+// ai-gateway.yaml also keeps its admin paths relative to /api/v1; only the AdminAi tag is public (docs/05 §6.15).
+const aiGatewayConfiguration = new AiGatewayConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
 export const api = {
+  aiAdmin: new AiAdminApi(aiGatewayConfiguration),
   studyPlans: new PlanningStudyPlansApi(planningConfiguration),
   weeks: new PlanningWeeksApi(planningConfiguration),
   today: new PlanningTodayApi(planningConfiguration),

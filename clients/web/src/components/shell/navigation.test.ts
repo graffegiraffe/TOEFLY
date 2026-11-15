@@ -28,8 +28,8 @@ describe('navigation', () => {
     ]);
   });
 
-  it('only an administrator sees the content administration', () => {
+  it('only an administrator sees the content and AI administration', () => {
     expect(navFor(['STUDENT']).admin).toEqual([]);
-    expect(navFor(['ADMIN']).admin.map((item) => item.to)).toEqual(['/admin/content']);
+    expect(navFor(['ADMIN']).admin.map((item) => item.to)).toEqual(['/admin/content', '/admin/ai']);
   });
 });

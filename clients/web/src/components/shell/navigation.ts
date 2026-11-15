@@ -1,4 +1,5 @@
 import {
+  Bot,
   CalendarDays,
   ClipboardList,
   Dumbbell,
@@ -39,7 +40,10 @@ export const TUTOR_NAV: NavItem[] = [
   { to: '/tutor/materials', labelKey: 'nav.materials', icon: FileText },
 ];
 
-export const ADMIN_NAV: NavItem[] = [{ to: '/admin/content', labelKey: 'nav.adminContent', icon: Library }];
+export const ADMIN_NAV: NavItem[] = [
+  { to: '/admin/content', labelKey: 'nav.adminContent', icon: Library },
+  { to: '/admin/ai', labelKey: 'nav.adminAi', icon: Bot },
+];
 
 export const SETTINGS_NAV: NavItem = { to: '/settings', labelKey: 'nav.settings', icon: Settings };
 
