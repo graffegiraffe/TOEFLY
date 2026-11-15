@@ -70,9 +70,12 @@ public final class ToeflyArchitectureRules {
             .notDependOnEachOther()
             .as("adaptersAreIndependent");
 
+    /** An enum such as {@code AiUseCase} of the canon names a kind of call, not a port. */
     public static final ArchRule useCasesAreInterfaces = classes()
             .that()
             .haveSimpleNameEndingWith("UseCase")
+            .and()
+            .areNotEnums()
             .should()
             .beInterfaces()
             .andShould()
