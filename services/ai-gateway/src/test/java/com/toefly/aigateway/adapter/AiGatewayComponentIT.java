@@ -476,11 +476,11 @@ class AiGatewayComponentIT {
 
     @Test
     void versionBecomesActiveOnlyAfterAPassedEvalRun() throws Exception {
-        mvc.perform(get("/admin/ai/prompts").with(admin()))
+        mvc.perform(get("/api/v1/admin/ai/prompts").with(admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[?(@.key == 'system.ping')].activeVersion")
                         .value(1));
-        mvc.perform(post("/admin/ai/prompts/system.ping/versions")
+        mvc.perform(post("/api/v1/admin/ai/prompts/system.ping/versions")
                         .with(admin())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -489,26 +489,29 @@ class AiGatewayComponentIT {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.version").value(2))
                 .andExpect(jsonPath("$.status").value("DRAFT"));
-        mvc.perform(post("/admin/ai/prompts/system.ping/versions/2/activation").with(admin()))
+        mvc.perform(post("/api/v1/admin/ai/prompts/system.ping/versions/2/activation")
+                        .with(admin()))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("EVALS_NOT_PASSED"));
-        mvc.perform(post("/admin/ai/eval-runs")
+        mvc.perform(post("/api/v1/admin/ai/eval-runs")
                         .with(service())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"promptKey":"system.ping","promptVersion":2,"suite":"tutor-chat","mode":"SMOKE",
                                  "passed":true,"metrics":{"refusalAccuracy":0.97},"ranAt":"2026-11-15T09:00:00Z"}"""))
                 .andExpect(status().isCreated());
-        mvc.perform(get("/admin/ai/prompts/system.ping/versions").with(admin()))
+        mvc.perform(get("/api/v1/admin/ai/prompts/system.ping/versions").with(admin()))
                 .andExpect(jsonPath("$.items[0].status").value("CANDIDATE"))
                 .andExpect(jsonPath("$.items[0].latestEval.passed").value(true));
-        mvc.perform(post("/admin/ai/prompts/system.ping/versions/2/activation").with(admin()))
+        mvc.perform(post("/api/v1/admin/ai/prompts/system.ping/versions/2/activation")
+                        .with(admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
         mvc.perform(get("/internal/v1/prompts/system.ping").with(service()))
                 .andExpect(jsonPath("$.version").value(2));
 
-        mvc.perform(post("/admin/ai/prompts/system.ping/versions/1/activation").with(admin()))
+        mvc.perform(post("/api/v1/admin/ai/prompts/system.ping/versions/1/activation")
+                        .with(admin()))
                 .andExpect(status().isConflict());
         jdbc.sql("UPDATE prompt_template SET active_version = 1 WHERE prompt_key = 'system.ping'")
                 .update();
@@ -525,24 +528,24 @@ class AiGatewayComponentIT {
                         .content(ping("Good morning", "Alina")))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/admin/ai/calls")
+        mvc.perform(get("/api/v1/admin/ai/calls")
                         .param("promptKey", "system.ping")
                         .param("limit", "1")
                         .with(admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].promptKey").value("system.ping"))
                 .andExpect(jsonPath("$.items[0].outcome").exists());
-        mvc.perform(get("/admin/ai/usage")
+        mvc.perform(get("/api/v1/admin/ai/usage")
                         .param("from", "2026-01-01")
                         .param("to", "2026-12-31")
                         .with(admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rows[0].calls").exists());
-        mvc.perform(get("/admin/ai/providers").with(admin()))
+        mvc.perform(get("/api/v1/admin/ai/providers").with(admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[?(@.model == 'openai/gpt-oss-20b')].dimensions[0].capacity")
                         .exists());
-        mvc.perform(get("/admin/ai/calls").with(JwtFixtures.student(UUID.randomUUID())))
+        mvc.perform(get("/api/v1/admin/ai/calls").with(JwtFixtures.student(UUID.randomUUID())))
                 .andExpect(status().isForbidden());
         mvc.perform(post("/internal/v1/ai/chat/completions")
                         .with(JwtFixtures.student(UUID.randomUUID()))
