@@ -1,0 +1,1020 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY ai-gateway API
+  version: 1.0.0
+  summary: Единственная точка LLM/STT/TTS-вызовов — маршрутизация, квоты, резервная цепочка, кэш, учёт, реестр промптов, маскировка и guard.
+  description: |
+    Внутренние операции (`/internal/**`) вызываются только сервисами (client credentials, scope `internal`)
+    и не публикуются через `api-gateway`. Админский раздел опубликован через `api-gateway` по пути
+    `/api/v1/admin/ai/**` (роль `ADMIN`). Поведение — docs/06-ai-agent.md §2–3, контракт — docs/05-api-contracts.md §6.15.
+    Все внутренние операции — листья (`x-toefly-leaf`): обращения к Groq, Ollama и Azure — внешние вызовы.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (админский раздел через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: Completions, description: 'Шаблонная генерация по промпту реестра' }
+  - { name: Streams, description: 'Стриминговая генерация (SSE); контроллер пишется вручную' }
+  - { name: OpenAiFacade, description: 'OpenAI-совместимый фасад для агентского цикла; контроллер пишется вручную' }
+  - { name: Speech, description: 'Транскрипция, оценка произношения, синтез речи' }
+  - { name: Embeddings, description: 'Локальные эмбеддинги' }
+  - { name: Moderations, description: 'Guard-модель и эвристики инъекций' }
+  - { name: Quotas, description: 'Снимок квот и circuit breakers' }
+  - { name: InternalPrompts, description: 'Активная версия промпта для отладки и evals' }
+  - { name: Usage, description: 'Учёт расхода' }
+  - { name: AdminAi, description: 'Админка AI: промпты, журнал, расход, провайдеры, evals' }
+paths:
+  /internal/v1/ai/chat/completions:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Completions]
+      operationId: completeChat
+      summary: Синхронная генерация по промпту реестра
+      description: |
+        Переменные из `untrusted` версии промпта маскируются (regex → словарь `piiHints` → NER), проверяются guard
+        политики версии и оборачиваются в теги с nonce. Ожидание квоты — до `maxWaitMs`. Ответ структурированного
+        промпта — `output` (JSON по схеме версии), свободного — `text`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompletionRequest' }
+      responses:
+        '200':
+          description: Ответ модели.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompletionResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/QuotaExhausted' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/chat/streams:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Streams]
+      operationId: streamChat
+      summary: Стриминговая генерация (SSE)
+      description: |
+        События: `delta` (`{"text": "..."}`), `completed` (`{"aiStamp": ..., "usage": ...}`), `error` (Problem).
+        Ошибка до первого события возвращается HTTP-статусом, после — событием `error`. Промпты со схемой вывода
+        не стримятся.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompletionRequest' }
+      responses:
+        '200':
+          description: Поток событий.
+          content:
+            text/event-stream:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/QuotaExhausted' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/openai/v1/chat/completions:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [OpenAiFacade]
+      operationId: createOpenAiChatCompletion
+      summary: OpenAI-совместимое завершение для агентского цикла
+      description: |
+        Тело и ответ — формат OpenAI Chat Completions (`messages`, `tools`, `tool_choice`, `stream`,
+        `stream_options.include_usage`). Сообщения `user`, `tool` и прежние `assistant` маскируются; сопоставление
+        плейсхолдеров стабильно в пределах `X-Toefly-Conversation-Id`. Инструменты не исполняются — `tool_calls`
+        возвращаются вызывающему.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      parameters:
+        - { name: X-Toefly-Use-Case, in: header, required: true, schema: { $ref: '#/components/schemas/AiUseCase' } }
+        - { name: X-Toefly-Prompt-Key, in: header, required: false, schema: { type: string, maxLength: 120 } }
+        - { name: X-Toefly-Prompt-Version, in: header, required: false, schema: { type: integer, minimum: 1 } }
+        - { name: X-Toefly-User-Id, in: header, required: false, schema: { type: string, format: uuid } }
+        - { name: X-Toefly-Conversation-Id, in: header, required: false, schema: { type: string, maxLength: 80 } }
+        - { name: X-Toefly-Pii-Hints, in: header, required: false, description: 'base64(JSON-массив имён)', schema: { type: string, maxLength: 2048 } }
+        - { name: X-Toefly-Priority, in: header, required: false, schema: { $ref: '#/components/schemas/Priority' } }
+        - { name: X-Toefly-Feature, in: header, required: false, schema: { type: string, maxLength: 60 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Ответ OpenAI (`chat.completion`) или поток чанков (`chat.completion.chunk`).
+          headers:
+            X-Toefly-Ai-Call-Id: { schema: { type: string } }
+            X-Toefly-Model: { schema: { type: string } }
+            X-Toefly-Fallback-Depth: { schema: { type: integer } }
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+            text/event-stream:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/QuotaExhausted' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/transcriptions:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Speech]
+      operationId: transcribe
+      summary: Распознавание речи со словами и таймкодами (Whisper)
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TranscriptionRequest' }
+      responses:
+        '200':
+          description: Расшифровка.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TranscriptionResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/QuotaExhausted' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/pronunciation-assessments:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Speech]
+      operationId: assessPronunciation
+      summary: Оценка произношения (Azure Pronunciation Assessment)
+      description: Аудио — WAV PCM 16 кГц mono (нормализует `speech-service`). `UNSCRIPTED` — без `referenceText` и без `completeness`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PronunciationRequest' }
+      responses:
+        '200':
+          description: Оценки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PronunciationResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/QuotaExhausted' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/speech-syntheses:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Speech]
+      operationId: synthesizeSpeech
+      summary: Синтез речи (Azure Neural TTS)
+      description: Ответ кэшируется по `sha256(ssml + voice + format)`; сохранение в R2 выполняет вызывающий.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SynthesisRequest' }
+      responses:
+        '200':
+          description: Аудио.
+          headers:
+            X-Toefly-Ai-Call-Id: { schema: { type: string } }
+            X-Toefly-Usage-Characters: { schema: { type: integer } }
+            X-Toefly-Cache-Hit: { schema: { type: boolean } }
+          content:
+            audio/mpeg:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/QuotaExhausted' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/embeddings:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Embeddings]
+      operationId: embed
+      summary: Эмбеддинги локальной моделью
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmbeddingRequest' }
+      responses:
+        '200':
+          description: Векторы в порядке текстов.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmbeddingResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/moderations:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Moderations]
+      operationId: moderate
+      summary: Проверка текста guard-моделью и эвристиками инъекций
+      description: Под политикой `CHAT` недоступность guard-модели даёт `503` (fail-closed); под остальными — `modelAvailable=false`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModerationRequest' }
+      responses:
+        '200':
+          description: Вердикт.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ModerationResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /internal/v1/ai/quotas:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    get:
+      tags: [Quotas]
+      operationId: getQuotas
+      summary: Снимок квот и circuit breakers
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      responses:
+        '200':
+          description: Снимок.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProviderStatusList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /internal/v1/prompts/{promptKey}:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    parameters:
+      - { $ref: '#/components/parameters/PromptKey' }
+    get:
+      tags: [InternalPrompts]
+      operationId: getActivePrompt
+      summary: Активная версия промпта
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      responses:
+        '200':
+          description: Версия.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromptVersion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /internal/v1/usage:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    post:
+      tags: [Usage]
+      operationId: reportUsage
+      summary: Учёт расхода внешнего вызова, сделанного не через ai-gateway
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsageReport' }
+      responses:
+        '202':
+          description: Принято; запись журнала создана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsageAccepted' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /internal/v1/usage/users/{userId}:
+    servers: [{ url: 'http://ai-gateway.toefly.svc.cluster.local:8095', description: Кластер }]
+    parameters:
+      - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { $ref: '#/components/parameters/From' }
+      - { $ref: '#/components/parameters/To' }
+    get:
+      tags: [Usage]
+      operationId: getUserUsage
+      summary: Расход пользователя за период
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security: [{ serviceAuth: [internal] }]
+      responses:
+        '200':
+          description: Строки по дням.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiUsageReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /admin/ai/prompts:
+    get:
+      tags: [AdminAi]
+      operationId: listPrompts
+      summary: Реестр промптов
+      x-toefly-roles: [ADMIN]
+      responses:
+        '200':
+          description: Промпты.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromptTemplatePage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/ai/prompts/{promptKey}/versions:
+    parameters:
+      - { $ref: '#/components/parameters/PromptKey' }
+    get:
+      tags: [AdminAi]
+      operationId: listPromptVersions
+      summary: Версии промпта с результатами evals
+      x-toefly-roles: [ADMIN]
+      responses:
+        '200':
+          description: Версии, новые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromptVersionList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [AdminAi]
+      operationId: createPromptVersion
+      summary: Новая версия (черновик)
+      x-toefly-roles: [ADMIN]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePromptVersionRequest' }
+      responses:
+        '201':
+          description: Черновик создан.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromptVersion' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /admin/ai/prompts/{promptKey}/versions/{version}/activation:
+    parameters:
+      - { $ref: '#/components/parameters/PromptKey' }
+      - { name: version, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    post:
+      tags: [AdminAi]
+      operationId: activatePromptVersion
+      summary: Активировать версию (или откатиться на прежнюю)
+      description: Требует пройденного прогона evals этой версии; предыдущая активная версия архивируется.
+      x-toefly-roles: [ADMIN]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200':
+          description: Версия активна.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromptVersion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/ai/calls:
+    get:
+      tags: [AdminAi]
+      operationId: listAiCalls
+      summary: Журнал вызовов
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: promptKey, in: query, required: false, schema: { type: string, maxLength: 120 } }
+        - { name: provider, in: query, required: false, schema: { $ref: '#/components/schemas/AiProvider' } }
+        - { name: outcome, in: query, required: false, schema: { $ref: '#/components/schemas/AiCallOutcome' } }
+        - { name: from, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date-time } }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Вызовы, новые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiCallPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/ai/providers:
+    get:
+      tags: [AdminAi]
+      operationId: listProviderStatuses
+      summary: Состояние провайдеров — квоты и circuit breakers
+      x-toefly-roles: [ADMIN]
+      responses:
+        '200':
+          description: Снимок.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProviderStatusList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/ai/usage:
+    get:
+      tags: [AdminAi]
+      operationId: getAiUsage
+      summary: Расход AI по дням, провайдерам, моделям и use case
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+      responses:
+        '200':
+          description: Строки по дням.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiUsageReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/ai/eval-runs:
+    get:
+      tags: [AdminAi]
+      operationId: listEvalRuns
+      summary: Отчёты прогонов evals
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: promptKey, in: query, required: false, schema: { type: string, maxLength: 120 } }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Прогоны, новые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvalRunPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [AdminAi]
+      operationId: recordEvalRun
+      summary: Принять отчёт прогона evals (сервисный токен CI)
+      x-toefly-roles: [ADMIN, SVC]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvalRunReport' }
+      responses:
+        '201':
+          description: Отчёт сохранён; пройденный прогон переводит черновик в `CANDIDATE`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvalRun' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+    serviceAuth:
+      type: oauth2
+      description: Client credentials клиента `svc-<service>`.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes:
+            internal: Внутренние вызовы сервис-сервис
+  parameters:
+    PromptKey:
+      name: promptKey
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9][a-z0-9.-]{1,118}[a-z0-9]$' }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: UUID; повтор с тем же ключом не создаёт вторую версию.
+      schema: { type: string, format: uuid }
+    From:
+      name: from
+      in: query
+      required: true
+      schema: { type: string, format: date }
+    To:
+      name: to
+      in: query
+      required: true
+      schema: { type: string, format: date }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Непрозрачный курсор из `page.nextCursor`.
+      schema: { type: string, maxLength: 1024 }
+  headers:
+    RetryAfter:
+      description: Секунды до повтора.
+      schema: { type: integer, minimum: 0 }
+  responses:
+    BadRequest:
+      description: "`400` — `validation-failed`, `malformed-request`, `ai-guard-blocked` (поля `verdict`, `categories`, `refusalCode`)."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: "`401 unauthenticated`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403 forbidden`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 prompt-not-found` (поле `promptKey`) или `not-found`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409 evals-not-passed` (поля `promptKey`, `version`) или `conflict`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422` — `ai-output-invalid` (поле `violations`), `prompt-too-large` (`estimatedTokens`, `maxInputTokens`), `business-rule-violated`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    QuotaExhausted:
+      description: "`429 ai-quota-exhausted` — ни один кандидат не уложился в квоту за `maxWaitMs` (поле `retryAfterSeconds`)."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: "`503 ai-provider-unavailable` — все кандидаты недоступны или недоступны локальные модели безопасности (поле `retryAfterSeconds`)."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }
+        instance: { type: string, format: uri-reference }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$' }
+        requestId: { type: string }
+        traceId: { type: string }
+      additionalProperties: true
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'] }
+        hasMore: { type: boolean }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    AiUseCase:
+      type: string
+      enum: [TUTOR_CHAT, TUTOR_ROUTER, TUTOR_ESCALATION, HINT, WRITING_GRADING, SPEAKING_CONTENT_GRADING, REPEAT_MEANING_CHECK, MISTAKE_EXPLANATION, TRANSLATION_RU, PLAN_GENERATION, WEEK_GENERATION, WEEKLY_REVIEW, REENGAGEMENT, ITEM_GENERATION, ITEM_SOLVING, ITEM_VALIDATION, INTERVIEW_SCRIPT, MATERIAL_EXTRACTION, EVAL_JUDGE, GUARD, EMBEDDING, TRANSCRIPTION, PRONUNCIATION, TTS]
+    AiProvider:
+      type: string
+      enum: [GROQ, AZURE_SPEECH, OLLAMA]
+    Priority:
+      type: string
+      enum: [INTERACTIVE, GRADING, BACKGROUND]
+    CachePolicy:
+      type: string
+      enum: [NONE, READ_WRITE, READ_ONLY]
+    GuardPolicy:
+      type: string
+      enum: [CHAT, STUDENT_SUBMISSION, GENERATED_CONTENT, TUTOR_MATERIAL, NONE]
+    GuardVerdict:
+      type: string
+      enum: [SAFE, UNSAFE, INJECTION, DISHONESTY]
+    PromptStatus:
+      type: string
+      enum: [DRAFT, CANDIDATE, ACTIVE, ARCHIVED]
+    AiCallOutcome:
+      type: string
+      enum: [SUCCESS, CACHE_HIT, QUOTA_EXHAUSTED, PROVIDER_ERROR, OUTPUT_INVALID, GUARD_BLOCKED]
+    QuotaDimension:
+      type: string
+      enum: [RPM, RPD, TPM, TPD, ASH, ASD, MONTHLY_AUDIO_SECONDS, MONTHLY_CHARACTERS]
+    CompletionRequest:
+      type: object
+      required: [useCase, promptKey, variables]
+      properties:
+        useCase: { $ref: '#/components/schemas/AiUseCase' }
+        promptKey: { type: string, maxLength: 120 }
+        promptVersion: { type: [integer, 'null'], minimum: 1, description: "`null` — активная (или canary) версия." }
+        variables: { type: object, additionalProperties: true, description: Переменные шаблона. }
+        userId: { type: [string, 'null'], format: uuid }
+        piiHints: { type: array, maxItems: 10, items: { type: string, maxLength: 100 }, description: Имена ученика и репетитора для словарной маскировки. }
+        allowList: { type: array, maxItems: 50, items: { type: string, maxLength: 100 }, description: Вымышленные имена из условия задания, которые не маскируются. }
+        feature: { type: [string, 'null'], maxLength: 60 }
+        priority: { $ref: '#/components/schemas/Priority' }
+        maxWaitMs: { type: [integer, 'null'], format: int64, minimum: 0, maximum: 600000 }
+        idempotencyKey: { type: [string, 'null'], maxLength: 200 }
+        cachePolicy: { $ref: '#/components/schemas/CachePolicy' }
+        modelOverride: { type: [string, 'null'], maxLength: 120, description: "Только для evals и проходов B/C грейдеров; `PROVIDER:model` или модель Groq." }
+        passTag: { type: [string, 'null'], enum: [A, B, C, null] }
+    AiStamp:
+      type: object
+      required: [aiCallId, provider, model, fallbackDepth, degraded, cacheHit, createdAt]
+      properties:
+        aiCallId: { type: string }
+        promptKey: { type: [string, 'null'] }
+        promptVersion: { type: [integer, 'null'] }
+        provider: { $ref: '#/components/schemas/AiProvider' }
+        model: { type: string }
+        fallbackDepth: { type: integer, minimum: 0 }
+        degraded: { type: boolean }
+        cacheHit: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    TokenUsage:
+      type: object
+      required: [inputTokens, outputTokens, latencyMs]
+      properties:
+        inputTokens: { type: integer, minimum: 0 }
+        outputTokens: { type: integer, minimum: 0 }
+        latencyMs: { type: integer, format: int64, minimum: 0 }
+    CompletionResponse:
+      type: object
+      required: [aiStamp, usage, integrityFlags]
+      properties:
+        output: { type: [object, 'null'], additionalProperties: true, description: JSON по схеме версии промпта. }
+        text: { type: [string, 'null'] }
+        aiStamp: { $ref: '#/components/schemas/AiStamp' }
+        usage: { $ref: '#/components/schemas/TokenUsage' }
+        integrityFlags: { type: array, items: { type: string }, description: "Например `INSTRUCTION_IN_RESPONSE`, `GUARD_UNAVAILABLE`, `SELF_HARM`." }
+    TranscriptionRequest:
+      type: object
+      required: [audioUrl]
+      properties:
+        audioUrl: { type: string, format: uri, maxLength: 2048 }
+        language: { type: string, default: en, maxLength: 5 }
+        prompt: { type: [string, 'null'], maxLength: 500 }
+        granularity: { type: string, enum: [WORD], default: WORD }
+        userId: { type: [string, 'null'], format: uuid }
+        feature: { type: [string, 'null'], maxLength: 60 }
+    TranscribedWord:
+      type: object
+      required: [w, start, end]
+      properties:
+        w: { type: string }
+        start: { type: number }
+        end: { type: number }
+        p: { type: [number, 'null'] }
+    TranscriptionResponse:
+      type: object
+      required: [text, words, durationSec, aiStamp]
+      properties:
+        text: { type: string }
+        words: { type: array, items: { $ref: '#/components/schemas/TranscribedWord' } }
+        durationSec: { type: number }
+        aiStamp: { $ref: '#/components/schemas/AiStamp' }
+    PronunciationRequest:
+      type: object
+      required: [audioUrl, mode]
+      properties:
+        audioUrl: { type: string, format: uri, maxLength: 2048 }
+        mode: { type: string, enum: [SCRIPTED, UNSCRIPTED] }
+        referenceText: { type: [string, 'null'], maxLength: 1000 }
+        locale: { type: string, default: en-US, enum: [en-US, en-GB, en-AU, en-CA] }
+        enableProsody: { type: boolean, default: true }
+        enableMiscue: { type: boolean, default: true }
+        granularity: { type: string, enum: [PHONEME, WORD], default: PHONEME }
+        userId: { type: [string, 'null'], format: uuid }
+        feature: { type: [string, 'null'], maxLength: 60 }
+    AssessedPhoneme:
+      type: object
+      required: [p, accuracy]
+      properties:
+        p: { type: string }
+        accuracy: { type: number }
+    AssessedWord:
+      type: object
+      required: [word, accuracy, errorType, offsetMs, durationMs, phonemes]
+      properties:
+        word: { type: string }
+        accuracy: { type: number }
+        errorType: { type: string, description: "`None`, `Mispronunciation`, `Omission`, `Insertion`, `UnexpectedBreak`, `MissingBreak`, `Monotone`." }
+        offsetMs: { type: integer, format: int64 }
+        durationMs: { type: integer, format: int64 }
+        phonemes: { type: array, items: { $ref: '#/components/schemas/AssessedPhoneme' } }
+    PronunciationResponse:
+      type: object
+      required: [accuracy, fluency, pronScore, recognizedText, words, aiStamp]
+      properties:
+        accuracy: { type: number }
+        fluency: { type: number }
+        completeness: { type: [number, 'null'] }
+        prosody: { type: [number, 'null'] }
+        pronScore: { type: number }
+        recognizedText: { type: string }
+        words: { type: array, items: { $ref: '#/components/schemas/AssessedWord' } }
+        aiStamp: { $ref: '#/components/schemas/AiStamp' }
+    SynthesisRequest:
+      type: object
+      required: [voice]
+      properties:
+        ssml: { type: [string, 'null'], maxLength: 10000 }
+        text: { type: [string, 'null'], maxLength: 5000 }
+        voice: { type: string, maxLength: 60, examples: [en-US-JennyNeural] }
+        format: { type: string, default: audio-24khz-48kbitrate-mono-mp3, maxLength: 60 }
+        userId: { type: [string, 'null'], format: uuid }
+    EmbeddingRequest:
+      type: object
+      required: [texts]
+      properties:
+        texts: { type: array, minItems: 1, maxItems: 128, items: { type: string, maxLength: 8000 } }
+        userId: { type: [string, 'null'], format: uuid }
+    EmbeddingResponse:
+      type: object
+      required: [vectors, dimensions, model]
+      properties:
+        vectors: { type: array, items: { type: array, items: { type: number, format: float } } }
+        dimensions: { type: integer }
+        model: { type: string }
+    ModerationRequest:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string, maxLength: 20000 }
+        policy: { $ref: '#/components/schemas/GuardPolicy' }
+    ModerationResult:
+      type: object
+      required: [allowed, verdict, categories, heuristicHits, modelAvailable, latencyMs]
+      properties:
+        allowed: { type: boolean }
+        verdict: { $ref: '#/components/schemas/GuardVerdict' }
+        categories: { type: array, items: { type: string } }
+        heuristicHits: { type: array, items: { type: string } }
+        model: { type: [string, 'null'] }
+        modelAvailable: { type: boolean }
+        latencyMs: { type: integer, format: int64 }
+        integrityFlags: { type: array, items: { type: string } }
+    QuotaDimensionStatus:
+      type: object
+      required: [dimension, capacity, remaining]
+      properties:
+        dimension: { $ref: '#/components/schemas/QuotaDimension' }
+        capacity: { type: integer, format: int64 }
+        remaining: { type: number }
+    ProviderStatus:
+      type: object
+      required: [provider, model, circuit, dimensions]
+      properties:
+        provider: { $ref: '#/components/schemas/AiProvider' }
+        model: { type: string }
+        circuit: { type: string, enum: [CLOSED, OPEN, HALF_OPEN, DISABLED, FORCED_OPEN, METRICS_ONLY] }
+        dimensions: { type: array, items: { $ref: '#/components/schemas/QuotaDimensionStatus' } }
+    ProviderStatusList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ProviderStatus' } }
+    PromptParams:
+      type: object
+      properties:
+        temperature: { type: [number, 'null'], minimum: 0, maximum: 2 }
+        maxOutputTokens: { type: [integer, 'null'], minimum: 1, maximum: 16384 }
+        reasoningEffort: { type: [string, 'null'], enum: [low, medium, high, null] }
+    PromptTemplate:
+      type: object
+      required: [key, useCase, description, ownerService, canaryPercent]
+      properties:
+        key: { type: string }
+        useCase: { $ref: '#/components/schemas/AiUseCase' }
+        description: { type: string }
+        ownerService: { type: string }
+        activeVersion: { type: [integer, 'null'] }
+        canaryVersion: { type: [integer, 'null'] }
+        canaryPercent: { type: integer, minimum: 0, maximum: 100 }
+    PromptTemplatePage:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/PromptTemplate' } }
+    PromptVersion:
+      type: object
+      required: [key, version, useCase, description, system, user, params, maxInputTokens, untrusted, guardPolicy, status, createdBy, createdAt]
+      properties:
+        key: { type: string }
+        version: { type: integer, minimum: 1 }
+        useCase: { $ref: '#/components/schemas/AiUseCase' }
+        description: { type: string }
+        system: { type: string }
+        user: { type: string }
+        outputSchema: { type: [string, 'null'], description: JSON Schema как текст. }
+        params: { $ref: '#/components/schemas/PromptParams' }
+        maxInputTokens: { type: integer }
+        untrusted: { type: array, items: { type: string } }
+        guardPolicy: { $ref: '#/components/schemas/GuardPolicy' }
+        evalSuite: { type: [string, 'null'] }
+        status: { $ref: '#/components/schemas/PromptStatus' }
+        active: { type: boolean }
+        latestEval: { oneOf: [{ $ref: '#/components/schemas/EvalRun' }, { type: 'null' }] }
+        createdBy: { type: string }
+        createdAt: { type: string, format: date-time }
+    PromptVersionList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/PromptVersion' } }
+    CreatePromptVersionRequest:
+      type: object
+      required: [description, system, user]
+      properties:
+        description: { type: string, maxLength: 500 }
+        system: { type: string, minLength: 1, maxLength: 40000 }
+        user: { type: string, minLength: 1, maxLength: 40000 }
+        outputSchema: { type: [string, 'null'], maxLength: 40000 }
+        params: { $ref: '#/components/schemas/PromptParams' }
+        maxInputTokens: { type: [integer, 'null'], minimum: 100, maximum: 100000 }
+        untrusted: { type: array, maxItems: 20, items: { type: string, maxLength: 60 } }
+        guardPolicy: { $ref: '#/components/schemas/GuardPolicy' }
+        evalSuite: { type: [string, 'null'], maxLength: 60 }
+    UsageReport:
+      type: object
+      required: [provider, model, useCase]
+      properties:
+        provider: { $ref: '#/components/schemas/AiProvider' }
+        model: { type: string, maxLength: 120 }
+        useCase: { $ref: '#/components/schemas/AiUseCase' }
+        userId: { type: [string, 'null'], format: uuid }
+        feature: { type: [string, 'null'], maxLength: 60 }
+        inputTokens: { type: integer, minimum: 0, default: 0 }
+        outputTokens: { type: integer, minimum: 0, default: 0 }
+        audioSeconds: { type: number, minimum: 0 }
+        characters: { type: integer, minimum: 0, default: 0 }
+        latencyMs: { type: integer, format: int64, minimum: 0, default: 0 }
+    UsageAccepted:
+      type: object
+      required: [aiCallId]
+      properties:
+        aiCallId: { type: string }
+    UsageRow:
+      type: object
+      required: [day, provider, model, useCase, calls, cacheHits, fallbacks, inputTokens, outputTokens, audioSeconds, characters, shadowCostMicroUsd]
+      properties:
+        day: { type: string, format: date }
+        provider: { $ref: '#/components/schemas/AiProvider' }
+        model: { type: string }
+        useCase: { $ref: '#/components/schemas/AiUseCase' }
+        feature: { type: [string, 'null'] }
+        calls: { type: integer, format: int64 }
+        cacheHits: { type: integer, format: int64 }
+        fallbacks: { type: integer, format: int64 }
+        inputTokens: { type: integer, format: int64 }
+        outputTokens: { type: integer, format: int64 }
+        audioSeconds: { type: number }
+        characters: { type: integer, format: int64 }
+        shadowCostMicroUsd: { type: integer, format: int64 }
+    AiUsageReport:
+      type: object
+      required: [from, to, rows]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        rows: { type: array, items: { $ref: '#/components/schemas/UsageRow' } }
+    AiCall:
+      type: object
+      required: [id, callerService, useCase, provider, model, fallbackDepth, degraded, cacheHit, inputTokens, outputTokens, latencyMs, shadowCostMicroUsd, outcome, createdAt]
+      properties:
+        id: { type: string }
+        callerService: { type: string }
+        useCase: { $ref: '#/components/schemas/AiUseCase' }
+        feature: { type: [string, 'null'] }
+        priority: { oneOf: [{ $ref: '#/components/schemas/Priority' }, { type: 'null' }] }
+        userId: { type: [string, 'null'], format: uuid }
+        promptKey: { type: [string, 'null'] }
+        promptVersion: { type: [integer, 'null'] }
+        provider: { $ref: '#/components/schemas/AiProvider' }
+        model: { type: string }
+        fallbackDepth: { type: integer }
+        degraded: { type: boolean }
+        cacheHit: { type: boolean }
+        requestMasked: { type: [string, 'null'], description: Маскированный запрос (30 дней). }
+        responseMasked: { type: [string, 'null'], description: Маскированный ответ (30 дней). }
+        inputTokens: { type: integer }
+        outputTokens: { type: integer }
+        audioSeconds: { type: number }
+        characters: { type: integer }
+        latencyMs: { type: integer, format: int64 }
+        shadowCostMicroUsd: { type: integer, format: int64 }
+        guardVerdict: { type: [string, 'null'] }
+        outcome: { $ref: '#/components/schemas/AiCallOutcome' }
+        errorCode: { type: [string, 'null'] }
+        traceId: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+    AiCallPage:
+      type: object
+      required: [items, page]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/AiCall' } }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    EvalRunReport:
+      type: object
+      required: [promptKey, promptVersion, suite, mode, passed, ranAt]
+      properties:
+        promptKey: { type: string, maxLength: 120 }
+        promptVersion: { type: integer, minimum: 1 }
+        suite: { type: string, maxLength: 60 }
+        mode: { type: string, enum: [SMOKE, FULL] }
+        passed: { type: boolean }
+        metrics: { type: object, additionalProperties: { type: number } }
+        reportUrl: { type: [string, 'null'], format: uri, maxLength: 2048 }
+        ranAt: { type: string, format: date-time }
+    EvalRun:
+      type: object
+      required: [id, promptKey, promptVersion, suite, mode, passed, metrics, ranAt, receivedAt]
+      properties:
+        id: { type: string, format: uuid }
+        promptKey: { type: string }
+        promptVersion: { type: integer }
+        suite: { type: string }
+        mode: { type: string }
+        passed: { type: boolean }
+        metrics: { type: object, additionalProperties: { type: number } }
+        reportUrl: { type: [string, 'null'] }
+        ranAt: { type: string, format: date-time }
+        receivedAt: { type: string, format: date-time }
+    EvalRunPage:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/EvalRun' } }
