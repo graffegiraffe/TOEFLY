@@ -1,0 +1,38 @@
+{
+  "id": "6f1e2d3c-4b5a-4c6d-8e7f-90a1b2c3d4e5",
+  "version": 1,
+  "taskType": "WRITE_ACADEMIC_DISCUSSION",
+  "section": "WRITING",
+  "examFormat": "TOEFL_2026",
+  "topic": "free public transport",
+  "itemCount": 1,
+  "estimatedMinutes": 10,
+  "status": "APPROVED",
+  "source": { "code": "TOEFLY", "title": "TOEFLY synthetic fixtures" },
+  "payload": {
+    "stimulus": {
+      "course": "urban studies",
+      "minWords": 100,
+      "timeLimitSeconds": 600,
+      "professor": {
+        "name": "Dr. Ortiz",
+        "post": "Several cities have made buses and trams free for everyone. Supporters say this reduces traffic and helps people with low incomes; critics say the money would be better spent on making transport faster and more reliable. Should cities make public transport free? Why or why not?"
+      },
+      "students": [
+        { "name": "Nora", "post": "I think free transport is a great idea. When tickets cost nothing, more people leave their cars at home, so the air gets cleaner and the roads are less crowded for everyone." },
+        { "name": "Felix", "post": "I disagree. Free buses sound nice, but if the system is slow and unreliable, people will still drive. Cities should first invest in more frequent and faster lines." }
+      ]
+    },
+    "items": [
+      {
+        "ordinal": 1,
+        "rubricId": "ETS_DISCUSSION_V1",
+        "maxScore": 5,
+        "keyPoints": ["Should cities make public transport free?"],
+        "modelAnswers": [
+          { "source": "GENERATED", "text": "I agree with Felix that reliability matters more than price. In my city, a monthly pass is already cheap, yet many people drive because the buses arrive every thirty minutes and are often late. If the city spent the money on dedicated bus lanes and more vehicles, the journey would become faster than driving, and people would switch on their own. Free tickets without better service would mostly help those who already use transport, while the traffic problem Nora describes would stay the same." }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+name: band_estimate_updated
+description: tutor-agent-service and planning-service read the band estimate of the learner
+input:
+  triggeredBy: bandEstimateUpdated()
+outputMessage:
+  sentTo: toefly.assessment.band-estimate-updated.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/assessment-service
+    content-type: application/avro
+    ce_type: toefly.assessment.band-estimate-updated.v1
+  body:
+    overallPoint: null
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.sections
+        type: by_type
+        minOccurrence: 4
+      - path: $.asOf
+        type: by_type

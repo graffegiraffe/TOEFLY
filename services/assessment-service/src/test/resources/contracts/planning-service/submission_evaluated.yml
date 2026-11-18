@@ -1,0 +1,39 @@
+name: submission_evaluated
+description: planning-service closes the task of the week; tutor-agent records the mistakes of the version
+input:
+  triggeredBy: submissionEvaluated()
+outputMessage:
+  sentTo: toefly.assessment.submission-evaluated.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/assessment-service
+    content-type: application/avro
+    ce_type: toefly.assessment.submission-evaluated.v1
+  body:
+    versionNo: 1
+    taskType: WRITE_ACADEMIC_DISCUSSION
+    section: WRITING
+    status: EVALUATED
+    promptKey: writing.grade.discussion
+  matchers:
+    body:
+      - path: $.submissionId
+        type: by_regex
+        predefined: uuid
+      - path: $.evaluationId
+        type: by_regex
+        predefined: uuid
+      - path: $.itemSetId
+        type: by_regex
+        predefined: uuid
+      - path: $.rubricScore
+        type: by_type
+      - path: $.finalScore
+        type: by_type
+      - path: $.criteria
+        type: by_type
+        minOccurrence: 6
+      - path: $.mistakes
+        type: by_type
+      - path: $.wordCount
+        type: by_type

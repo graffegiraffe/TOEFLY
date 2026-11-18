@@ -1,0 +1,14 @@
+{
+  "note": "Own synthetic responses with deliberate mistakes (docs/12 phase 5b decision 5).",
+  "itemSet": "discussion-item-set.json",
+  "versions": [
+    {
+      "versionNo": 1,
+      "text": "In my opinion, cities should make public transport free, because it help people who dont have much money. I agree with Nora that less cars on the road is good for the enviroment. For example, in my hometown many students cant afford a monthly pass, so they walk for a long time or miss classes. But I also understand Felix, the buses are often late and this is a big problem. However I think if transport is free, more people will use it and the city will have more reasons to improve it. Therefore free transport is the first step to make the city better for everyone."
+    },
+    {
+      "versionNo": 2,
+      "text": "In my opinion, cities should make public transport free, because it helps people who don't have much money. I agree with Nora that fewer cars on the road are good for the environment. For example, in my hometown many students can't afford a monthly pass, so they walk for a long time or even miss classes, which affects their grades. Felix is right that buses are often late, and this is a serious problem. However, I believe that when transport is free, more people will use it, and the city will face public pressure to make it faster and more reliable. Therefore, free transport is the first step towards a city that works for everyone, not only for those who can pay."
+    }
+  ]
+}

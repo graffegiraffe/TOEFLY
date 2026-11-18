@@ -1,0 +1,24 @@
+name: evaluation_requested
+description: the workers of assessment-service grade Writing; speech-service starts STT for Speaking (phase 6)
+input:
+  triggeredBy: evaluationRequested()
+outputMessage:
+  sentTo: toefly.assessment.evaluation-requested.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/assessment-service
+    content-type: application/avro
+    ce_type: toefly.assessment.evaluation-requested.v1
+  body:
+    versionNo: 1
+    taskType: WRITE_ACADEMIC_DISCUSSION
+    rubricId: ETS_DISCUSSION_V1
+    mode: PRACTICE
+    attemptNo: 1
+    recordingIds: []
+    referenceTexts: []
+  matchers:
+    body:
+      - path: $.submissionId
+        type: by_regex
+        predefined: uuid
