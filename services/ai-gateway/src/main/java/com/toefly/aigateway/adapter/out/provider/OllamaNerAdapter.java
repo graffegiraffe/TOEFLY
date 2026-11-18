@@ -36,6 +36,11 @@ public class OllamaNerAdapter implements NerPort {
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
+    /** A small model can loop in JSON mode; both bounds keep a request from waiting on it for ever. */
+    static final int MAX_TOKENS = 512;
+
+    static final java.time.Duration TIMEOUT = java.time.Duration.ofSeconds(30);
+
     private final OllamaChatModel chat;
     private final String model;
 
@@ -48,13 +53,15 @@ public class OllamaNerAdapter implements NerPort {
     public List<PiiSpan> find(String text) {
         String answer;
         try {
-            ChatResponse response = chat.call(new Prompt(
+            Prompt prompt = new Prompt(
                     List.of(new SystemMessage(SYSTEM), new UserMessage(text)),
                     OllamaChatOptions.builder()
                             .model(model)
                             .temperature(0.0)
                             .format("json")
-                            .build()));
+                            .numPredict(MAX_TOKENS)
+                            .build());
+            ChatResponse response = bounded(() -> chat.call(prompt));
             answer = response.getResult() == null
                     ? ""
                     : response.getResult().getOutput().getText();
@@ -62,6 +69,24 @@ public class OllamaNerAdapter implements NerPort {
             throw ProviderErrors.map("OLLAMA", error);
         }
         return spans(text, answer == null ? "" : answer);
+    }
+
+    static <T> T bounded(java.util.function.Supplier<T> call) {
+        var future = java.util.concurrent.CompletableFuture.supplyAsync(
+                call, java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor());
+        try {
+            return future.get(TIMEOUT.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (java.util.concurrent.TimeoutException slow) {
+            future.cancel(true);
+            throw new IllegalStateException("OLLAMA NER timed out after " + TIMEOUT.toSeconds() + " s", slow);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("OLLAMA NER interrupted", interrupted);
+        } catch (java.util.concurrent.ExecutionException failed) {
+            throw failed.getCause() instanceof RuntimeException runtime
+                    ? runtime
+                    : new IllegalStateException(failed.getCause());
+        }
     }
 
     static List<PiiSpan> spans(String text, String answer) {
