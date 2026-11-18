@@ -57,6 +57,10 @@ spring:
               uri: ${toefly.gateway.services.planning-service}
               predicates:
                 - Path=/api/v1/study-plans,/api/v1/study-plans/**,/api/v1/weeks/**,/api/v1/today,/api/v1/week-tasks/**,/api/v1/students/*/study-plan,/api/v1/students/*/weeks,/api/v1/tutor/pending-approvals
+            - id: assessment-service
+              uri: ${toefly.gateway.services.assessment-service}
+              predicates:
+                - Path=/api/v1/submissions,/api/v1/submissions/**,/api/v1/band-estimates,/api/v1/band-estimates/**,/api/v1/admin/deferred-evaluations,/api/v1/admin/deferred-evaluations/**
             # Only the admin section of ai-gateway is public; its /internal API stays inside the cluster.
             - id: ai-gateway
               uri: ${toefly.gateway.services.ai-gateway}
@@ -84,6 +88,7 @@ toefly:
       content-service: http://localhost:8082
       practice-service: http://localhost:8084
       planning-service: http://localhost:8087
+      assessment-service: http://localhost:8085
       ai-gateway: http://localhost:8095
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
