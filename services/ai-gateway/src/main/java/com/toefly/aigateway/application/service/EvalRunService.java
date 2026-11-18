@@ -29,6 +29,12 @@ class EvalRunService implements EvalRunUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public java.util.Optional<EvalRun> find(java.util.UUID runId) {
+        return runs.find(runId);
+    }
+
+    @Override
     @Transactional
     public EvalRun record(EvalReport report) {
         PromptVersion version = prompts.version(report.promptKey(), report.promptVersion())
@@ -44,7 +50,9 @@ class EvalRunService implements EvalRunUseCase {
                 report.metrics(),
                 report.reportUrl(),
                 report.ranAt(),
-                clock.instant());
+                clock.instant(),
+                report.thresholds(),
+                report.cases());
         runs.save(run);
         if (report.passed() && version.status() == PromptStatus.DRAFT) {
             prompts.updateStatus(version.key(), version.version(), PromptStatus.CANDIDATE);

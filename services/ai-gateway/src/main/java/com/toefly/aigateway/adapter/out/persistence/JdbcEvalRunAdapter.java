@@ -29,9 +29,9 @@ public class JdbcEvalRunAdapter implements EvalRunRepository {
     public void save(EvalRun run) {
         jdbc.sql("""
                         INSERT INTO eval_run (id, prompt_key, prompt_version, suite, mode, passed, metrics, report_url,
-                            ran_at, received_at)
+                            ran_at, received_at, thresholds, cases)
                         VALUES (:id, :key, :version, :suite, :mode, :passed, CAST(:metrics AS jsonb), :url, :ranAt,
-                            :receivedAt)""")
+                            :receivedAt, CAST(:thresholds AS jsonb), CAST(:cases AS jsonb))""")
                 .param("id", run.id())
                 .param("key", run.promptKey())
                 .param("version", run.promptVersion())
@@ -42,6 +42,8 @@ public class JdbcEvalRunAdapter implements EvalRunRepository {
                 .param("url", run.reportUrl())
                 .param("ranAt", Timestamp.from(run.ranAt()))
                 .param("receivedAt", Timestamp.from(run.receivedAt()))
+                .param("thresholds", JSON.writeValueAsString(run.thresholds()))
+                .param("cases", JSON.writeValueAsString(run.cases()))
                 .update();
     }
 
@@ -67,6 +69,14 @@ public class JdbcEvalRunAdapter implements EvalRunRepository {
                 .optional();
     }
 
+    @Override
+    public Optional<EvalRun> find(UUID runId) {
+        return jdbc.sql("SELECT * FROM eval_run WHERE id = :id")
+                .param("id", runId)
+                .query(JdbcEvalRunAdapter::run)
+                .optional();
+    }
+
     private static EvalRun run(ResultSet rs, int row) throws SQLException {
         Map<String, Double> metrics = JSON.readValue(rs.getString("metrics"), new TypeReference<>() {});
         return new EvalRun(
@@ -79,6 +89,8 @@ public class JdbcEvalRunAdapter implements EvalRunRepository {
                 metrics,
                 rs.getString("report_url"),
                 rs.getTimestamp("ran_at").toInstant(),
-                rs.getTimestamp("received_at").toInstant());
+                rs.getTimestamp("received_at").toInstant(),
+                JSON.readValue(rs.getString("thresholds"), new TypeReference<Map<String, EvalRun.Bound>>() {}),
+                JSON.readValue(rs.getString("cases"), new TypeReference<List<EvalRun.CaseResult>>() {}));
     }
 }

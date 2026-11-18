@@ -52,6 +52,11 @@ class RegistryAndUsageTest {
                     .filter(r -> r.promptKey().equals(promptKey) && r.promptVersion() == version && r.passed())
                     .findFirst();
         }
+
+        @Override
+        public Optional<EvalRun> find(java.util.UUID runId) {
+            return runs.stream().filter(r -> r.id().equals(runId)).findFirst();
+        }
     };
     final PromptVersion fileVersion = new PromptVersion(
             "system.ping",
@@ -108,7 +113,18 @@ class RegistryAndUsageTest {
                 .isInstanceOf(EvalsNotPassedException.class);
 
         evals.record(new EvalRunUseCase.EvalReport(
-                "system.ping", 1, "tutor-chat", "SMOKE", true, Map.of("x", 1.0), null, gateway.clock.instant()));
+                "system.ping",
+                1,
+                "tutor-chat",
+                "SMOKE",
+                true,
+                Map.of("x", 1.0),
+                null,
+                gateway.clock.instant(),
+                Map.of("x", new EvalRun.Bound(0.5, null)),
+                List.of(new EvalRun.CaseResult("c-1", "eval", 4.0, 3.5, List.of(4, 3), List.of()))));
+        assertThat(evals.page(null, 10).getFirst().cases()).hasSize(1);
+        assertThat(evals.find(evals.page(null, 10).getFirst().id())).isPresent();
         assertThat(gateway.prompts.version("system.ping", 1).orElseThrow().status())
                 .isEqualTo(PromptStatus.CANDIDATE);
         registry.activate("system.ping", 1, "admin");
@@ -119,7 +135,16 @@ class RegistryAndUsageTest {
         assertThat(registry.createVersion("system.ping", draft, "admin").version())
                 .isEqualTo(v2.version());
         evals.record(new EvalRunUseCase.EvalReport(
-                "system.ping", 2, "tutor-chat", "FULL", true, Map.of(), null, gateway.clock.instant()));
+                "system.ping",
+                2,
+                "tutor-chat",
+                "FULL",
+                true,
+                Map.of(),
+                null,
+                gateway.clock.instant(),
+                Map.of(),
+                List.of()));
         registry.activate("system.ping", 2, "admin");
 
         assertThat(registry.versions("system.ping"))
