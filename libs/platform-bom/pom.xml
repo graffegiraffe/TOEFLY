@@ -30,6 +30,7 @@
         <jtokkit.version>1.1.0</jtokkit.version>
         <libphonenumber.version>8.13.52</libphonenumber.version>
         <wiremock.version>3.13.1</wiremock.version>
+        <java-diff-utils.version>4.15</java-diff-utils.version>
     </properties>
 
     <dependencyManagement>
@@ -154,6 +155,11 @@
                 <groupId>com.toefly</groupId>
                 <artifactId>toefly-common-test</artifactId>
                 <version>${toefly.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.java-diff-utils</groupId>
+                <artifactId>java-diff-utils</artifactId>
+                <version>${java-diff-utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.knuddels</groupId>
