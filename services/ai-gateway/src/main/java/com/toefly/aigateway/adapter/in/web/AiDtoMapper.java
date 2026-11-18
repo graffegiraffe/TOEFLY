@@ -104,7 +104,52 @@ final class AiDtoMapper {
                 .metrics(new java.util.HashMap<>(run.metrics()))
                 .reportUrl(run.reportUrl())
                 .ranAt(time(run.ranAt()))
-                .receivedAt(time(run.receivedAt()));
+                .receivedAt(time(run.receivedAt()))
+                .thresholds(run.thresholds().entrySet().stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                java.util.Map.Entry::getKey,
+                                e -> new com.toefly.aigateway.adapter.in.web.dto.EvalThreshold()
+                                        .min(e.getValue().min())
+                                        .max(e.getValue().max()))))
+                .cases(run.cases().stream()
+                        .map(c -> new com.toefly.aigateway.adapter.in.web.dto.EvalCaseResult()
+                                .caseId(c.caseId())
+                                .split(c.split())
+                                .gold(c.gold())
+                                .predicted(c.predicted())
+                                .passes(c.passes())
+                                .flags(c.flags()))
+                        .toList());
+    }
+
+    static java.util.Map<String, com.toefly.aigateway.domain.prompt.EvalRun.Bound> thresholds(
+            java.util.@Nullable Map<String, com.toefly.aigateway.adapter.in.web.dto.EvalThreshold> thresholds) {
+        if (thresholds == null) {
+            return java.util.Map.of();
+        }
+        java.util.Map<String, com.toefly.aigateway.domain.prompt.EvalRun.Bound> bounds = new java.util.HashMap<>();
+        thresholds.forEach((name, t) -> bounds.put(
+                name,
+                new com.toefly.aigateway.domain.prompt.EvalRun.Bound(
+                        t.getMin() == null ? null : t.getMin().doubleValue(),
+                        t.getMax() == null ? null : t.getMax().doubleValue())));
+        return bounds;
+    }
+
+    static List<com.toefly.aigateway.domain.prompt.EvalRun.CaseResult> cases(
+            @Nullable List<com.toefly.aigateway.adapter.in.web.dto.EvalCaseResult> cases) {
+        if (cases == null) {
+            return List.of();
+        }
+        return cases.stream()
+                .map(c -> new com.toefly.aigateway.domain.prompt.EvalRun.CaseResult(
+                        c.getCaseId(),
+                        c.getSplit(),
+                        c.getGold() == null ? null : c.getGold().doubleValue(),
+                        c.getPredicted().doubleValue(),
+                        c.getPasses() == null ? List.of() : c.getPasses(),
+                        c.getFlags() == null ? List.of() : c.getFlags()))
+                .toList();
     }
 
     static ProviderStatusList providers(List<QuotaQueryUseCase.ModelStatus> statuses) {

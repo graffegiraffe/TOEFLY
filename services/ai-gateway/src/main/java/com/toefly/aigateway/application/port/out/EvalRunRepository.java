@@ -3,6 +3,7 @@ package com.toefly.aigateway.application.port.out;
 import com.toefly.aigateway.domain.prompt.EvalRun;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /** Reports of eval runs (§7.4). */
@@ -13,4 +14,6 @@ public interface EvalRunRepository {
     List<EvalRun> page(@Nullable String promptKey, int limit);
 
     Optional<EvalRun> latestPassed(String promptKey, int version);
+
+    Optional<EvalRun> find(UUID runId);
 }

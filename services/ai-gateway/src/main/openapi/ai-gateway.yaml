@@ -527,6 +527,23 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/Unprocessable' }
+  /admin/ai/eval-runs/{runId}:
+    get:
+      tags: [AdminAi]
+      operationId: getEvalRun
+      summary: Прогон evals с порогами и по-случайными результатами
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Прогон.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvalRun' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
     bearerAuth:
@@ -999,6 +1016,25 @@ components:
         metrics: { type: object, additionalProperties: { type: number } }
         reportUrl: { type: [string, 'null'], format: uri, maxLength: 2048 }
         ranAt: { type: string, format: date-time }
+        thresholds: { type: object, additionalProperties: { $ref: '#/components/schemas/EvalThreshold' } }
+        cases: { type: array, maxItems: 2000, items: { $ref: '#/components/schemas/EvalCaseResult' } }
+    EvalThreshold:
+      type: object
+      description: Порог метрики (06 §7.3); блокирует активацию версии.
+      properties:
+        min: { type: [number, 'null'] }
+        max: { type: [number, 'null'] }
+    EvalCaseResult:
+      type: object
+      description: Результат случая набора без текста работы (12, этап 5b, решение 15).
+      required: [caseId, split, predicted]
+      properties:
+        caseId: { type: string, maxLength: 80 }
+        split: { type: string, maxLength: 20 }
+        gold: { type: [number, 'null'] }
+        predicted: { type: number }
+        passes: { type: array, items: { type: integer } }
+        flags: { type: array, items: { type: string } }
     EvalRun:
       type: object
       required: [id, promptKey, promptVersion, suite, mode, passed, metrics, ranAt, receivedAt]
@@ -1013,6 +1049,8 @@ components:
         reportUrl: { type: [string, 'null'] }
         ranAt: { type: string, format: date-time }
         receivedAt: { type: string, format: date-time }
+        thresholds: { type: object, additionalProperties: { $ref: '#/components/schemas/EvalThreshold' } }
+        cases: { type: array, items: { $ref: '#/components/schemas/EvalCaseResult' }, description: 'Только в `GET /admin/ai/eval-runs/{runId}`.' }
     EvalRunPage:
       type: object
       required: [items]

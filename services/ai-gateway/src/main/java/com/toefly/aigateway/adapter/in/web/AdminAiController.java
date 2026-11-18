@@ -143,7 +143,16 @@ public class AdminAiController implements AdminAiApi {
         return ResponseEntity.ok(new EvalRunPage()
                 .items(evals.page(promptKey, limit).stream()
                         .map(AiDtoMapper::evalRun)
+                        .map(run -> run.cases(null))
                         .toList()));
+    }
+
+    @Override
+    public ResponseEntity<EvalRun> getEvalRun(java.util.UUID runId) {
+        return evals.find(runId)
+                .map(AiDtoMapper::evalRun)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override
@@ -156,7 +165,9 @@ public class AdminAiController implements AdminAiApi {
                 report.getPassed(),
                 report.getMetrics() == null ? java.util.Map.of() : report.getMetrics(),
                 report.getReportUrl(),
-                report.getRanAt().toInstant()));
+                report.getRanAt().toInstant(),
+                AiDtoMapper.thresholds(report.getThresholds()),
+                AiDtoMapper.cases(report.getCases())));
         return ResponseEntity.status(HttpStatus.CREATED).body(AiDtoMapper.evalRun(run));
     }
 
