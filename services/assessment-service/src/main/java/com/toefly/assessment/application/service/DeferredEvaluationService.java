@@ -18,8 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * {@code DeferredEvaluationJob}: sends due retries of deferred versions as a new {@code evaluation-requested}, and
- * after 24 hours copies the command to the DLQ with an alert (docs/12 phase 5b decision 6).
+ * {@code DeferredEvaluationJob}: sends due retries of deferred versions as a new {@code evaluation-requested}; after
+ * 24 hours the row is marked dead-lettered once with an alert, and the hourly retries go on (docs/12 phase 5b
+ * decision 6).
  */
 @Service
 class DeferredEvaluationService implements DeferredEvaluationUseCase {
@@ -96,7 +97,6 @@ class DeferredEvaluationService implements DeferredEvaluationUseCase {
                     row.versionNo(),
                     row.lastError());
             meters.counter("toefly.assessment.evaluation.dead-lettered").increment();
-            events.evaluationDeadLettered(submission, row.versionNo(), row.attempts(), Cause.none());
             next = next.markDeadLettered();
         }
         int before = submission.version();

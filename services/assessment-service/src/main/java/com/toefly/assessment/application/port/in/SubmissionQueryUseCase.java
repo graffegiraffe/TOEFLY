@@ -1,6 +1,5 @@
 package com.toefly.assessment.application.port.in;
 
-import com.toefly.assessment.application.port.out.SubmissionRepository;
 import com.toefly.assessment.domain.submission.Submission;
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +10,5 @@ public interface SubmissionQueryUseCase {
 
     SubmissionView get(Caller caller, UUID submissionId);
 
-    List<Submission> list(
-            Caller caller, @Nullable UUID studentId, SubmissionRepository.Filter filter, int offset, int limit);
+    List<Submission> list(Caller caller, @Nullable UUID studentId, SubmissionFilter filter, int offset, int limit);
 }

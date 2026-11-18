@@ -10,9 +10,9 @@ import static com.toefly.assessment.application.service.Fakes.pass;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.toefly.assessment.application.port.in.SubmissionFilter;
 import com.toefly.assessment.application.port.in.TutorEvaluationCommand;
 import com.toefly.assessment.application.port.out.Cause;
-import com.toefly.assessment.application.port.out.SubmissionRepository;
 import com.toefly.assessment.domain.estimate.BandEstimate;
 import com.toefly.assessment.domain.estimate.Section;
 import com.toefly.assessment.domain.evaluation.Evaluation;
@@ -60,7 +60,7 @@ class TutorAndEstimateScenarioTest {
                 .isEqualTo(tutor);
         assertThat(app.events.types()).last().isEqualTo("submission-evaluated");
         assertThat(app.queries.get(TUTOR_CALLER, submission.id()).evaluations()).hasSize(2);
-        assertThat(app.queries.list(TUTOR_CALLER, STUDENT, new SubmissionRepository.Filter(null, null, null), 0, 10))
+        assertThat(app.queries.list(TUTOR_CALLER, STUDENT, new SubmissionFilter(null, null, null), 0, 10))
                 .hasSize(1);
         app.tutorLinks.unenrolled(TUTOR, STUDENT);
         assertThatThrownBy(() -> app.queries.get(TUTOR_CALLER, submission.id())).hasMessageContaining("No such");

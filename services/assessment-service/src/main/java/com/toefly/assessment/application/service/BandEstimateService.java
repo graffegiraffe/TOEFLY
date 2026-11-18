@@ -9,6 +9,7 @@ import com.toefly.assessment.application.port.out.SubmissionRepository;
 import com.toefly.assessment.domain.estimate.BandEstimate;
 import com.toefly.assessment.domain.estimate.EstimateInputs;
 import com.toefly.assessment.domain.estimate.Section;
+import com.toefly.assessment.domain.estimate.WeeklyEstimate;
 import com.toefly.assessment.domain.submission.TaskType;
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -62,7 +63,7 @@ class BandEstimateService implements BandEstimateUseCase {
     }
 
     @Override
-    public List<EstimateInputsRepository.WeeklyEstimate> history(Caller caller, @Nullable UUID studentId) {
+    public List<WeeklyEstimate> history(Caller caller, @Nullable UUID studentId) {
         return inputs.history(access.student(caller, studentId), HISTORY_WEEKS);
     }
 

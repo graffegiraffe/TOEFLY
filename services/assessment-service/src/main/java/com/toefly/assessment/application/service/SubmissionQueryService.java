@@ -1,6 +1,7 @@
 package com.toefly.assessment.application.service;
 
 import com.toefly.assessment.application.port.in.Caller;
+import com.toefly.assessment.application.port.in.SubmissionFilter;
 import com.toefly.assessment.application.port.in.SubmissionQueryUseCase;
 import com.toefly.assessment.application.port.in.SubmissionView;
 import com.toefly.assessment.application.port.out.DeferredEvaluationRepository;
@@ -56,7 +57,7 @@ class SubmissionQueryService implements SubmissionQueryUseCase {
 
     @Override
     public List<Submission> list(
-            Caller caller, @Nullable UUID studentId, SubmissionRepository.Filter filter, int offset, int limit) {
+            Caller caller, @Nullable UUID studentId, SubmissionFilter filter, int offset, int limit) {
         return submissions.list(access.student(caller, studentId), filter, offset, limit);
     }
 }

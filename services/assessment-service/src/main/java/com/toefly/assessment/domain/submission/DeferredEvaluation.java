@@ -7,7 +7,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A version waiting for AI (docs/06-ai-agent.md §8.3, docs/12 phase 5b decision 6): retries after
- * {@code max(Retry-After, 1-2-4-8-16 min)}, then every hour; after 24 hours the command also goes to the DLQ once.
+ * {@code max(Retry-After, 1-2-4-8-16 min)}, then every hour; after 24 hours the row is marked dead-lettered once
+ * for the alert.
  */
 public record DeferredEvaluation(
         UUID submissionId,
