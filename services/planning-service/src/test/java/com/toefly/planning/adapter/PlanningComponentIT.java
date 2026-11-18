@@ -99,6 +99,9 @@ import tools.jackson.databind.json.JsonMapper;
 class PlanningComponentIT {
 
     static final JsonMapper JSON = JsonMapper.builder().build();
+    /** A shared CI runner needs longer for the consumer group to settle on all topics after start. */
+    static final Duration KAFKA_WAIT = Duration.ofSeconds(90);
+
     static final Path CONTRACTS = Path.of("src/test/resources/contracts");
     static final ZoneId MINSK = ZoneId.of("Europe/Minsk");
     static final List<TaskType> CLOSED = List.of(
@@ -211,7 +214,7 @@ class PlanningComponentIT {
         send("toefly.profile.onboarding-completed.v1", user.toString(), event.getEventId(), event);
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(KAFKA_WAIT)
                 .untilAsserted(() -> assertThat(planCount(user)).isEqualTo(1));
         mvc.perform(get("/api/v1/study-plans/current").with(student(user)))
                 .andExpect(status().isOk())
@@ -253,7 +256,7 @@ class PlanningComponentIT {
                 .build();
         send("toefly.practice.attempt-started.v1", user.toString(), started.getEventId(), started);
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(KAFKA_WAIT)
                 .untilAsserted(() -> assertThat(taskStatus(task.id())).isEqualTo("IN_PROGRESS"));
 
         AttemptScoredV1 scored = scored(user, task, attempt, UUID.randomUUID());
@@ -263,10 +266,10 @@ class PlanningComponentIT {
         send("toefly.practice.attempt-scored.v1", user.toString(), redelivered.getEventId(), redelivered);
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(KAFKA_WAIT)
                 .untilAsserted(() -> assertThat(taskStatus(task.id())).isEqualTo("DONE"));
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(KAFKA_WAIT)
                 .untilAsserted(() -> assertThat(jdbc.sql("SELECT count(*) FROM processed_events WHERE event_id = :id")
                                 .param("id", redelivered.getEventId())
                                 .query(Integer.class)
@@ -425,7 +428,7 @@ class PlanningComponentIT {
         send("toefly.assessment.submission-evaluated.v1", user.toString(), draft.getEventId(), draft);
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(KAFKA_WAIT)
                 .untilAsserted(() -> assertThat(taskStatus(task.id())).isEqualTo("DONE"));
         assertThat(jdbc.sql("""
                         SELECT count(*) FROM outbox_event
