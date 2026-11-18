@@ -54,3 +54,17 @@ export function useActivatePromptVersion() {
     onSuccess: () => client.invalidateQueries({ queryKey: ['admin', 'ai', 'prompts'] }),
   });
 }
+
+/** «AI → Evals» (docs/06-ai-agent.md §7.5): runs, newest first; the detail carries thresholds and cases. */
+export const aiEvalRunsQuery = (promptKey: string) =>
+  queryOptions({
+    queryKey: ['admin', 'ai', 'eval-runs', promptKey],
+    queryFn: () => api.aiAdmin.listEvalRuns({ promptKey: promptKey || undefined, limit: 100 }),
+  });
+
+export const aiEvalRunQuery = (runId: string) =>
+  queryOptions({
+    queryKey: ['admin', 'ai', 'eval-run', runId],
+    queryFn: () => api.aiAdmin.getEvalRun({ runId }),
+    staleTime: Infinity, // a recorded run does not change
+  });

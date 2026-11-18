@@ -2,15 +2,16 @@ import { createFileRoute, notFound } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiCallsPanel } from '@/components/admin/ai-calls-panel';
+import { AiEvalsPanel } from '@/components/admin/ai-evals-panel';
 import { AiPromptsPanel } from '@/components/admin/ai-prompts-panel';
 import { AiProvidersPanel } from '@/components/admin/ai-providers-panel';
 import { AiUsagePanel } from '@/components/admin/ai-usage-panel';
 import { cn } from '@/lib/cn';
 
-type Tab = 'prompts' | 'calls' | 'usage' | 'providers';
-const TABS: Tab[] = ['prompts', 'calls', 'usage', 'providers'];
+type Tab = 'prompts' | 'evals' | 'calls' | 'usage' | 'providers';
+const TABS: Tab[] = ['prompts', 'evals', 'calls', 'usage', 'providers'];
 
-/** AI administration of phase 5a (docs/12-implementation-plan.md, decision 10); ADMIN only. */
+/** AI administration of phase 5a (docs/12-implementation-plan.md, decision 10) with Evals of 5b (decision 15); ADMIN only. */
 export const Route = createFileRoute('/_auth/_app/admin/ai')({
   beforeLoad: ({ context }) => {
     if (!context.session.user.roles.includes('ADMIN')) {
@@ -50,6 +51,7 @@ function AdminAi() {
       </div>
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'prompts' && <AiPromptsPanel />}
+        {tab === 'evals' && <AiEvalsPanel />}
         {tab === 'calls' && <AiCallsPanel />}
         {tab === 'usage' && <AiUsagePanel />}
         {tab === 'providers' && <AiProvidersPanel />}
