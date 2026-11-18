@@ -1,0 +1,147 @@
+{
+  "type": "record",
+  "name": "EvaluationRequestedV1",
+  "namespace": "com.toefly.events.assessment",
+  "doc": "A submission version is sent to AI evaluation (toefly.assessment.evaluation-requested.v1); a command for the workers of assessment-service and, for Speaking, speech-service.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "submissionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Submission."
+    },
+    {
+      "name": "versionNo",
+      "type": "int",
+      "doc": "Version of the submission, 1-3."
+    },
+    {
+      "name": "taskType",
+      "type": {
+        "type": "enum",
+        "name": "TaskType",
+        "namespace": "com.toefly.events.common",
+        "doc": "Task type (docs/00-README.md section 5.1).",
+        "symbols": [
+          "UNKNOWN",
+          "COMPLETE_THE_WORDS",
+          "READ_DAILY_LIFE",
+          "READ_ACADEMIC_PASSAGE",
+          "LISTEN_CHOOSE_RESPONSE",
+          "LISTEN_CONVERSATION",
+          "LISTEN_ANNOUNCEMENT",
+          "LISTEN_ACADEMIC_TALK",
+          "BUILD_A_SENTENCE",
+          "WRITE_EMAIL",
+          "WRITE_ACADEMIC_DISCUSSION",
+          "LISTEN_AND_REPEAT",
+          "TAKE_AN_INTERVIEW",
+          "GRAMMAR_EXERCISE",
+          "VOCAB_EXERCISE",
+          "LEGACY_READING",
+          "LEGACY_LISTENING"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Task type."
+    },
+    {
+      "name": "rubricId",
+      "type": "string",
+      "doc": "Rubric (ETS_EMAIL_V1, ETS_DISCUSSION_V1, ETS_REPEAT_V1, ETS_INTERVIEW_V1)."
+    },
+    {
+      "name": "mode",
+      "type": {
+        "type": "enum",
+        "name": "AttemptMode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Attempt mode.",
+        "symbols": [
+          "UNKNOWN",
+          "PRACTICE",
+          "EXAM"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Practice or exam."
+    },
+    {
+      "name": "attemptNo",
+      "type": "int",
+      "default": 1,
+      "doc": "Delivery attempt of the command: 1 for the first, more for the retries of a deferred evaluation."
+    },
+    {
+      "name": "recordingIds",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      },
+      "default": [],
+      "doc": "Recordings of a Speaking submission, in item order; empty for Writing."
+    },
+    {
+      "name": "referenceTexts",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Reference sentences of Listen and Repeat; empty otherwise."
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "type": "record",
+  "name": "BandEstimateUpdatedV1",
+  "namespace": "com.toefly.events.assessment",
+  "doc": "The band estimate of a learner is recomputed (toefly.assessment.band-estimate-updated.v1); compacted by userId.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "sections",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "SectionEstimateV1",
+          "namespace": "com.toefly.events.assessment",
+          "doc": "Estimate of one section.",
+          "fields": [
+            {
+              "name": "section",
+              "type": {
+                "type": "enum",
+                "name": "Section",
+                "namespace": "com.toefly.events.common",
+                "doc": "Exam section.",
+                "symbols": [
+                  "UNKNOWN",
+                  "READING",
+                  "LISTENING",
+                  "WRITING",
+                  "SPEAKING"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Exam section."
+            },
+            {
+              "name": "status",
+              "type": {
+                "type": "enum",
+                "name": "EstimateStatus",
+                "namespace": "com.toefly.events.assessment",
+                "doc": "Whether a section has enough data for a band.",
+                "symbols": [
+                  "UNKNOWN",
+                  "READY",
+                  "NEED_MORE_DATA"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "READY or NEED_MORE_DATA."
+            },
+            {
+              "name": "pointBand",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null,
+              "doc": "Point band 1.0-6.0 in steps of 0.5; null without enough data."
+            },
+            {
+              "name": "low",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null,
+              "doc": "Lower bound of the range; null without enough data."
+            },
+            {
+              "name": "high",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null,
+              "doc": "Upper bound of the range; null without enough data."
+            },
+            {
+              "name": "n",
+              "type": "int",
+              "doc": "Items (Reading, Listening) or evaluated submissions (Writing, Speaking) counted."
+            }
+          ]
+        }
+      },
+      "doc": "The four sections."
+    },
+    {
+      "name": "overallPoint",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Overall point band; null unless all four sections are READY."
+    },
+    {
+      "name": "overallLow",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Lower bound of the overall range; null unless all sections are READY."
+    },
+    {
+      "name": "overallHigh",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Upper bound of the overall range; null unless all sections are READY."
+    },
+    {
+      "name": "asOf",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment of the newest input of the estimate, UTC."
+    }
+  ]
+}
