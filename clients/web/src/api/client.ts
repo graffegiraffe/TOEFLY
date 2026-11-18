@@ -29,6 +29,11 @@ import {
   WeeksApi as PlanningWeeksApi,
 } from './generated/planning';
 import { AdminAiApi as AiAdminApi, Configuration as AiGatewayConfiguration } from './generated/aigateway';
+import {
+  BandEstimatesApi as AssessmentBandEstimatesApi,
+  Configuration as AssessmentConfiguration,
+  SubmissionsApi as AssessmentSubmissionsApi,
+} from './generated/assessment';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -81,7 +86,16 @@ const aiGatewayConfiguration = new AiGatewayConfiguration({
   middleware: [csrfMiddleware],
 });
 
+// assessment-service.yaml keeps its paths relative to /api/v1 as well (docs/05 §6.5).
+const assessmentConfiguration = new AssessmentConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
 export const api = {
+  submissions: new AssessmentSubmissionsApi(assessmentConfiguration),
+  bandEstimates: new AssessmentBandEstimatesApi(assessmentConfiguration),
   aiAdmin: new AiAdminApi(aiGatewayConfiguration),
   studyPlans: new PlanningStudyPlansApi(planningConfiguration),
   weeks: new PlanningWeeksApi(planningConfiguration),

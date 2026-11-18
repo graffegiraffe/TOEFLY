@@ -7,6 +7,9 @@ import { AttemptStatus } from '@/api/generated/practice';
 import { api } from '@/api/client';
 import { weekQuery } from '@/api/planning';
 import { attemptQuery, newKey, reviewQuery } from '@/api/practice';
+import { createSubmission } from '@/api/assessment';
+import { SubmissionStatus } from '@/api/generated/assessment';
+import { isWritingType } from '@/lib/writing';
 import { TaskPlayer } from '@/components/practice/task-player';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -15,6 +18,7 @@ const search = z.object({ week: z.string().optional() });
 /**
  * A task of the week in the player (docs/07-ux-ui.md §4.4 `/tasks/$weekTaskId`): continues the open attempt of the
  * task or starts one with its weekTaskId; the review of phase 3 follows the submission (docs/12, phase 4, decision 9).
+ * A Writing task opens the submission of the task in the Writing editor or its review (docs/12, phase 5b, decision 14).
  */
 export const Route = createFileRoute('/_auth/_app/tasks/$weekTaskId')({
   validateSearch: search,
@@ -32,7 +36,8 @@ function WeekTaskPage() {
   const { week: weekId } = Route.useSearch();
   const week = useQuery({ ...weekQuery(weekId ?? 'none'), enabled: Boolean(weekId) });
   const task = week.data?.sections.flatMap((block) => block.tasks).find((item) => item.taskId === weekTaskId);
-  const ready = Boolean(task && task.kind === 'ITEM_SET' && task.itemSetId && task.status !== 'DONE');
+  const writing = isWritingType(task?.taskType);
+  const ready = Boolean(task && task.kind === 'ITEM_SET' && task.itemSetId && task.status !== 'DONE' && !writing);
 
   const attempt = useQuery({
     // Outside the 'practice' keys: the invalidation after a submission must not start a second attempt.
@@ -57,6 +62,26 @@ function WeekTaskPage() {
     },
   });
 
+  const submission = useQuery({
+    // Its own key with no cache: creating a submission must never repeat because of an invalidation.
+    queryKey: ['week-task-submission', weekTaskId],
+    enabled: Boolean(task && writing && task.itemSetId),
+    staleTime: Infinity,
+    gcTime: 0,
+    queryFn: async () => {
+      const found = await api.submissions.listSubmissions({ weekTaskId, limit: 1 });
+      const existing = found.items[0];
+      if (existing) {
+        return { id: existing.id, status: existing.status };
+      }
+      if (task?.status === 'DONE') {
+        return null;
+      }
+      const created = await createSubmission(task?.itemSetId ?? '', weekTaskId);
+      return { id: created.id, status: created.status };
+    },
+  });
+
   if (!weekId) {
     return <EmptyState title={t('weeks.taskNotFound')} />;
   }
@@ -68,6 +93,19 @@ function WeekTaskPage() {
   }
   if (task.kind !== 'ITEM_SET') {
     return <EmptyState title={t('weeks.notPlayable')} />;
+  }
+  if (writing) {
+    if (submission.isPending) {
+      return <div className="h-96 animate-pulse rounded-xl bg-surface-sunken" aria-busy="true" />;
+    }
+    if (submission.isError || !submission.data) {
+      return <EmptyState title={t('writing.notFound')} />;
+    }
+    return submission.data.status === SubmissionStatus.Draft ? (
+      <Navigate to="/write/$submissionId" params={{ submissionId: submission.data.id }} replace />
+    ) : (
+      <Navigate to="/review/submissions/$submissionId" params={{ submissionId: submission.data.id }} replace />
+    );
   }
   if (task.status === 'DONE' && task.lastAttemptId) {
     return <Navigate to="/review/attempts/$attemptId" params={{ attemptId: task.lastAttemptId }} replace />;

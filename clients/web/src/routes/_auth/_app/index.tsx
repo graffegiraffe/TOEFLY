@@ -3,12 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ClipboardCheck, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { bandEstimateQuery } from '@/api/assessment';
 import { planQuery, todayQuery } from '@/api/planning';
 import { studyGoalQuery } from '@/api/queries';
 import { TaskRow } from '@/components/weeks/task-row';
 import { buttonClass } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { BandRingCard } from '@/components/writing/band-ring';
 import { bandHint } from '@/lib/band';
 
 export const Route = createFileRoute('/_auth/_app/')({
@@ -26,6 +28,7 @@ function Home() {
   const goal = useQuery({ ...studyGoalQuery, enabled: isStudent });
   const plan = useQuery({ ...planQuery, enabled: isStudent });
   const today = useQuery({ ...todayQuery, enabled: isStudent && Boolean(plan.data) });
+  const estimate = useQuery({ ...bandEstimateQuery, enabled: isStudent });
   const hasPlan = Boolean(plan.data);
   const name = profile.displayName?.split(' ')[0];
   return (
@@ -64,7 +67,7 @@ function Home() {
         </Card>
       )}
       {isStudent && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
           <Card>
             <div className="mb-2 flex items-center gap-2 text-caption font-semibold uppercase tracking-wide text-ink-muted">
               <Target className="size-4" aria-hidden="true" />
@@ -78,13 +81,11 @@ function Home() {
               <div className="h-7 w-40 animate-pulse rounded bg-surface-sunken" aria-busy="true" />
             )}
           </Card>
-          <Card>
-            <div className="mb-2 text-caption font-semibold uppercase tracking-wide text-ink-muted">
-              {t('home.estimate')}
-            </div>
-            <p className="text-title-2 font-semibold text-ink">{t('home.needMoreData')}</p>
-            <p className="text-body text-ink-muted">{t('home.needMoreDataText')}</p>
-          </Card>
+          {estimate.isPending ? (
+            <div className="h-56 animate-pulse rounded-xl bg-surface-sunken" aria-busy="true" />
+          ) : (
+            <BandRingCard estimate={estimate.data} />
+          )}
         </div>
       )}
     </div>
