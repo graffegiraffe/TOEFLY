@@ -1,0 +1,300 @@
+{
+  "type": "record",
+  "name": "SubmissionEvaluatedV1",
+  "namespace": "com.toefly.events.assessment",
+  "doc": "A Writing or Speaking submission is evaluated (toefly.assessment.submission-evaluated.v1). Text and audio are not in the event.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "submissionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Submission."
+    },
+    {
+      "name": "versionNo",
+      "type": "int",
+      "doc": "Version of the submission, 1-3."
+    },
+    {
+      "name": "evaluationId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Evaluation."
+    },
+    {
+      "name": "itemSetId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Item set of the task."
+    },
+    {
+      "name": "taskType",
+      "type": {
+        "type": "enum",
+        "name": "TaskType",
+        "namespace": "com.toefly.events.common",
+        "doc": "Task type (docs/00-README.md section 5.1).",
+        "symbols": [
+          "UNKNOWN",
+          "COMPLETE_THE_WORDS",
+          "READ_DAILY_LIFE",
+          "READ_ACADEMIC_PASSAGE",
+          "LISTEN_CHOOSE_RESPONSE",
+          "LISTEN_CONVERSATION",
+          "LISTEN_ANNOUNCEMENT",
+          "LISTEN_ACADEMIC_TALK",
+          "BUILD_A_SENTENCE",
+          "WRITE_EMAIL",
+          "WRITE_ACADEMIC_DISCUSSION",
+          "LISTEN_AND_REPEAT",
+          "TAKE_AN_INTERVIEW",
+          "GRAMMAR_EXERCISE",
+          "VOCAB_EXERCISE",
+          "LEGACY_READING",
+          "LEGACY_LISTENING"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Task type."
+    },
+    {
+      "name": "section",
+      "type": {
+        "type": "enum",
+        "name": "Section",
+        "namespace": "com.toefly.events.common",
+        "doc": "Exam section.",
+        "symbols": [
+          "UNKNOWN",
+          "READING",
+          "LISTENING",
+          "WRITING",
+          "SPEAKING"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "WRITING or SPEAKING."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "SubmissionStatus",
+        "namespace": "com.toefly.events.common",
+        "doc": "Status of a submission version (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "DRAFT",
+          "SUBMITTED",
+          "EVALUATING",
+          "EVALUATED",
+          "EVALUATION_DEFERRED",
+          "TUTOR_REVIEWED"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Status after the evaluation: EVALUATED or TUTOR_REVIEWED."
+    },
+    {
+      "name": "weekTaskId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Task of the week."
+    },
+    {
+      "name": "examSessionId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Exam session."
+    },
+    {
+      "name": "interviewSessionId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Session of the AI interviewer."
+    },
+    {
+      "name": "evaluatedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the evaluation finished, UTC."
+    },
+    {
+      "name": "rubricScore",
+      "type": "int",
+      "doc": "Final ETS rubric score, 0-5 (round half up of finalScore)."
+    },
+    {
+      "name": "criteria",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "CriterionScoreV1",
+          "namespace": "com.toefly.events.assessment",
+          "doc": "Score of one criterion of the ETS rubric.",
+          "fields": [
+            {
+              "name": "criterion",
+              "type": "string",
+              "doc": "Criterion key of the rubric (taskAchievement, development, organization, languageRange, accuracy, conventions)."
+            },
+            {
+              "name": "score",
+              "type": "int",
+              "doc": "Criterion score, 0-5."
+            }
+          ]
+        }
+      },
+      "default": [],
+      "doc": "Scores of the criteria."
+    },
+    {
+      "name": "mistakes",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "MistakeCountV1",
+          "namespace": "com.toefly.events.assessment",
+          "doc": "Number of mistakes of a category.",
+          "fields": [
+            {
+              "name": "category",
+              "type": {
+                "type": "enum",
+                "name": "MistakeCategory",
+                "namespace": "com.toefly.events.common",
+                "doc": "Mistake category.",
+                "symbols": [
+                  "UNKNOWN",
+                  "GRAMMAR",
+                  "VOCABULARY",
+                  "SPELLING",
+                  "COHERENCE",
+                  "TASK_RESPONSE",
+                  "PRONUNCIATION",
+                  "FLUENCY",
+                  "COMPREHENSION",
+                  "TIME_MANAGEMENT"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Mistake category."
+            },
+            {
+              "name": "count",
+              "type": "int",
+              "doc": "Number of mistakes."
+            }
+          ]
+        }
+      },
+      "default": [],
+      "doc": "Mistakes by category."
+    },
+    {
+      "name": "wordCount",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": null,
+      "doc": "Words of a Writing response; null for Speaking."
+    },
+    {
+      "name": "promptKey",
+      "type": "string",
+      "doc": "Prompt key of the ai-gateway registry."
+    },
+    {
+      "name": "promptVersion",
+      "type": "int",
+      "doc": "Prompt version."
+    },
+    {
+      "name": "finalScore",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null,
+      "doc": "Final score 0-5 in steps of 0.5 (Writing, docs/06 section 5.4.5)."
+    }
+  ]
+}
