@@ -53,7 +53,7 @@ toefly:
     auto-register: false
   planning:
     content-url: http://localhost:8082
-    # Closed types only: the open Writing and Speaking types wait for phases 5b and 6 (docs/12, phase 4, decision 2).
+    # Writing joins in phase 5b; the open Speaking types wait for phase 6 (docs/12, phase 4 decision 2, 5b decision 14).
     available-task-types:
       - COMPLETE_THE_WORDS
       - READ_DAILY_LIFE
@@ -63,6 +63,8 @@ toefly:
       - LISTEN_ANNOUNCEMENT
       - LISTEN_ACADEMIC_TALK
       - BUILD_A_SENTENCE
+      - WRITE_EMAIL
+      - WRITE_ACADEMIC_DISCUSSION
       - GRAMMAR_EXERCISE
     vocabulary-review-enabled: false
     mock-exam-enabled: false

@@ -21,6 +21,7 @@ import com.toefly.common.test.contract.ContractCoverage;
 import com.toefly.common.test.contract.ContractTests;
 import com.toefly.common.test.contract.MockMvcExchanger;
 import com.toefly.common.test.contract.OutboxMessageReceiver;
+import com.toefly.events.assessment.SubmissionEvaluatedV1;
 import com.toefly.events.common.AttemptMode;
 import com.toefly.events.common.Section;
 import com.toefly.events.practice.AttemptScoredV1;
@@ -410,6 +411,51 @@ class PlanningComponentIT {
                 .andExpect(jsonPath("$.items[1].status").value("PUBLISHED"));
         assertThat(OutboxAssertions.published(jdbc, "toefly.planning.week-completed.v1"))
                 .isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("US-09.03, docs/12 5b decision 14: an evaluated first version closes the Writing task of the week")
+    void submissionEvaluatedClosesTask() throws Exception {
+        UUID user = plan();
+        WeekTask task = firstOf(user, WeekTaskKind.ITEM_SET);
+        SubmissionEvaluatedV1 attempt2 = evaluated(user, task, 2);
+        send("toefly.assessment.submission-evaluated.v1", user.toString(), attempt2.getEventId(), attempt2);
+        SubmissionEvaluatedV1 draft = evaluated(user, task, 1);
+        send("toefly.assessment.submission-evaluated.v1", user.toString(), draft.getEventId(), draft);
+        send("toefly.assessment.submission-evaluated.v1", user.toString(), draft.getEventId(), draft);
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .untilAsserted(() -> assertThat(taskStatus(task.id())).isEqualTo("DONE"));
+        assertThat(jdbc.sql("""
+                        SELECT count(*) FROM outbox_event
+                        WHERE topic = 'toefly.planning.week-task-completed.v1' AND subject LIKE :subject
+                        """)
+                        .param("subject", "%/tasks/" + task.id())
+                        .query(Integer.class)
+                        .single())
+                .isEqualTo(1);
+    }
+
+    private static SubmissionEvaluatedV1 evaluated(UUID user, WeekTask task, int versionNo) {
+        return SubmissionEvaluatedV1.newBuilder()
+                .setEventId(UUID.randomUUID())
+                .setOccurredAt(Instant.now())
+                .setUserId(user)
+                .setSubmissionId(UUID.randomUUID())
+                .setVersionNo(versionNo)
+                .setEvaluationId(UUID.randomUUID())
+                .setItemSetId(UUID.fromString(task.refId()))
+                .setTaskType(com.toefly.events.common.TaskType.WRITE_ACADEMIC_DISCUSSION)
+                .setSection(Section.WRITING)
+                .setStatus(com.toefly.events.common.SubmissionStatus.EVALUATED)
+                .setWeekTaskId(task.id())
+                .setEvaluatedAt(Instant.now())
+                .setRubricScore(4)
+                .setPromptKey("writing.grade.discussion")
+                .setPromptVersion(1)
+                .setFinalScore(3.5)
+                .build();
     }
 
     // ---- contracts ----
