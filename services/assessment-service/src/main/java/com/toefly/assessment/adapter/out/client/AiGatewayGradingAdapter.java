@@ -84,7 +84,7 @@ public class AiGatewayGradingAdapter implements AiGradingPort {
         return pass(request.passTag(), response);
     }
 
-    static PassOutput pass(String passTag, JsonNode response) {
+    public static PassOutput pass(String passTag, JsonNode response) {
         JsonNode out = response.path("output");
         JsonNode stamp = response.path("aiStamp");
         List<CriterionScore> criteria = new ArrayList<>();

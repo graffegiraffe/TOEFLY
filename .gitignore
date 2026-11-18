@@ -23,3 +23,6 @@ content/scripts/.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Eval sets of WritingGrader stay with the author (docs/06-ai-agent.md §7.2, docs/12 phase 5b decision 2)
+evals/data/

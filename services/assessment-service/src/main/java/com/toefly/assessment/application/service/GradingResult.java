@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /** What WritingGrader decided for a version, before it becomes an {@link Evaluation}. */
-record GradingResult(
+public record GradingResult(
         double finalScore,
         @Nullable EvaluationAgreement agreement,
         boolean needsHumanReview,
@@ -28,7 +28,7 @@ record GradingResult(
         @Nullable String modelId,
         boolean degraded) {
 
-    Evaluation toEvaluation(UUID submissionId, int versionNo, String rubricId, Instant now) {
+    public Evaluation toEvaluation(UUID submissionId, int versionNo, String rubricId, Instant now) {
         return new Evaluation(
                 UUID.randomUUID(),
                 submissionId,

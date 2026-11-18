@@ -1,0 +1,55 @@
+name: ai-evals
+
+# Evals of the AI workers (docs/06-ai-agent.md §7.4). Until the private bucket of phase 13 exists, the eval sets stay
+# with the author: the live run is local and its report without texts is committed to src/evals/reports/. On a pull
+# request this workflow replays that report: the prompts and anchors must be the ones the report was made with, and
+# the metrics recomputed from the per-case results must meet the thresholds (docs/12, phase 5b, decision 3).
+on:
+  pull_request:
+    paths:
+      - "services/ai-gateway/src/main/resources/prompts/**"
+      - "services/ai-gateway/src/main/resources/ai-gateway-routes.yaml"
+      - "services/*/src/main/java/**/application/service/WritingGrader.java"
+      - "services/assessment-service/src/main/resources/grading/**"
+      - "services/assessment-service/src/evals/**"
+      - "evals/manifest.json"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Replay the eval reports of WritingGrader
+        run: >-
+          ./mvnw -B -ntp -Pevals -pl services/assessment-service -am test
+          -Dtest=EvalReportReplayTest -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Summary
+        if: always()
+        run: |
+          summary=services/assessment-service/target/evals-summary.md
+          if [ -f "$summary" ]; then cat "$summary" >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Comment on the pull request
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          summary=services/assessment-service/target/evals-summary.md
+          [ -f "$summary" ] || exit 0
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$summary" --edit-last \
+            || gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$summary"
