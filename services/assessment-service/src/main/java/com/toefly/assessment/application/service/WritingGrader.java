@@ -40,13 +40,13 @@ public class WritingGrader {
     private final AiGradingPort ai;
     private final GradingKit kit;
 
-    WritingGrader(AiGradingPort ai, GradingKit kit) {
+    public WritingGrader(AiGradingPort ai, GradingKit kit) {
         this.ai = ai;
         this.kit = kit;
     }
 
     @Observed(name = "toefly.assessment.writing.grading")
-    GradingResult grade(GradingInput input) {
+    public GradingResult grade(GradingInput input) {
         TaskType type = input.task().taskType();
         String text = input.responseText();
         TextFacts facts = TextFacts.of(text, input.task().sourceTexts());

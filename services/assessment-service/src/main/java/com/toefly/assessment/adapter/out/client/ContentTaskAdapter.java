@@ -64,7 +64,7 @@ public class ContentTaskAdapter implements TaskContentPort {
         return Optional.of(task(itemSetId, set));
     }
 
-    static TaskContent task(UUID itemSetId, JsonNode set) {
+    public static TaskContent task(UUID itemSetId, JsonNode set) {
         TaskType type = TaskType.valueOf(set.path("taskType").asString());
         JsonNode payload = set.path("payload");
         JsonNode stimulus = payload.path("stimulus");
