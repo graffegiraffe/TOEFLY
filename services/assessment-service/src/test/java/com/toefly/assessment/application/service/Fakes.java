@@ -1,6 +1,7 @@
 package com.toefly.assessment.application.service;
 
 import com.toefly.assessment.application.port.in.Caller;
+import com.toefly.assessment.application.port.in.SubmissionFilter;
 import com.toefly.assessment.application.port.out.AiGradingPort;
 import com.toefly.assessment.application.port.out.AiUnavailableException;
 import com.toefly.assessment.application.port.out.AssessmentEventPublisherPort;
@@ -17,6 +18,7 @@ import com.toefly.assessment.application.port.out.TutorLinkRepository;
 import com.toefly.assessment.domain.estimate.BandEstimate;
 import com.toefly.assessment.domain.estimate.EstimateInputs;
 import com.toefly.assessment.domain.estimate.Section;
+import com.toefly.assessment.domain.estimate.WeeklyEstimate;
 import com.toefly.assessment.domain.evaluation.CriterionScore;
 import com.toefly.assessment.domain.evaluation.Evaluation;
 import com.toefly.assessment.domain.evaluation.EvaluatorType;
@@ -253,7 +255,7 @@ final class Fakes {
         }
 
         @Override
-        public List<Submission> list(UUID userId, Filter filter, int offset, int limit) {
+        public List<Submission> list(UUID userId, SubmissionFilter filter, int offset, int limit) {
             return byId.values().stream()
                     .filter(s -> s.userId().equals(userId))
                     .filter(s -> filter.taskType() == null || s.taskType() == filter.taskType())
@@ -443,11 +445,6 @@ final class Fakes {
         @Override
         public void evaluationRequested(Submission submission, int versionNo, int attemptNo, Cause cause) {
             published.add(new Published("evaluation-requested", submission.id(), versionNo, attemptNo, null));
-        }
-
-        @Override
-        public void evaluationDeadLettered(Submission submission, int versionNo, int attemptNo, Cause cause) {
-            published.add(new Published("dlq", submission.id(), versionNo, attemptNo, null));
         }
 
         @Override

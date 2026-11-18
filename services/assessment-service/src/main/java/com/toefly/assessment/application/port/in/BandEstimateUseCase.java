@@ -1,9 +1,9 @@
 package com.toefly.assessment.application.port.in;
 
 import com.toefly.assessment.application.port.out.Cause;
-import com.toefly.assessment.application.port.out.EstimateInputsRepository;
 import com.toefly.assessment.domain.estimate.BandEstimate;
 import com.toefly.assessment.domain.estimate.Section;
+import com.toefly.assessment.domain.estimate.WeeklyEstimate;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +14,7 @@ public interface BandEstimateUseCase {
 
     BandEstimate current(Caller caller, @Nullable UUID studentId);
 
-    List<EstimateInputsRepository.WeeklyEstimate> history(Caller caller, @Nullable UUID studentId);
+    List<WeeklyEstimate> history(Caller caller, @Nullable UUID studentId);
 
     void abilityUpdated(
             UUID userId, Section section, double theta, double standardError, int n, Instant at, Cause cause);

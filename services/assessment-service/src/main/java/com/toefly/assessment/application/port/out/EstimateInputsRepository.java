@@ -3,6 +3,7 @@ package com.toefly.assessment.application.port.out;
 import com.toefly.assessment.domain.estimate.BandEstimate;
 import com.toefly.assessment.domain.estimate.EstimateInputs;
 import com.toefly.assessment.domain.estimate.Section;
+import com.toefly.assessment.domain.estimate.WeeklyEstimate;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,4 @@ public interface EstimateInputsRepository {
     Optional<BandEstimate> current(UUID userId);
 
     List<WeeklyEstimate> history(UUID userId, int limit);
-
-    record WeeklyEstimate(LocalDate weekStart, BandEstimate estimate) {}
 }

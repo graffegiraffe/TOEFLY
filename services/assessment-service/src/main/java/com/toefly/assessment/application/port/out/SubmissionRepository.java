@@ -1,14 +1,13 @@
 package com.toefly.assessment.application.port.out;
 
+import com.toefly.assessment.application.port.in.SubmissionFilter;
 import com.toefly.assessment.domain.evaluation.Evaluation;
 import com.toefly.assessment.domain.evaluation.InlineAnnotation;
 import com.toefly.assessment.domain.submission.Submission;
-import com.toefly.assessment.domain.submission.SubmissionStatus;
 import com.toefly.assessment.domain.submission.TaskType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 
 /** Submissions with their versions and evaluations (assessment_db). */
 public interface SubmissionRepository {
@@ -20,7 +19,7 @@ public interface SubmissionRepository {
 
     Optional<Submission> find(UUID submissionId);
 
-    List<Submission> list(UUID userId, Filter filter, int offset, int limit);
+    List<Submission> list(UUID userId, SubmissionFilter filter, int offset, int limit);
 
     void saveEvaluation(Evaluation evaluation);
 
@@ -33,9 +32,4 @@ public interface SubmissionRepository {
 
     /** Effective scores of first versions of a type for the estimate, newest first. */
     List<Double> firstVersionScores(UUID userId, TaskType type, int limit);
-
-    record Filter(
-            @Nullable TaskType taskType,
-            @Nullable SubmissionStatus status,
-            @Nullable UUID weekTaskId) {}
 }

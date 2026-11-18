@@ -75,14 +75,15 @@ class DeferredEvaluationScenarioTest {
     }
 
     @Test
-    @DisplayName("AC-11.06.4 after 24 hours the command is copied to the DLQ once and retries go on")
+    @DisplayName("AC-11.06.4 after 24 hours the row is dead-lettered once with an alert and retries go on")
     void deadLetters() {
         Submission submission = app.submittedDiscussion(RESPONSE);
         app.ai.unavailable(null);
         app.worker.evaluate(submission.id(), 1, Cause.none(), ONCE);
         app.clock.advance(Duration.ofHours(25));
         app.retries.retryDue();
-        assertThat(app.events.types()).contains("dlq");
+        assertThat(app.deferred.find(submission.id(), 1).orElseThrow().deadLettered())
+                .isTrue();
         assertThat(app.meters
                         .counter("toefly.assessment.evaluation.dead-lettered")
                         .count())
@@ -91,7 +92,10 @@ class DeferredEvaluationScenarioTest {
         app.worker.evaluate(submission.id(), 1, Cause.none(), ONCE);
         app.clock.advance(Duration.ofHours(2));
         app.retries.retryDue();
-        assertThat(app.events.types().stream().filter("dlq"::equals)).hasSize(1);
+        assertThat(app.meters
+                        .counter("toefly.assessment.evaluation.dead-lettered")
+                        .count())
+                .isEqualTo(1);
     }
 
     @Test

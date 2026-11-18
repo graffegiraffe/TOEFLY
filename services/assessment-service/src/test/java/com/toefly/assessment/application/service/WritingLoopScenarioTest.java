@@ -217,7 +217,7 @@ class WritingLoopScenarioTest {
         assertThat(app.queries.list(
                         STUDENT_CALLER,
                         null,
-                        new com.toefly.assessment.application.port.out.SubmissionRepository.Filter(null, null, null),
+                        new com.toefly.assessment.application.port.in.SubmissionFilter(null, null, null),
                         0,
                         10))
                 .extracting(Submission::userId)
