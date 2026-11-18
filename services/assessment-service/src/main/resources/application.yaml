@@ -26,6 +26,18 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+      client:
+        registration:
+          svc-assessment-service:
+            provider: keycloak
+            client-id: svc-assessment-service
+            client-secret: ${SVC_ASSESSMENT_SERVICE_SECRET:svc-assessment-service-local}
+            authorization-grant-type: client_credentials
+            scope: internal
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/toefly/protocol/openid-connect/token
   mvc:
     problemdetails:
       enabled: true
@@ -37,6 +49,14 @@ toefly:
   events:
     registry-url: http://localhost:8380/apis/registry/v3
     auto-register: false
+  assessment:
+    content-url: http://localhost:8082
+    ai-gateway-url: http://localhost:8095
+    # Background group of ai-gateway calls (docs/05 §9.3.8); a pass waits up to 30 s for quota inside ai-gateway.
+    ai-read-timeout: PT90S
+    deferred:
+      enabled: true
+      interval: PT1M
 
 management:
   opentelemetry:
