@@ -3,20 +3,22 @@ import { createFileRoute, Link, notFound, useNavigate } from '@tanstack/react-ro
 import { ArrowRight, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { draftSubmissionsQuery, useCreateSubmission } from '@/api/assessment';
 import { itemSetsQuery, openAttemptsQuery, recentAttemptsQuery, useStartAttempt } from '@/api/practice';
 import { Button, buttonClass } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/cn';
+import { isWritingType } from '@/lib/writing';
 
-/** Closed task types by section; the open types arrive with their phases (docs/12 §4, phases 5 and 6). */
+/** Task types by section; Writing opens in phase 5b, Speaking arrives with phase 6 (docs/12 §4). */
 export const PRACTICE_GROUPS = [
   { id: 'READING', types: ['COMPLETE_THE_WORDS', 'READ_DAILY_LIFE', 'READ_ACADEMIC_PASSAGE'] },
   {
     id: 'LISTENING',
     types: ['LISTEN_CHOOSE_RESPONSE', 'LISTEN_CONVERSATION', 'LISTEN_ANNOUNCEMENT', 'LISTEN_ACADEMIC_TALK'],
   },
-  { id: 'WRITING', types: ['BUILD_A_SENTENCE'] },
+  { id: 'WRITING', types: ['BUILD_A_SENTENCE', 'WRITE_EMAIL', 'WRITE_ACADEMIC_DISCUSSION'] },
   { id: 'GRAMMAR', types: ['GRAMMAR_EXERCISE'] },
   { id: 'VOCABULARY', types: ['VOCAB_EXERCISE'] },
   { id: 'LEGACY', types: ['LEGACY_READING', 'LEGACY_LISTENING'] },
@@ -45,12 +47,28 @@ function PracticeHub() {
   const open = useQuery(openAttemptsQuery);
   const recent = useQuery(recentAttemptsQuery);
   const sets = useQuery(itemSetsQuery(type));
-  const start = useStartAttempt();
+  const drafts = useQuery(draftSubmissionsQuery);
+  const startAttempt = useStartAttempt();
+  const startWriting = useCreateSubmission();
+  const writing = isWritingType(type);
+  const start = writing
+    ? { isPending: startWriting.isPending, isError: startWriting.isError, variables: startWriting.variables?.itemSetId }
+    : startAttempt;
 
   const begin = (itemSetId: string) =>
-    start.mutate(itemSetId, {
-      onSuccess: (attempt) => void navigate({ to: '/practice/$attemptId', params: { attemptId: attempt.attemptId } }),
-    });
+    writing
+      ? startWriting.mutate(
+          { itemSetId },
+          {
+            onSuccess: (submission) =>
+              void navigate({ to: '/write/$submissionId', params: { submissionId: submission.id } }),
+          },
+        )
+      : startAttempt.mutate(itemSetId, {
+          onSuccess: (attempt) =>
+            void navigate({ to: '/practice/$attemptId', params: { attemptId: attempt.attemptId } }),
+        });
+  const openDrafts = drafts.data?.items ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,11 +77,23 @@ function PracticeHub() {
         <p className="text-body text-ink-muted">{t('practice.subtitle')}</p>
       </header>
 
-      {open.data && open.data.items.length > 0 && (
+      {((open.data && open.data.items.length > 0) || openDrafts.length > 0) && (
         <Card className="flex flex-col gap-3">
           <h2 className="text-title-3 font-semibold text-ink">{t('practice.continueTitle')}</h2>
           <ul className="flex flex-col divide-y divide-border">
-            {open.data.items.map((attempt) => (
+            {openDrafts.map((draft) => (
+              <li key={draft.id} className="flex items-center gap-3 py-2">
+                <span className="flex-1 text-body text-ink">{t(`practice.taskType.${draft.taskType}`)}</span>
+                <Link
+                  to="/write/$submissionId"
+                  params={{ submissionId: draft.id }}
+                  className={buttonClass('secondary')}
+                >
+                  {t('practice.continue')}
+                </Link>
+              </li>
+            ))}
+            {(open.data?.items ?? []).map((attempt) => (
               <li key={attempt.attemptId} className="flex items-center gap-3 py-2">
                 <span className="flex-1 text-body text-ink">{t(`practice.taskType.${attempt.taskType}`)}</span>
                 <Link
@@ -124,7 +154,7 @@ function PracticeHub() {
                   <div className="flex-1">
                     <h3 className="text-body font-semibold text-ink">{set.topic}</h3>
                     <p className="mt-1 flex flex-wrap items-center gap-x-3 text-caption text-ink-muted">
-                      <span>{t('practice.questions', { count: set.itemCount })}</span>
+                      {!writing && <span>{t('practice.questions', { count: set.itemCount })}</span>}
                       <span className="inline-flex items-center gap-1">
                         <Clock className="size-3" aria-hidden="true" />
                         {t('practice.minutes', { count: Math.max(1, Math.round(set.estimatedMinutes)) })}
