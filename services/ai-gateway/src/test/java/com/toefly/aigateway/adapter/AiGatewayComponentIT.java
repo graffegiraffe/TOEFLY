@@ -172,7 +172,23 @@ class AiGatewayComponentIT {
         PROVIDERS.stubFor(WireMock.post(urlPathEqualTo("/openai/v1/chat/completions"))
                 .atPriority(5)
                 .willReturn(groqChat("Hello [PERSON_1], nice to meet you!")));
+        // WritingGrader of assessment-service (contract grade_writing_pass.yml): a structured pass output.
+        PROVIDERS.stubFor(WireMock.post(urlPathEqualTo("/openai/v1/chat/completions"))
+                .withRequestBody(containing("TOEFL iBT rater"))
+                .atPriority(2)
+                .willReturn(groqChat(WRITING_PASS)));
     }
+
+    static final String WRITING_PASS = """
+            {"criteria": {"taskAchievement": {"level": 4, "note": "Clear position."},
+              "development": {"level": 3, "note": "One example."}, "organization": {"level": 4, "note": "Logical."},
+              "languageRange": {"level": 3, "note": "Some variety."}, "accuracy": {"level": 3, "note": "Errors."},
+              "conventions": {"level": 4, "note": "Builds on a post."}},
+             "score": 4, "scoreRationale": "Relevant and clear.", "bulletCoverage": [],
+             "comments": [{"quote": "people lives", "occurrence": 1, "category": "GRAMMAR",
+               "subcategory": "SUBJECT_VERB_AGREEMENT", "severity": "MAJOR", "comment": "Plural subject.",
+               "suggestion": "people live"}],
+             "strengths": ["Clear position"], "priorities": ["Check verb forms"], "integrityFlags": []}""";
 
     // ---- DoD: no external request carries PII ----
 
