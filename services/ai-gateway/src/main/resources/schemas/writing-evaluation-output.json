@@ -1,0 +1,179 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "criteria",
+    "score",
+    "scoreRationale",
+    "bulletCoverage",
+    "comments",
+    "strengths",
+    "priorities",
+    "integrityFlags"
+  ],
+  "properties": {
+    "criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taskAchievement",
+        "development",
+        "organization",
+        "languageRange",
+        "accuracy",
+        "conventions"
+      ],
+      "properties": {
+        "taskAchievement": {
+          "$ref": "#/$defs/criterion"
+        },
+        "development": {
+          "$ref": "#/$defs/criterion"
+        },
+        "organization": {
+          "$ref": "#/$defs/criterion"
+        },
+        "languageRange": {
+          "$ref": "#/$defs/criterion"
+        },
+        "accuracy": {
+          "$ref": "#/$defs/criterion"
+        },
+        "conventions": {
+          "$ref": "#/$defs/criterion"
+        }
+      }
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "scoreRationale": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "bulletCoverage": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bullet",
+          "status"
+        ],
+        "properties": {
+          "bullet": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "FULL",
+              "PARTIAL",
+              "MISSING"
+            ]
+          }
+        }
+      }
+    },
+    "comments": {
+      "type": "array",
+      "maxItems": 25,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "quote",
+          "occurrence",
+          "category",
+          "subcategory",
+          "severity",
+          "comment"
+        ],
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "occurrence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "GRAMMAR, VOCABULARY, SPELLING, COHERENCE or TASK_RESPONSE"
+          },
+          "subcategory": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "severity": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "MINOR, MAJOR or CRITICAL"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 280
+          },
+          "suggestion": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      }
+    },
+    "priorities": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      }
+    },
+    "integrityFlags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 40
+      }
+    }
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "note"
+      ],
+      "properties": {
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 200
+        }
+      }
+    }
+  }
+}
