@@ -1,0 +1,12 @@
+# Values of assessment-service for the shared chart infra/helm/toefly-service-lib (phase 13 fills in the rest).
+image:
+  repository: ghcr.io/OWNER/toefly-assessment-service
+  digest: ""
+service:
+  port: 8085
+database:
+  name: assessment_db
+  role: assessment_app
+resources:
+  requests: { cpu: 50m, memory: 320Mi }
+  limits: { memory: 448Mi }

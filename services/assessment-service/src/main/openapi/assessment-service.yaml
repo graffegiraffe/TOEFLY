@@ -1,0 +1,766 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY assessment-service API
+  version: 1.0.0
+  summary: Работы Writing с версиями (черновик → Attempt 2 → Attempt 3), AI-проверка по рубрикам ETS, отложенная проверка, оценка репетитора и прогноз балла.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`. Проверка асинхронная: сдача переводит версию в
+    `EVALUATING` и отправляет `toefly.assessment.evaluation-requested.v1`; результат приходит событием
+    `submission-evaluated` и потоком `GET /submissions/{submissionId}/events`. Поведение — docs/03 §5, docs/06 §5.4, §8.3;
+    контракт — docs/05 §6.5. Текст задания и модельный ответ клиент берёт из content-service (`GET /item-sets/{itemSetId}`).
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: Submissions, description: 'Работы, версии и сдача на проверку' }
+  - { name: Evaluations, description: 'Оценки AI и репетитора' }
+  - { name: SubmissionStreams, description: 'SSE статуса проверки; контроллер пишется вручную' }
+  - { name: BandEstimates, description: 'Прогноз балла' }
+  - { name: AdminAssessment, description: 'Очередь отложенных проверок' }
+paths:
+  /submissions:
+    post:
+      tags: [Submissions]
+      operationId: createSubmission
+      summary: Создать работу
+      description: Работа на опубликованный ItemSet открытого типа; версия 1 создаётся пустым черновиком (`DRAFT`).
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSubmissionRequest' }
+      responses:
+        '201':
+          description: Работа создана.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Submission' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+    get:
+      tags: [Submissions]
+      operationId: listSubmissions
+      summary: Мои работы или работы ученика
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/StudentId' }
+        - { name: taskType, in: query, required: false, schema: { $ref: '#/components/schemas/TaskType' } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/SubmissionStatus' } }
+        - { name: weekTaskId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Работы, новые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionSummaryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /submissions/{submissionId}:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    get:
+      tags: [Submissions]
+      operationId: getSubmission
+      summary: Работа со всеми версиями, оценками и комментариями
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Работа.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Submission' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /submissions/{submissionId}/versions/current:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    put:
+      tags: [Submissions]
+      operationId: saveDraft
+      summary: Автосохранение текста черновика
+      description: Только версия в `DRAFT`; для версии 1 время сверх лимита задания считается как overtime.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaveDraftRequest' }
+      responses:
+        '200':
+          description: Черновик сохранён.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionVersion' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /submissions/{submissionId}/submission:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    post:
+      tags: [Submissions]
+      operationId: submitSubmission
+      summary: Сдать текущую версию на AI-проверку
+      description: |
+        Версия переходит в `SUBMITTED` и сразу в `EVALUATING`, публикуется `evaluation-requested`. Пустая версия в
+        Practice — `409 submission-not-ready`.
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '202':
+          description: Работа принята на проверку.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Submission' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /submissions/{submissionId}/versions:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    post:
+      tags: [Submissions]
+      operationId: createVersion
+      summary: Начать Attempt 2 или Attempt 3
+      description: Новая версия получает текст предыдущей; предыдущая должна быть оценена, максимум 3 версии (`409`).
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '201':
+          description: Версия создана.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionVersion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+    get:
+      tags: [Submissions]
+      operationId: listVersions
+      summary: Все версии
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Версии по номеру.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionVersionList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /submissions/{submissionId}/versions/{versionNo}:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+      - { name: versionNo, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 3 } }
+    get:
+      tags: [Submissions]
+      operationId: getVersion
+      summary: Версия с оценками и комментариями
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Версия.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionVersion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /submissions/{submissionId}/evaluations:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    get:
+      tags: [Evaluations]
+      operationId: listEvaluations
+      summary: Оценки AI и репетитора по всем версиям
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Оценки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvaluationList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /submissions/{submissionId}/tutor-evaluation:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    put:
+      tags: [Evaluations]
+      operationId: putTutorEvaluation
+      summary: Оценка репетитора (переопределяет AI, статус `TUTOR_REVIEWED`)
+      x-toefly-roles: [TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TutorEvaluationRequest' }
+      responses:
+        '200':
+          description: Оценка сохранена.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Evaluation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /submissions/{submissionId}/events:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+      - name: Last-Event-ID
+        in: header
+        required: false
+        description: Идентификатор последнего полученного события (`<submissionId>:<seq>`).
+        schema: { type: string, maxLength: 80 }
+    get:
+      tags: [SubmissionStreams]
+      operationId: streamSubmissionEvents
+      summary: SSE статуса проверки
+      description: |
+        `evaluation.status` `{submissionId, versionNo, status}` при каждой смене статуса, `evaluation.progress`
+        `{submissionId, stage: SCORING}`, `evaluation.deferred` `{submissionId, retryAfterSeconds}` и
+        `evaluation.completed` `{submissionId, versionNo, evaluationId, score}`, после которого поток закрывается.
+        Через 120 с без результата поток закрывается, клиент переподключается (docs/05 §4).
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      responses:
+        '200':
+          description: Поток событий.
+          content:
+            text/event-stream:
+              schema: { type: string }
+              example: "retry: 3000\n\nid: 0193f2b0-1d4e-7c55-9e1a-6b6f2b8d0c11:1\nevent: evaluation.status\ndata: {\"submissionId\":\"0193f2b0-1d4e-7c55-9e1a-6b6f2b8d0c11\",\"versionNo\":1,\"status\":\"EVALUATING\"}\n\n"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /band-estimates/current:
+    get:
+      tags: [BandEstimates]
+      operationId: getCurrentBandEstimate
+      summary: Прогноз балла по секциям и общий
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/StudentId' }
+      responses:
+        '200':
+          description: Прогноз.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BandEstimate' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /band-estimates:
+    get:
+      tags: [BandEstimates]
+      operationId: listBandEstimates
+      summary: История прогноза по неделям
+      x-toefly-roles: [STUDENT, TUTOR]
+      x-toefly-tutor-link: true
+      parameters:
+        - { $ref: '#/components/parameters/StudentId' }
+      responses:
+        '200':
+          description: Снимки прогноза, по одному на ISO-неделю.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BandEstimateHistory' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/deferred-evaluations:
+    get:
+      tags: [AdminAssessment]
+      operationId: listDeferredEvaluations
+      summary: Очередь отложенных проверок
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Отложенные версии, старые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeferredEvaluationPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/deferred-evaluations/{submissionId}/retry:
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    post:
+      tags: [AdminAssessment]
+      operationId: retryDeferredEvaluation
+      summary: Повторить проверку немедленно
+      x-toefly-roles: [ADMIN]
+      responses:
+        '202': { description: Команда отправлена. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+    serviceAuth:
+      type: oauth2
+      description: Client credentials клиента `svc-<service>`.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes:
+            internal: Внутренние вызовы сервис-сервис
+  parameters:
+    SubmissionId:
+      name: submissionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID операции; повтор с тем же ключом и телом возвращает сохранённый ответ (хранится 24 ч).
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Сильный ETag ресурса (номер версии агрегата), например `"7"`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: ETag из предыдущего ответа; при совпадении — `304`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Непрозрачный курсор из `page.nextCursor`; привязан к сортировке и фильтрам.
+      schema: { type: string, maxLength: 1024 }
+    StudentId:
+      name: studentId
+      in: query
+      required: false
+      description: Идентификатор ученика; только для `TUTOR` (ученик репетитора). Для `STUDENT` игнорируется или должен совпадать с `sub`.
+      schema: { type: string, format: uuid }
+  headers:
+    ETag:
+      description: Сильный ETag — номер версии ресурса.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Location:
+      description: Адрес созданного ресурса.
+      schema: { type: string, format: uri-reference }
+    IdempotentReplayed:
+      description: "`true`, если ответ воспроизведён по `Idempotency-Key`."
+      schema: { type: boolean }
+    RetryAfter:
+      description: Секунды до повтора.
+      schema: { type: integer, minimum: 0 }
+  responses:
+    BadRequest:
+      description: "`400` — `validation-failed`, `malformed-request`, `invalid-cursor`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://toefly.app/problems/validation-failed
+            title: Validation failed
+            status: 400
+            detail: Request body is invalid.
+            instance: /api/v1/resource
+            code: VALIDATION_FAILED
+            requestId: f1c2d3e4-0a1b-4c5d-8e9f-001122334455
+            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+            errors:
+              - { pointer: /answer/optionIds, code: REQUIRED, message: must not be empty }
+    Unauthorized:
+      description: "`401 unauthenticated` — нет или просрочен токен."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403` — `forbidden`, `entitlement-required`, `quota-exceeded`, `consent-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found` — ресурс не найден или недоступен пользователю."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409` — доменный конфликт состояния (`conflict`, `request-in-progress` и специфичные типы операции)."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionFailed:
+      description: "`412 version-mismatch` — `If-Match` не совпал; в ответе актуальный `ETag` и поле `currentVersion`."
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422` — `business-rule-violated` (поле `rule`) или `idempotency-key-reuse`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428` — `precondition-required` (нет `If-Match`) или `idempotency-key-required` (нет `Idempotency-Key`)."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: "`429 rate-limited`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+        X-RateLimit-Remaining: { schema: { type: integer, minimum: 0 }, description: Остаток токенов в корзине. }
+        X-RateLimit-Replenish-Rate: { schema: { type: integer, minimum: 0 }, description: Пополнение в секунду. }
+        X-RateLimit-Burst-Capacity: { schema: { type: integer, minimum: 0 }, description: Ёмкость корзины. }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    InternalError:
+      description: "`500 internal-error`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: "`503` — `dependency-unavailable` (поле `dependency`) или `ai-unavailable`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri, description: "`https://toefly.app/problems/<slug>`." }
+        title: { type: string, description: Стабильный английский заголовок типа. }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string, description: Локализованное описание без персональных данных. }
+        instance: { type: string, format: uri-reference }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$', description: Стабильный машинный код. }
+        requestId: { type: string }
+        traceId: { type: string, pattern: '^[0-9a-f]{32}$' }
+        errors:
+          type: array
+          items: { $ref: '#/components/schemas/ProblemError' }
+      additionalProperties: true
+    ProblemError:
+      type: object
+      required: [pointer, code]
+      properties:
+        pointer: { type: string, description: JSON Pointer (RFC 6901) на поле запроса. }
+        code: { type: string }
+        message: { type: string }
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'], description: "`null`, если страниц больше нет." }
+        hasMore: { type: boolean }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    Section:
+      type: string
+      enum: [READING, LISTENING, WRITING, SPEAKING]
+    TaskType:
+      type: string
+      description: Открытые типы заданий канона (00-README §5.1); в 5b — Writing.
+      enum: [WRITE_EMAIL, WRITE_ACADEMIC_DISCUSSION, LISTEN_AND_REPEAT, TAKE_AN_INTERVIEW, GRAMMAR_EXERCISE]
+    AttemptMode:
+      type: string
+      enum: [PRACTICE, EXAM]
+    SubmissionStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, EVALUATING, EVALUATED, EVALUATION_DEFERRED, TUTOR_REVIEWED]
+    MistakeCategory:
+      type: string
+      enum: [GRAMMAR, VOCABULARY, SPELLING, COHERENCE, TASK_RESPONSE, PRONUNCIATION, FLUENCY, COMPREHENSION, TIME_MANAGEMENT]
+    Severity:
+      type: string
+      enum: [MINOR, MAJOR, CRITICAL]
+    AnnotationStatus:
+      type: string
+      description: Статус комментария прошлой версии после проверки следующей (03 §5.5).
+      enum: [OPEN, FIXED, STILL_PRESENT]
+    EvaluatorType:
+      type: string
+      enum: [AI, TUTOR]
+    EvaluationAgreement:
+      type: string
+      enum: [AGREED, RESOLVED_BY_THIRD_PASS, FLAGGED]
+    CreateSubmissionRequest:
+      type: object
+      required: [itemSetId]
+      additionalProperties: false
+      properties:
+        itemSetId: { type: string, format: uuid }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        examSessionId: { type: [string, 'null'], format: uuid }
+        interviewSessionId: { type: [string, 'null'], format: uuid }
+        mode: { $ref: '#/components/schemas/AttemptMode' }
+    SaveDraftRequest:
+      type: object
+      required: [text, elapsedSeconds]
+      additionalProperties: false
+      properties:
+        text: { type: string, maxLength: 10000, description: 'До 5000 кодовых точек после нормализации NFC (INV-SUB-05).' }
+        elapsedSeconds: { type: integer, minimum: 0, maximum: 86400 }
+    TutorEvaluationRequest:
+      type: object
+      required: [versionNo, score]
+      additionalProperties: false
+      properties:
+        versionNo: { type: integer, minimum: 1, maximum: 3 }
+        score: { type: number, minimum: 0, maximum: 5, multipleOf: 0.5 }
+        criteria: { type: object, additionalProperties: { type: integer, minimum: 0, maximum: 5 } }
+        note: { type: string, maxLength: 2000 }
+    CriterionScore:
+      type: object
+      required: [criterion, level, note]
+      properties:
+        criterion: { type: string, description: 'taskAchievement, development, organization, languageRange, accuracy, conventions.' }
+        level: { type: integer, minimum: 0, maximum: 5 }
+        note: { type: string }
+    InlineAnnotation:
+      type: object
+      required: [id, anchorQuote, category, subcategory, severity, message, status]
+      properties:
+        id: { type: string, format: uuid }
+        start: { type: [integer, 'null'], minimum: 0, description: 'Смещение в единицах UTF-16; null — общий комментарий без подсветки.' }
+        end: { type: [integer, 'null'], minimum: 1 }
+        anchorQuote: { type: string }
+        category: { $ref: '#/components/schemas/MistakeCategory' }
+        subcategory: { type: string, description: 'Код `<CATEGORY>.<NAME>` (06 §6.3).' }
+        severity: { $ref: '#/components/schemas/Severity' }
+        message: { type: string, maxLength: 400 }
+        suggestion: { type: [string, 'null'], maxLength: 300 }
+        grammarTopic: { type: [string, 'null'], description: 'Код юнита, например `ROUNDUP5.U10`.' }
+        unitTitle: { type: [string, 'null'] }
+        status: { $ref: '#/components/schemas/AnnotationStatus' }
+    Evaluation:
+      type: object
+      required: [id, versionNo, evaluator, rubricId, finalScore, overallScore, criteria, strengths, priorities, annotations, needsHumanReview, capsApplied, integrityFlags, degraded, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        versionNo: { type: integer }
+        evaluator: { $ref: '#/components/schemas/EvaluatorType' }
+        tutorId: { type: [string, 'null'], format: uuid }
+        rubricId: { type: string }
+        finalScore: { type: number, minimum: 0, maximum: 5, description: 'Шаг 0.5.' }
+        overallScore: { type: integer, minimum: 0, maximum: 5 }
+        criteria: { type: array, items: { $ref: '#/components/schemas/CriterionScore' } }
+        strengths: { type: array, items: { type: string } }
+        priorities: { type: array, items: { type: string } }
+        annotations: { type: array, items: { $ref: '#/components/schemas/InlineAnnotation' } }
+        agreement: { oneOf: [{ $ref: '#/components/schemas/EvaluationAgreement' }, { type: 'null' }] }
+        needsHumanReview: { type: boolean }
+        capsApplied: { type: array, items: { type: string }, description: 'Сработавшие ограничители 06 §5.4.1.' }
+        integrityFlags: { type: array, items: { type: string } }
+        degraded: { type: boolean, description: 'Проверено резервной моделью.' }
+        createdAt: { type: string, format: date-time }
+    EvaluationList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Evaluation' } }
+    SubmissionVersion:
+      type: object
+      required: [versionNo, status, text, wordCount, activeSeconds, overtimeSeconds, countsForEstimate]
+      properties:
+        versionNo: { type: integer, minimum: 1, maximum: 3 }
+        status: { $ref: '#/components/schemas/SubmissionStatus' }
+        text: { type: string }
+        wordCount: { type: integer, minimum: 0 }
+        activeSeconds: { type: integer, minimum: 0 }
+        overtimeSeconds: { type: integer, minimum: 0 }
+        submittedAt: { type: [string, 'null'], format: date-time }
+        countsForEstimate: { type: boolean }
+        evaluation: { oneOf: [{ $ref: '#/components/schemas/Evaluation' }, { type: 'null' }], description: Оценка AI. }
+        tutorEvaluation: { oneOf: [{ $ref: '#/components/schemas/Evaluation' }, { type: 'null' }] }
+        effectiveScore: { type: [number, 'null'], description: 'Балл репетитора, иначе AI (INV-SUB-10).' }
+        scoreDelta: { type: [number, 'null'], description: 'Изменение к прошлой версии («+1»).' }
+    SubmissionVersionList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SubmissionVersion' } }
+    DeferredInfo:
+      type: object
+      required: [attempts, nextAttemptAt, retryAfterSeconds]
+      properties:
+        attempts: { type: integer, minimum: 1 }
+        nextAttemptAt: { type: string, format: date-time }
+        retryAfterSeconds: { type: integer, minimum: 0 }
+    Submission:
+      type: object
+      required: [id, userId, itemSetId, itemSetVersion, taskType, mode, status, currentVersionNo, version, createdAt, versions]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        itemSetVersion: { type: integer }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        mode: { $ref: '#/components/schemas/AttemptMode' }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        examSessionId: { type: [string, 'null'], format: uuid }
+        status: { $ref: '#/components/schemas/SubmissionStatus' }
+        currentVersionNo: { type: integer, minimum: 1, maximum: 3 }
+        version: { type: integer, description: Версия агрегата (ETag). }
+        createdAt: { type: string, format: date-time }
+        timeLimitSeconds: { type: integer }
+        versions: { type: array, items: { $ref: '#/components/schemas/SubmissionVersion' } }
+        deferred: { oneOf: [{ $ref: '#/components/schemas/DeferredInfo' }, { type: 'null' }] }
+    SubmissionSummary:
+      type: object
+      required: [id, itemSetId, taskType, mode, status, currentVersionNo, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        mode: { $ref: '#/components/schemas/AttemptMode' }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        status: { $ref: '#/components/schemas/SubmissionStatus' }
+        currentVersionNo: { type: integer }
+        latestScore: { type: [number, 'null'] }
+        createdAt: { type: string, format: date-time }
+    SubmissionSummaryPage:
+      type: object
+      required: [items, page]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SubmissionSummary' } }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    SectionEstimate:
+      type: object
+      required: [section, status, n, remaining]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        status: { type: string, enum: [READY, NEED_MORE_DATA] }
+        pointBand: { type: [number, 'null'] }
+        low: { type: [number, 'null'] }
+        high: { type: [number, 'null'] }
+        cefrLow: { type: [string, 'null'] }
+        cefrHigh: { type: [string, 'null'] }
+        comparableLow: { type: [integer, 'null'], description: 'Нижняя граница справочной шкалы 0–120.' }
+        comparableHigh: { type: [integer, 'null'] }
+        confidence: { type: [string, 'null'], enum: [HIGH, MEDIUM, LOW, null], description: 'По ширине диапазона: 0.5 — HIGH, 1.0 — MEDIUM, шире — LOW.' }
+        n: { type: integer, description: 'Учтено Item (R/L) или работ (W/S).' }
+        remaining: { type: integer, description: 'Сколько ещё нужно до прогноза.' }
+    OverallEstimate:
+      type: object
+      required: [pointBand, low, high, cefr, cefrLow, cefrHigh, comparableLow, comparableHigh]
+      properties:
+        pointBand: { type: number }
+        low: { type: number }
+        high: { type: number }
+        cefr: { type: string }
+        cefrLow: { type: string }
+        cefrHigh: { type: string }
+        comparableLow: { type: integer }
+        comparableHigh: { type: integer }
+    BandEstimate:
+      type: object
+      required: [sections, needsMoreData, asOf]
+      properties:
+        sections: { type: array, items: { $ref: '#/components/schemas/SectionEstimate' } }
+        overall: { oneOf: [{ $ref: '#/components/schemas/OverallEstimate' }, { type: 'null' }] }
+        needsMoreData: { type: array, items: { $ref: '#/components/schemas/Section' }, description: 'Секции без прогноза.' }
+        asOf: { type: string, format: date-time }
+    WeeklyBandEstimate:
+      type: object
+      required: [weekStart, estimate]
+      properties:
+        weekStart: { type: string, format: date }
+        estimate: { $ref: '#/components/schemas/BandEstimate' }
+    BandEstimateHistory:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/WeeklyBandEstimate' } }
+    DeferredEvaluation:
+      type: object
+      required: [submissionId, versionNo, userId, attempts, deferredAt, nextAttemptAt, deadLettered]
+      properties:
+        submissionId: { type: string, format: uuid }
+        versionNo: { type: integer }
+        userId: { type: string, format: uuid }
+        attempts: { type: integer }
+        deferredAt: { type: string, format: date-time }
+        nextAttemptAt: { type: string, format: date-time }
+        lastError: { type: [string, 'null'] }
+        deadLettered: { type: boolean }
+    DeferredEvaluationPage:
+      type: object
+      required: [items, page]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/DeferredEvaluation' } }
+        page: { $ref: '#/components/schemas/PageInfo' }

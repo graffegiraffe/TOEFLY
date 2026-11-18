@@ -27,6 +27,7 @@
         <module>services/practice-service</module>
         <module>services/planning-service</module>
         <module>services/ai-gateway</module>
+        <module>services/assessment-service</module>
         <module>tools/service-archetype</module>
         <module>infra/keycloak/extensions</module>
     </modules>
