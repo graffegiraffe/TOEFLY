@@ -1,0 +1,49 @@
+name: grade_writing_pass
+description: WritingGrader of assessment-service runs pass A of an Academic Discussion response (docs/06 §5.4)
+request:
+  method: POST
+  url: /internal/v1/ai/chat/completions
+  headers:
+    Authorization: Bearer service-token
+    Content-Type: application/json
+  body:
+    useCase: WRITING_GRADING
+    promptKey: writing.grade.discussion
+    promptVersion: null
+    variables:
+      explanationLanguage: English
+      taskText: "Write for an Academic Discussion (urban studies). Professor Dr. Ortiz: Should cities make public transport free?"
+      anchors: "Task: t\nResponse (score 5):\nfive\nWhy: why"
+      previousVersionBlock: ""
+      responseText: "In my opinion people lives longer in cities with free buses, because they walk more and drive less."
+      wordCount: 18
+      timeSpentSec: 540
+      timeLimitSec: 600
+      previousViolations: ""
+    userId: 0193f2b0-1d4e-7c55-9e1a-6b6f2b8d0c11
+    allowList: ["Dr. Ortiz", "Nora", "Felix"]
+    feature: writing-review
+    priority: GRADING
+    maxWaitMs: 30000
+    idempotencyKey: "WritingGrader:0193f2b0-1d4e-7c55-9e1a-6b6f2b8d0c12:1:A"
+    passTag: A
+response:
+  status: 200
+  body:
+    output:
+      score: 4
+  matchers:
+    body:
+      - path: $.output.criteria.taskAchievement.level
+        type: by_type
+      - path: $.output.comments
+        type: by_type
+      - path: $.output.strengths
+        type: by_type
+        minOccurrence: 1
+      - path: $.aiStamp.model
+        type: by_type
+      - path: $.aiStamp.promptVersion
+        type: by_type
+      - path: $.usage.latencyMs
+        type: by_type
