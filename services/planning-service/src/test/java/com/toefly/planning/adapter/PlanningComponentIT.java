@@ -76,6 +76,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -168,8 +170,23 @@ class PlanningComponentIT {
     @MockitoBean
     UnitCatalogPort units;
 
+    @Autowired
+    KafkaListenerEndpointRegistry listenerRegistry;
+
+    /** Slow CI runners join the consumer groups late; the tests start once every listener owns its partitions. */
+    private void awaitListenerAssignment() {
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(3))
+                .pollInterval(Duration.ofMillis(500))
+                .until(() -> listenerRegistry.getAllListenerContainers().stream()
+                        .filter(MessageListenerContainer::isRunning)
+                        .allMatch(c -> c.getAssignedPartitions() != null
+                                && !c.getAssignedPartitions().isEmpty()));
+    }
+
     @BeforeEach
     void catalog() {
+        awaitListenerAssignment();
         clock.reset();
         when(units.roundUp()).thenReturn(units("Round-Up Unit"));
         when(units.collinsGrammar()).thenReturn(units("Collins Grammar Unit"));
