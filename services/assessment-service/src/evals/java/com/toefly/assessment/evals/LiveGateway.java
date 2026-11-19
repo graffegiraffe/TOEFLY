@@ -66,7 +66,10 @@ public final class LiveGateway implements AiGradingPort {
         for (int attempt = 1; ; attempt++) {
             HttpResponse<String> response = post(aiGatewayUrl + "/internal/v1/ai/chat/completions", body);
             if (response.statusCode() == 401 && attempt < 6) {
-                token = null;
+                synchronized (this) {
+                    token = null;
+                }
+                sleep(5L * attempt);
                 continue;
             }
             if (response.statusCode() == 200) {
@@ -107,18 +110,24 @@ public final class LiveGateway implements AiGradingPort {
         }
     }
 
-    private String token() throws IOException, InterruptedException {
+    private synchronized String token() throws IOException, InterruptedException {
         if (token == null || System.nanoTime() - tokenAt > java.time.Duration.ofMinutes(4).toNanos()) {
             tokenAt = System.nanoTime();
             String form = "grant_type=client_credentials&client_id=svc-assessment-service&scope=internal&client_secret="
                     + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8);
             HttpResponse<String> response = http.send(
                     HttpRequest.newBuilder(URI.create(tokenUrl))
+                            .timeout(Duration.ofSeconds(20))
                             .header("Content-Type", "application/x-www-form-urlencoded")
                             .POST(HttpRequest.BodyPublishers.ofString(form))
                             .build(),
                     HttpResponse.BodyHandlers.ofString());
-            token = EvalDataset.JSON.readTree(response.body()).path("access_token").asString();
+            String fresh = EvalDataset.JSON.readTree(response.body()).path("access_token").asString("");
+            if (response.statusCode() != 200 || fresh.isBlank()) {
+                token = null;
+                throw new IllegalStateException("Keycloak token " + response.statusCode());
+            }
+            token = fresh;
         }
         return token;
     }

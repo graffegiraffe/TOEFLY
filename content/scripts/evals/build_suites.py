@@ -52,7 +52,9 @@ def main(root: Path) -> int:
             if not 0 <= value <= 5 or value * 2 != int(value * 2):
                 raise SystemExit(f"{case['id']}: score must be 0-5 in steps of 0.5, got {score}")
             case["goldScores"] = {"raterA": value}
-        case["taskPrompt"] = case.get("taskPrompt") or tasks.get(case["topic"])
+        if not case.get("taskPrompt") and case["topic"] in tasks:
+            case["taskPrompt"] = tasks[case["topic"]]
+            case["taskSource"] = "RECONSTRUCTED"
         case.setdefault("distortionOf", None)
         case.setdefault("distortion", None)
         suites[SUITES[case["taskType"]]].append(case)
