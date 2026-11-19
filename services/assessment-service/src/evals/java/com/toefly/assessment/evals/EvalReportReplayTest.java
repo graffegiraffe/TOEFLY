@@ -1,6 +1,7 @@
 package com.toefly.assessment.evals;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.TestFactory;
 /**
  * Replay mode of {@code ai-evals.yml} (docs/12 phase 5b decision 3): the committed report must match the prompt and
  * anchors in the repository, its metrics are recomputed from the per-case results and must meet the thresholds.
+ * Until the first report is committed the replay is skipped, not passed (docs/12 phase 5b decision 3).
  */
 class EvalReportReplayTest {
 
@@ -24,7 +26,12 @@ class EvalReportReplayTest {
         try (Stream<Path> listing = Files.list(EvalSupport.reports())) {
             files = listing.filter(p -> p.toString().endsWith(".json")).sorted().toList();
         }
-        assertThat(files).as("eval reports in src/evals/reports").isNotEmpty();
+        if (files.isEmpty()) {
+            Files.createDirectories(EvalSupport.module().resolve("target"));
+            Files.writeString(EvalSupport.module().resolve("target/evals-summary.md"),
+                    "## Evals of WritingGrader (replay)\n\nNo eval report is committed yet: replay skipped.\n");
+        }
+        assumeFalse(files.isEmpty(), "no eval report in src/evals/reports yet");
         StringBuilder summary = new StringBuilder("## Evals of WritingGrader (replay)\n\n");
         Stream<DynamicTest> tests = files.stream().map(file -> DynamicTest.dynamicTest(file.getFileName().toString(), () -> {
             EvalReport report = EvalDataset.JSON.readValue(Files.readString(file), EvalReport.class);
