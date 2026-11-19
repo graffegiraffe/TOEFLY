@@ -7,6 +7,9 @@ import PackageDescription
 let package = Package(
     name: "ToeflyKit",
     platforms: [.iOS(.v26), .macOS(.v26)],
+    products: [
+        .library(name: "ToeflyCore", targets: ["ToeflyCore"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-openapi-generator", exact: "1.14.4"),
         .package(url: "https://github.com/apple/swift-openapi-runtime", exact: "1.13.4"),
@@ -23,6 +26,24 @@ let package = Package(
             name: "PlanningAPI",
             dependencies: [.product(name: "OpenAPIRuntime", package: "swift-openapi-runtime")],
             plugins: [.plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")],
+        ),
+        .target(
+            name: "ToeflyCore",
+            dependencies: [
+                "ProfileAPI",
+                "PlanningAPI",
+                .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
+                .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
+                .product(name: "HTTPTypes", package: "swift-http-types"),
+            ],
+        ),
+        .testTarget(
+            name: "ToeflyKitTests",
+            dependencies: [
+                "ToeflyCore",
+                .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
+                .product(name: "HTTPTypes", package: "swift-http-types"),
+            ],
         ),
     ],
     swiftLanguageModes: [.v6],
