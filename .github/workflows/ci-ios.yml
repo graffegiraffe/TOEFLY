@@ -2,10 +2,19 @@ name: ci-ios
 
 on:
   pull_request:
-    paths: ["clients/ios/**"]
+    paths:
+      - "clients/ios/**"
+      # The generated Swift clients read these contracts through links in clients/ios/Packages/ToeflyKit.
+      - "services/profile-service/src/main/openapi/**"
+      - "services/planning-service/src/main/openapi/**"
+      - ".github/workflows/ci-ios.yml"
   push:
     branches: [develop, main]
-    paths: ["clients/ios/**"]
+    paths:
+      - "clients/ios/**"
+      - "services/profile-service/src/main/openapi/**"
+      - "services/planning-service/src/main/openapi/**"
+      - ".github/workflows/ci-ios.yml"
 
 permissions: {}
 
@@ -14,29 +23,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # The iOS client appears in phase 12; until the Xcode project exists the macOS job is skipped.
-  # hashFiles() is not available in a job-level `if`, so a cheap job looks for the project first.
-  detect:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      project: ${{ steps.project.outputs.exists }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - id: project
-        run: |
-          if [ -f clients/ios/Toefly.xcodeproj/project.pbxproj ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::clients/ios/Toefly.xcodeproj does not exist yet; the iOS build is skipped"
-          fi
-
   ios:
-    needs: detect
-    if: needs.detect.outputs.project == 'true'
     runs-on: macos-26
+    timeout-minutes: 60
     permissions:
       contents: read
     defaults:
@@ -44,10 +33,31 @@ jobs:
         working-directory: clients/ios
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Show the toolchain
+        run: xcodebuild -version && swift --version
+      - name: Install SwiftLint and SwiftFormat
+        run: |
+          command -v swiftlint >/dev/null || brew install swiftlint
+          command -v swiftformat >/dev/null || brew install swiftformat
       - run: swiftlint --strict
       - run: swiftformat --lint .
+      - name: Unit tests and view model coverage (≥ 80%)
+        working-directory: clients/ios/Packages/ToeflyKit
+        run: |
+          swift test --enable-code-coverage
+          python3 ../../scripts/check-coverage.py "$(swift test --show-codecov-path)" ToeflyFeatures 80
       - name: Build and test on the simulator
         run: >-
           xcodebuild test -project Toefly.xcodeproj -scheme Toefly
           -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+          -skipPackagePluginValidation -skipMacroValidation
+          -resultBundlePath build/Toefly.xcresult
           CODE_SIGNING_ALLOWED=NO
+      - name: Keep the test results and screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ios-test-results
+          path: clients/ios/build/Toefly.xcresult
+          if-no-files-found: ignore
+          retention-days: 14
