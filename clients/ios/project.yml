@@ -1,0 +1,78 @@
+# XcodeGen spec of the iOS client. Toefly.xcodeproj is generated from it and committed, so CI and Xcode open it
+# without XcodeGen; after changing this file run `xcodegen generate` in clients/ios.
+name: Toefly
+options:
+  bundleIdPrefix: app.toefly
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: NO
+packages:
+  ToeflyKit:
+    path: Packages/ToeflyKit
+targets:
+  Toefly:
+    type: application
+    platform: iOS
+    sources:
+      - path: Toefly
+    dependencies:
+      - package: ToeflyKit
+        product: ToeflyCore
+      - package: ToeflyKit
+        product: ToeflyFeatures
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.toefly.ios
+        PRODUCT_NAME: Toefly
+        INFOPLIST_FILE: Toefly/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        # Endpoints of the local Compose stack; another environment overrides them in an .xcconfig.
+        TOEFLY_API_BASE_URL: http:/$()/localhost:8080
+        TOEFLY_AUTH_ISSUER: http:/$()/localhost:8180/realms/toefly
+        TOEFLY_APPLE_SIGN_IN_ENABLED: NO
+  ToeflyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ToeflyUITests
+    dependencies:
+      - target: Toefly
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.toefly.ios.uitests
+        TEST_TARGET_NAME: Toefly
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  Toefly:
+    build:
+      targets:
+        Toefly: all
+        ToeflyUITests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: true
+      coverageTargets:
+        - Toefly
+        - package: ToeflyKit/ToeflyFeatures
+        - package: ToeflyKit/ToeflyCore
+      targets:
+        - name: ToeflyUITests
+        - package: ToeflyKit/ToeflyKitTests
+    run:
+      config: Debug
