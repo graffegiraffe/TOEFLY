@@ -9,6 +9,7 @@ let package = Package(
     platforms: [.iOS(.v26), .macOS(.v26)],
     products: [
         .library(name: "ToeflyCore", targets: ["ToeflyCore"]),
+        .library(name: "ToeflyFeatures", targets: ["ToeflyFeatures"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-openapi-generator", exact: "1.14.4"),
@@ -37,10 +38,12 @@ let package = Package(
                 .product(name: "HTTPTypes", package: "swift-http-types"),
             ],
         ),
+        .target(name: "ToeflyFeatures", dependencies: ["ToeflyCore"]),
         .testTarget(
             name: "ToeflyKitTests",
             dependencies: [
                 "ToeflyCore",
+                "ToeflyFeatures",
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
                 .product(name: "HTTPTypes", package: "swift-http-types"),
             ],

@@ -1,5 +1,6 @@
 import Foundation
 @testable import ToeflyCore
+@testable import ToeflyFeatures
 
 /// Fixed "today" of the tests: Thursday, 19 November 2026, 10:00 in Minsk.
 let testNow = Date(timeIntervalSince1970: 1_795_071_600)
@@ -48,6 +49,43 @@ func fixtureRepositories(_ scenario: FixtureScenario) -> FixtureRepositories {
     )
 }
 
+/// Session controller that records calls; `signInResult` decides what the web session returns.
+actor FakeSession: SessionControlling {
+    var signInResult: AuthError?
+    var restoreResult = false
+    private(set) var signedInWith: [SignInMethod] = []
+    private(set) var signOutCount = 0
+    private var expiryHandler: (@Sendable () async -> Void)?
+
+    init(signInResult: AuthError? = nil, restoreResult: Bool = false) {
+        self.signInResult = signInResult
+        self.restoreResult = restoreResult
+    }
+
+    func signIn(with method: SignInMethod) async throws(AuthError) {
+        signedInWith.append(method)
+        if let signInResult {
+            throw signInResult
+        }
+    }
+
+    func restore() async -> Bool {
+        restoreResult
+    }
+
+    func signOut() async {
+        signOutCount += 1
+    }
+
+    func onSessionExpired(_ handler: @escaping @Sendable () async -> Void) async {
+        expiryHandler = handler
+    }
+
+    func expire() async {
+        await expiryHandler?()
+    }
+}
+
 /// Profile repository that fails every call with the given error.
 struct FailingProfiles: ProfileRepository {
     let error: APIError
@@ -73,5 +111,17 @@ struct FailingProfiles: ProfileRepository {
 
     func studyGoal() async throws(APIError) -> StudyGoal? {
         throw error
+    }
+}
+
+final class RecordingNotifications: NotificationPermissionRequesting, @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+    var requests: Int {
+        lock.withLock { count }
+    }
+
+    func requestAuthorization() async {
+        lock.withLock { count += 1 }
     }
 }
