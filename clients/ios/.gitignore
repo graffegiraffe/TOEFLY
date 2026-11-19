@@ -1,0 +1,7 @@
+.build/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+Packages/ToeflyKit/.swiftpm/
+.build-ios/

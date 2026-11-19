@@ -1,0 +1,7 @@
+# profile-service client (docs/05-api-contracts.md §1.2). Internal operations are not generated.
+generate: [types, client]
+accessModifier: public
+namingStrategy: idiomatic
+additionalFileComments: ["swiftlint:disable all"]
+filter:
+  tags: [Profile, Onboarding, Preferences, Consents]

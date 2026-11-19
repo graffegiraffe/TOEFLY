@@ -1,0 +1,3 @@
+# Adds to the root .swiftformat (120 columns, indent 4): keep the `@Test("…")` names of Swift Testing.
+--disable wrapMultilineStatementBraces, redundantSendable, swiftTestingTestCaseNames, redundantSwiftTestingSuite
+--exclude Packages/ToeflyKit/.build, Packages/ToeflyKit/.build-ios, build, DerivedData
