@@ -1,0 +1,32 @@
+# The rules of the root .swiftlint.yml for runs from clients/ios (pre-commit hook and ci-ios.yml).
+included:
+  - Toefly
+  - ToeflyUITests
+  - Packages/ToeflyKit/Sources
+  - Packages/ToeflyKit/Tests
+  - Packages/ToeflyKit/Package.swift
+excluded:
+  - Packages/ToeflyKit/.build
+  - Packages/ToeflyKit/.build-ios
+  - build
+  - DerivedData
+line_length:
+  warning: 120
+  error: 140
+opt_in_rules:
+  - empty_count
+  - first_where
+  - force_unwrapping
+  - implicit_return
+  - private_swiftui_state
+  - sorted_imports
+disabled_rules:
+  - trailing_comma
+  - todo
+cyclomatic_complexity:
+  ignores_case_statements: true
+identifier_name:
+  # Token names of docs/07-ux-ui.md §2.12 (Radius, Space, button sizes) and canonical language codes.
+  excluded: [id, ok, x, y, en, ru, xs, sm, md, lg, xl, xxl, s1, s2, s3, s4, s5, s6, s8, s10, s12]
+type_body_length: 400
+file_length: 600
