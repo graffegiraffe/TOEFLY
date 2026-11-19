@@ -1,0 +1,633 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01823D67F0B6EDC09428ECFF /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A59B2A6CEB28BCBE132F8C0 /* MainTabView.swift */; };
+		0ACB73108BB732B59C1204D2 /* ToeflyCore in Frameworks */ = {isa = PBXBuildFile; productRef = B5EE47F1421813528AFC46E6 /* ToeflyCore */; };
+		2EFAD3C3D34C0496FBF9F839 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAC0BBA294585BCDF19761 /* OnboardingUITests.swift */; };
+		4FF94135761972BE73718C27 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0200F9321CDD8291BC980A /* Card.swift */; };
+		69839BDEEBE201AC525256B9 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF07D5D28C5E29EE87FBF1 /* UITestSupport.swift */; };
+		842B52A03A8EAC6E6432F5DE /* Chrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F39851558167F1A892182A /* Chrome.swift */; };
+		84FB6259468213A67EBAFE21 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A010DEFAB2BC6A56F1327DBE /* Tokens.swift */; };
+		8501E1AFB5C7BACEEAB778E6 /* HomeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2492E21F5F7BA7C0C2144B02 /* HomeUITests.swift */; };
+		8AE4B171554946C4699EFA3E /* ToeflyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AE5CA7DA7C7CA90931CA25 /* ToeflyApp.swift */; };
+		8D5FE2E95F20631C90D843E3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630984AA9A93AC023AD52461 /* ProfileView.swift */; };
+		8D99B88553EA7A206BB0E467 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7D5EA18102EA4FFD656E71D /* Assets.xcassets */; };
+		A69E7B4691F9FB3800D60C9C /* ToeflyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F50573EB6CA479B38E01EB8 /* ToeflyButton.swift */; };
+		ABFBD5E94834B0E5BE025BD5 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A388FD1E50C2335EF450A5B1 /* HomeView.swift */; };
+		BEC095185321569DBDC5D9B5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B4EB635C4B3A87EAD8E3C3 /* WelcomeView.swift */; };
+		C61565C61CCCDA8749ED8FD8 /* SignInUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C114F63E10BE951CC13D111F /* SignInUITests.swift */; };
+		CF20D3673148FE3A362A250E /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DC426488BDF69DEB4C3DA9 /* Progress.swift */; };
+		E5846128D8DE28175F206D60 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B86CFE19AA4BCFB6096A4F /* Feedback.swift */; };
+		E5B051BEE8B09C3F201EA81D /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753DFB09CA75532929378CD6 /* AppEnvironment.swift */; };
+		E67DDC83407D4B66E10E45F6 /* Controls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E8FBB8AD0C7AFF4D36723 /* Controls.swift */; };
+		F7387760A51106FC5288D2B4 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D14BC98B0419EB3F3EF99AA /* OnboardingView.swift */; };
+		FA3F698E58C1C87E8D2F19FE /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 875AF43948CD0D749AEF889B /* AccessibilityUITests.swift */; };
+		FB0C078E3D3C268EC16CEEA3 /* ToeflyFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = 8658418D4BE7A017A5DF085D /* ToeflyFeatures */; };
+		FEB896F2EE1E66B370147612 /* WebAuthenticationSessionAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91EDA95C8B214F7D5168057 /* WebAuthenticationSessionAuthenticator.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		53F0EDD30C1F04BBEFCF3607 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B85C95E725BBFD90745C743E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC68169732ED08CE1F64E13E;
+			remoteInfo = Toefly;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		04B86CFE19AA4BCFB6096A4F /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
+		138E8FBB8AD0C7AFF4D36723 /* Controls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controls.swift; sourceTree = "<group>"; };
+		13AE5CA7DA7C7CA90931CA25 /* ToeflyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToeflyApp.swift; sourceTree = "<group>"; };
+		1C5C45CCE8A73D52BA23146C /* ToeflyUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ToeflyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2492E21F5F7BA7C0C2144B02 /* HomeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeUITests.swift; sourceTree = "<group>"; };
+		35DC426488BDF69DEB4C3DA9 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
+		4B0200F9321CDD8291BC980A /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
+		4BFF07D5D28C5E29EE87FBF1 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		630984AA9A93AC023AD52461 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		6F50573EB6CA479B38E01EB8 /* ToeflyButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToeflyButton.swift; sourceTree = "<group>"; };
+		745ECC304B6FCDB6946DE3E5 /* Toefly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Toefly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		753DFB09CA75532929378CD6 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		7D14BC98B0419EB3F3EF99AA /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		875AF43948CD0D749AEF889B /* AccessibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUITests.swift; sourceTree = "<group>"; };
+		9A59B2A6CEB28BCBE132F8C0 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A010DEFAB2BC6A56F1327DBE /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		A388FD1E50C2335EF450A5B1 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AAAAC0BBA294585BCDF19761 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
+		C114F63E10BE951CC13D111F /* SignInUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInUITests.swift; sourceTree = "<group>"; };
+		CC2717458B562AA39ACF559F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D1F39851558167F1A892182A /* Chrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chrome.swift; sourceTree = "<group>"; };
+		D7D5EA18102EA4FFD656E71D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E4AF2FEAD39EA390F74E7C96 /* ToeflyKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ToeflyKit; path = Packages/ToeflyKit; sourceTree = SOURCE_ROOT; };
+		E91EDA95C8B214F7D5168057 /* WebAuthenticationSessionAuthenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationSessionAuthenticator.swift; sourceTree = "<group>"; };
+		F5B4EB635C4B3A87EAD8E3C3 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E588D76A5BB83B9E2DFDE847 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0ACB73108BB732B59C1204D2 /* ToeflyCore in Frameworks */,
+				FB0C078E3D3C268EC16CEEA3 /* ToeflyFeatures in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0947CB2BED31805852B3D1F3 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D7D5EA18102EA4FFD656E71D /* Assets.xcassets */,
+				CC2717458B562AA39ACF559F /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		0A423A9952774EA55563C420 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				9A59B2A6CEB28BCBE132F8C0 /* MainTabView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		2FB4A7C8FC93FD9A048C7032 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				7D14BC98B0419EB3F3EF99AA /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		2FD4552D99288B360FC20780 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				630984AA9A93AC023AD52461 /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		2FE3EFD0D19A7D71911081BE /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				E4AF2FEAD39EA390F74E7C96 /* ToeflyKit */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		40BEF24781FD1C4D7EB1E58D /* App */ = {
+			isa = PBXGroup;
+			children = (
+				753DFB09CA75532929378CD6 /* AppEnvironment.swift */,
+				13AE5CA7DA7C7CA90931CA25 /* ToeflyApp.swift */,
+				E91EDA95C8B214F7D5168057 /* WebAuthenticationSessionAuthenticator.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		6469DC45B896C3407778B5E6 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				CE025E09B40CE7DA37486CD0 /* Components */,
+				A010DEFAB2BC6A56F1327DBE /* Tokens.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		96B1D07A87CF5EB1C8405514 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				F21E4B9B9BA4B0635CFB27C0 /* Home */,
+				0A423A9952774EA55563C420 /* Main */,
+				2FB4A7C8FC93FD9A048C7032 /* Onboarding */,
+				2FD4552D99288B360FC20780 /* Profile */,
+				A1BD0C430E08E80D5A059A77 /* Welcome */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		A1BD0C430E08E80D5A059A77 /* Welcome */ = {
+			isa = PBXGroup;
+			children = (
+				F5B4EB635C4B3A87EAD8E3C3 /* WelcomeView.swift */,
+			);
+			path = Welcome;
+			sourceTree = "<group>";
+		};
+		B59FC486AE2997537F726AC0 = {
+			isa = PBXGroup;
+			children = (
+				2FE3EFD0D19A7D71911081BE /* Packages */,
+				DC9A9A1B930DF7B1902E2FDB /* Toefly */,
+				E06F22162E91E55EF7724FE0 /* ToeflyUITests */,
+				BA7DCFCB9880352699D8B7B7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BA7DCFCB9880352699D8B7B7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				745ECC304B6FCDB6946DE3E5 /* Toefly.app */,
+				1C5C45CCE8A73D52BA23146C /* ToeflyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CE025E09B40CE7DA37486CD0 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				4B0200F9321CDD8291BC980A /* Card.swift */,
+				D1F39851558167F1A892182A /* Chrome.swift */,
+				138E8FBB8AD0C7AFF4D36723 /* Controls.swift */,
+				04B86CFE19AA4BCFB6096A4F /* Feedback.swift */,
+				35DC426488BDF69DEB4C3DA9 /* Progress.swift */,
+				6F50573EB6CA479B38E01EB8 /* ToeflyButton.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		DC9A9A1B930DF7B1902E2FDB /* Toefly */ = {
+			isa = PBXGroup;
+			children = (
+				40BEF24781FD1C4D7EB1E58D /* App */,
+				6469DC45B896C3407778B5E6 /* DesignSystem */,
+				96B1D07A87CF5EB1C8405514 /* Features */,
+				0947CB2BED31805852B3D1F3 /* Resources */,
+			);
+			path = Toefly;
+			sourceTree = "<group>";
+		};
+		E06F22162E91E55EF7724FE0 /* ToeflyUITests */ = {
+			isa = PBXGroup;
+			children = (
+				875AF43948CD0D749AEF889B /* AccessibilityUITests.swift */,
+				2492E21F5F7BA7C0C2144B02 /* HomeUITests.swift */,
+				AAAAC0BBA294585BCDF19761 /* OnboardingUITests.swift */,
+				C114F63E10BE951CC13D111F /* SignInUITests.swift */,
+				4BFF07D5D28C5E29EE87FBF1 /* UITestSupport.swift */,
+			);
+			path = ToeflyUITests;
+			sourceTree = "<group>";
+		};
+		F21E4B9B9BA4B0635CFB27C0 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A388FD1E50C2335EF450A5B1 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C8AE596C4F6616469972D7B8 /* ToeflyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 04E283B3378E3A8E50858053 /* Build configuration list for PBXNativeTarget "ToeflyUITests" */;
+			buildPhases = (
+				D0F6DE7453C9F3B06314C90B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7453386BD85C23253C049E04 /* PBXTargetDependency */,
+			);
+			name = ToeflyUITests;
+			packageProductDependencies = (
+			);
+			productName = ToeflyUITests;
+			productReference = 1C5C45CCE8A73D52BA23146C /* ToeflyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		CC68169732ED08CE1F64E13E /* Toefly */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DCB0C4A5F470FEB3FD5E76D5 /* Build configuration list for PBXNativeTarget "Toefly" */;
+			buildPhases = (
+				250AD83AA73167757371C90F /* Sources */,
+				C48EA51B684D76CA8943E918 /* Resources */,
+				E588D76A5BB83B9E2DFDE847 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Toefly;
+			packageProductDependencies = (
+				B5EE47F1421813528AFC46E6 /* ToeflyCore */,
+				8658418D4BE7A017A5DF085D /* ToeflyFeatures */,
+			);
+			productName = Toefly;
+			productReference = 745ECC304B6FCDB6946DE3E5 /* Toefly.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B85C95E725BBFD90745C743E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					C8AE596C4F6616469972D7B8 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = CC68169732ED08CE1F64E13E;
+					};
+					CC68169732ED08CE1F64E13E = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 386A95A12E04CD7519B23B92 /* Build configuration list for PBXProject "Toefly" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B59FC486AE2997537F726AC0;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				EF894113C6337F2F34782253 /* XCLocalSwiftPackageReference "Packages/ToeflyKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BA7DCFCB9880352699D8B7B7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CC68169732ED08CE1F64E13E /* Toefly */,
+				C8AE596C4F6616469972D7B8 /* ToeflyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C48EA51B684D76CA8943E918 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D99B88553EA7A206BB0E467 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		250AD83AA73167757371C90F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5B051BEE8B09C3F201EA81D /* AppEnvironment.swift in Sources */,
+				4FF94135761972BE73718C27 /* Card.swift in Sources */,
+				842B52A03A8EAC6E6432F5DE /* Chrome.swift in Sources */,
+				E67DDC83407D4B66E10E45F6 /* Controls.swift in Sources */,
+				E5846128D8DE28175F206D60 /* Feedback.swift in Sources */,
+				ABFBD5E94834B0E5BE025BD5 /* HomeView.swift in Sources */,
+				01823D67F0B6EDC09428ECFF /* MainTabView.swift in Sources */,
+				F7387760A51106FC5288D2B4 /* OnboardingView.swift in Sources */,
+				8D5FE2E95F20631C90D843E3 /* ProfileView.swift in Sources */,
+				CF20D3673148FE3A362A250E /* Progress.swift in Sources */,
+				8AE4B171554946C4699EFA3E /* ToeflyApp.swift in Sources */,
+				A69E7B4691F9FB3800D60C9C /* ToeflyButton.swift in Sources */,
+				84FB6259468213A67EBAFE21 /* Tokens.swift in Sources */,
+				FEB896F2EE1E66B370147612 /* WebAuthenticationSessionAuthenticator.swift in Sources */,
+				BEC095185321569DBDC5D9B5 /* WelcomeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0F6DE7453C9F3B06314C90B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA3F698E58C1C87E8D2F19FE /* AccessibilityUITests.swift in Sources */,
+				8501E1AFB5C7BACEEAB778E6 /* HomeUITests.swift in Sources */,
+				2EFAD3C3D34C0496FBF9F839 /* OnboardingUITests.swift in Sources */,
+				C61565C61CCCDA8749ED8FD8 /* SignInUITests.swift in Sources */,
+				69839BDEEBE201AC525256B9 /* UITestSupport.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7453386BD85C23253C049E04 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC68169732ED08CE1F64E13E /* Toefly */;
+			targetProxy = 53F0EDD30C1F04BBEFCF3607 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		624BEF16CB06C9EFA71F3570 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.toefly.ios.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Toefly;
+			};
+			name = Debug;
+		};
+		62BB15CA59D5CB335E7BCB31 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.toefly.ios.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Toefly;
+			};
+			name = Release;
+		};
+		97A2808080EE77F7FCC16140 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Toefly/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.toefly.ios;
+				PRODUCT_NAME = Toefly;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TOEFLY_API_BASE_URL = "http:/$()/localhost:8080";
+				TOEFLY_APPLE_SIGN_IN_ENABLED = NO;
+				TOEFLY_AUTH_ISSUER = "http:/$()/localhost:8180/realms/toefly";
+			};
+			name = Release;
+		};
+		C4B31717D9E23003491332C2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		C9E368433F801BA6D92952A6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Toefly/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.toefly.ios;
+				PRODUCT_NAME = Toefly;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TOEFLY_API_BASE_URL = "http:/$()/localhost:8080";
+				TOEFLY_APPLE_SIGN_IN_ENABLED = NO;
+				TOEFLY_AUTH_ISSUER = "http:/$()/localhost:8180/realms/toefly";
+			};
+			name = Debug;
+		};
+		F23F8EC1BC35A5FD97CF99CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		04E283B3378E3A8E50858053 /* Build configuration list for PBXNativeTarget "ToeflyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				624BEF16CB06C9EFA71F3570 /* Debug */,
+				62BB15CA59D5CB335E7BCB31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		386A95A12E04CD7519B23B92 /* Build configuration list for PBXProject "Toefly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F23F8EC1BC35A5FD97CF99CD /* Debug */,
+				C4B31717D9E23003491332C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DCB0C4A5F470FEB3FD5E76D5 /* Build configuration list for PBXNativeTarget "Toefly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9E368433F801BA6D92952A6 /* Debug */,
+				97A2808080EE77F7FCC16140 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		EF894113C6337F2F34782253 /* XCLocalSwiftPackageReference "Packages/ToeflyKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ToeflyKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8658418D4BE7A017A5DF085D /* ToeflyFeatures */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ToeflyFeatures;
+		};
+		B5EE47F1421813528AFC46E6 /* ToeflyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ToeflyCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B85C95E725BBFD90745C743E /* Project object */;
+}

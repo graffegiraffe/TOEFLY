@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- TOEFLY app icon: cover-gradient (docs/07-ux-ui.md §2.5) with a white paper plane, no transparency. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0.32" x2="1" y2="0.68">
+      <stop offset="0" stop-color="#0F7D4D"/>
+      <stop offset="0.55" stop-color="#04AC6A"/>
+      <stop offset="1" stop-color="#3CC98A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#g)"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="44" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M232 520 L800 264 L640 784 L512 576 Z"/>
+    <path d="M512 576 L800 264"/>
+  </g>
+</svg>
