@@ -74,6 +74,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -185,8 +187,23 @@ class AssessmentComponentIT {
     @MockitoBean
     JwtDecoder jwtDecoder;
 
+    @Autowired
+    KafkaListenerEndpointRegistry listenerRegistry;
+
+    /** Slow CI runners join the consumer groups late; the tests start once every listener owns its partitions. */
+    private void awaitListenerAssignment() {
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(3))
+                .pollInterval(Duration.ofMillis(500))
+                .until(() -> listenerRegistry.getAllListenerContainers().stream()
+                        .filter(MessageListenerContainer::isRunning)
+                        .allMatch(c -> c.getAssignedPartitions() != null
+                                && !c.getAssignedPartitions().isEmpty()));
+    }
+
     @BeforeEach
     void stubs() throws Exception {
+        awaitListenerAssignment();
         TestClock.CLOCK.offset = Duration.ZERO;
         DEPENDENCIES.resetAll();
         DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo("/token"))
@@ -427,11 +444,14 @@ class AssessmentComponentIT {
                                 .andExpect(jsonPath("$.sections[?(@.section == 'READING')].status")
                                         .value("READY"))
                                 .andExpect(jsonPath("$.overall").doesNotExist()));
-        assertThat(jdbc.sql("SELECT jsonb_array_length(correct) FROM build_sentence_result WHERE user_id = :u")
-                        .param("u", user)
-                        .query(Integer.class)
-                        .single())
-                .isEqualTo(10);
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .untilAsserted(() -> assertThat(jdbc.sql(
+                                        "SELECT jsonb_array_length(correct) FROM build_sentence_result WHERE user_id = :u")
+                                .param("u", user)
+                                .query(Integer.class)
+                                .list())
+                        .containsExactly(10));
         mvc.perform(get("/api/v1/band-estimates").with(student(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].estimate.sections.length()").value(4));
