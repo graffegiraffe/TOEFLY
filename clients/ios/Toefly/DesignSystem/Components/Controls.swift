@@ -132,6 +132,8 @@ struct Avatar: View {
     var body: some View {
         Text(initials)
             .font(.system(size: size * 0.38, weight: .semibold))
+            .minimumScaleFactor(0.5)
+            .lineLimit(1)
             .foregroundStyle(Color.toefly.accentOnSoft)
             .frame(width: size, height: size)
             .background(Color.toefly.accentSoft, in: .circle)

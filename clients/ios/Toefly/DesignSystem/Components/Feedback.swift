@@ -94,6 +94,7 @@ struct ErrorState: View {
             }
             Button("Try again", action: retry).buttonStyle(.toefly(.secondary))
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("error-state")
     }
 }
