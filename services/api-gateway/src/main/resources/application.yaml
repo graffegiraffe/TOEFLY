@@ -66,6 +66,13 @@ spring:
               uri: ${toefly.gateway.services.ai-gateway}
               predicates:
                 - Path=/api/v1/admin/ai/**
+            # The rebuilds of analytics read models are listed by name: practice-service owns the rest of
+            # /api/v1/admin/projections/**, so this route is matched first.
+            - id: analytics-service
+              uri: ${toefly.gateway.services.analytics-service}
+              order: -1
+              predicates:
+                - Path=/api/v1/dashboards/**,/api/v1/streaks/**,/api/v1/activity-days,/api/v1/time-reports,/api/v1/admin/metrics/**,/api/v1/admin/projections/student-dashboard/**,/api/v1/admin/projections/activity/**,/api/v1/admin/projections/product-metrics/**,/api/v1/admin/projections/ai-usage/**,/api/v1/admin/projections/rebuilds/**
 
 server:
   port: 8080
@@ -90,6 +97,7 @@ toefly:
       planning-service: http://localhost:8087
       assessment-service: http://localhost:8085
       ai-gateway: http://localhost:8095
+      analytics-service: http://localhost:8094
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
     rate-limits:
