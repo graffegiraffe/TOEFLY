@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Bot,
   CalendarDays,
   ClipboardList,
@@ -43,11 +44,12 @@ export const TUTOR_NAV: NavItem[] = [
 export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/content', labelKey: 'nav.adminContent', icon: Library },
   { to: '/admin/ai', labelKey: 'nav.adminAi', icon: Bot },
+  { to: '/admin/metrics', labelKey: 'nav.adminMetrics', icon: BarChart3 },
 ];
 
 export const SETTINGS_NAV: NavItem = { to: '/settings', labelKey: 'nav.settings', icon: Settings };
 
-export const PLACEHOLDER_SECTIONS = ['grammar', 'vocabulary', 'progress', 'ai-tutor'] as const;
+export const PLACEHOLDER_SECTIONS = ['grammar', 'vocabulary', 'ai-tutor'] as const;
 
 export function navFor(roles: readonly string[]): { primary: NavItem[]; tutor: NavItem[]; admin: NavItem[] } {
   return {
