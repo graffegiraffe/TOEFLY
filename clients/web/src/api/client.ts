@@ -34,6 +34,14 @@ import {
   Configuration as AssessmentConfiguration,
   SubmissionsApi as AssessmentSubmissionsApi,
 } from './generated/assessment';
+import {
+  ActivityApi as AnalyticsActivityApi,
+  AdminMetricsApi as AnalyticsAdminMetricsApi,
+  Configuration as AnalyticsConfiguration,
+  DashboardsApi as AnalyticsDashboardsApi,
+  ProjectionsApi as AnalyticsProjectionsApi,
+  StreaksApi as AnalyticsStreaksApi,
+} from './generated/analytics';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -93,7 +101,19 @@ const assessmentConfiguration = new AssessmentConfiguration({
   middleware: [csrfMiddleware],
 });
 
+// analytics-service.yaml keeps its paths relative to /api/v1 too (docs/05 §6.14).
+const analyticsConfiguration = new AnalyticsConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware],
+});
+
 export const api = {
+  dashboards: new AnalyticsDashboardsApi(analyticsConfiguration),
+  streaks: new AnalyticsStreaksApi(analyticsConfiguration),
+  activity: new AnalyticsActivityApi(analyticsConfiguration),
+  analyticsAdmin: new AnalyticsAdminMetricsApi(analyticsConfiguration),
+  projections: new AnalyticsProjectionsApi(analyticsConfiguration),
   submissions: new AssessmentSubmissionsApi(assessmentConfiguration),
   bandEstimates: new AssessmentBandEstimatesApi(assessmentConfiguration),
   aiAdmin: new AiAdminApi(aiGatewayConfiguration),

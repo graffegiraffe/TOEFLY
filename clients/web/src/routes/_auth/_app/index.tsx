@@ -1,16 +1,20 @@
 import { Role } from '@/api/generated';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ClipboardCheck, Target } from 'lucide-react';
+import { ClipboardCheck, Clock, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { streakQuery, studentDashboardQuery } from '@/api/analytics';
 import { bandEstimateQuery } from '@/api/assessment';
 import { planQuery, todayQuery } from '@/api/planning';
 import { studyGoalQuery } from '@/api/queries';
+import { Freshness } from '@/components/progress/freshness';
+import { StreakCard } from '@/components/progress/streak-card';
 import { TaskRow } from '@/components/weeks/task-row';
 import { buttonClass } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { BandRingCard } from '@/components/writing/band-ring';
+import { formatDuration } from '@/lib/analytics';
 import { bandHint } from '@/lib/band';
 
 export const Route = createFileRoute('/_auth/_app/')({
@@ -29,6 +33,9 @@ function Home() {
   const plan = useQuery({ ...planQuery, enabled: isStudent });
   const today = useQuery({ ...todayQuery, enabled: isStudent && Boolean(plan.data) });
   const estimate = useQuery({ ...bandEstimateQuery, enabled: isStudent });
+  // Streak, goal ring and time of the week come from the read models of analytics-service (AC-05.02.1).
+  const streak = useQuery({ ...streakQuery, enabled: isStudent });
+  const dashboard = useQuery({ ...studentDashboardQuery, enabled: isStudent });
   const hasPlan = Boolean(plan.data);
   const name = profile.displayName?.split(' ')[0];
   return (
@@ -86,6 +93,24 @@ function Home() {
           ) : (
             <BandRingCard estimate={estimate.data} />
           )}
+        </div>
+      )}
+      {isStudent && streak.data && (
+        <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <StreakCard streak={streak.data} compact />
+          <Card className="flex flex-col gap-2" data-testid="home-time">
+            <div className="flex items-center gap-2 text-caption font-semibold uppercase tracking-wide text-ink-muted">
+              <Clock className="size-4" aria-hidden="true" />
+              {t('analytics.home.timeThisWeek')}
+            </div>
+            <p className="text-title-2 font-semibold text-ink">
+              {formatDuration(dashboard.data?.weekActiveSeconds ?? 0)}
+            </p>
+            <Freshness asOf={dashboard.data?.asOf ?? streak.data.asOf} />
+            <Link to="/progress" className="text-body font-semibold text-link hover:text-link-hover">
+              {t('analytics.home.openProgress')}
+            </Link>
+          </Card>
         </div>
       )}
     </div>
