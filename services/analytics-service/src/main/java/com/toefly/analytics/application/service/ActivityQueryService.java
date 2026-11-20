@@ -52,7 +52,9 @@ public class ActivityQueryService implements ActivityQueryUseCase {
         LocalDate end = to == null ? today.plusDays(1) : to;
         LocalDate start = from == null ? end.minusDays(DEFAULT_DAYS) : from;
         check(start, end);
-        return TimeReport.of(activity.days(userId, start, end), start, end, today, settings.minutesPerDay());
+        LocalDate planStart = settings.planStart();
+        LocalDate planFrom = planStart != null && planStart.isAfter(start) ? planStart : start;
+        return TimeReport.of(activity.days(userId, start, end), start, end, planFrom, today, settings.minutesPerDay());
     }
 
     static void check(LocalDate from, LocalDate to) {

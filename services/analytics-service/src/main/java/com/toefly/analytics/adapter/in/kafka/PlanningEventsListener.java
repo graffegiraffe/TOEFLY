@@ -46,6 +46,7 @@ public class PlanningEventsListener {
                 new StudyPlanCreated(
                         e.getUserId(),
                         e.getPlanId(),
+                        e.getStartDate(),
                         e.getExamDate(),
                         e.getMinutesPerDay(),
                         e.getTimezone(),

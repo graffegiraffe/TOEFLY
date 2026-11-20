@@ -45,13 +45,14 @@ class LearnerSettingsTest {
                 .goal(LocalDate.of(2026, 12, 27), 5.0, Map.of(Section.READING, 5.5), T0)
                 .schedule(ZoneId.of("Europe/Minsk"), 90, T0.plusSeconds(10))
                 .goal(LocalDate.of(2027, 1, 1), 4.0, Map.of(), T0.minusSeconds(10))
-                .examDate(LocalDate.of(2026, 12, 28), T0.plusSeconds(20))
-                .examDate(LocalDate.of(2026, 12, 1), T0.minusSeconds(20));
+                .plan(LocalDate.of(2026, 12, 28), LocalDate.of(2026, 11, 22), T0.plusSeconds(20))
+                .plan(LocalDate.of(2026, 12, 1), LocalDate.of(2026, 11, 21), T0.minusSeconds(20));
 
         assertThat(settings.overallTarget()).isEqualTo(5.0);
         assertThat(settings.sectionTargets()).containsEntry(Section.READING, 5.5);
         assertThat(settings.examDate()).isEqualTo(LocalDate.of(2026, 12, 28));
         assertThat(settings.minutesPerDay()).isEqualTo(90);
+        assertThat(settings.planStart()).isEqualTo(LocalDate.of(2026, 11, 21));
     }
 
     @Test
@@ -59,7 +60,7 @@ class LearnerSettingsTest {
     void countdown() {
         LearnerSettings settings = LearnerSettings.unknown(USER)
                 .schedule(ZoneId.of("Europe/Minsk"), 30, T0)
-                .examDate(LocalDate.of(2026, 11, 28), T0);
+                .plan(LocalDate.of(2026, 11, 28), LocalDate.of(2026, 11, 21), T0);
 
         assertThat(settings.daysUntilExam(T0)).isEqualTo(7);
         assertThat(settings.daysUntilExam(T0.plusSeconds(86_400L * 30))).isZero();

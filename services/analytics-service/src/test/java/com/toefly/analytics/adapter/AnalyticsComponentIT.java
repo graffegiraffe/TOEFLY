@@ -200,7 +200,7 @@ class AnalyticsComponentIT {
         mvc.perform(get("/api/v1/time-reports").with(JwtFixtures.student(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalSeconds").value(1500))
-                .andExpect(jsonPath("$.plannedSeconds").value(7 * 20 * 60))
+                .andExpect(jsonPath("$.plannedSeconds").value(3 * 20 * 60))
                 .andExpect(jsonPath("$.bySection[0].section").value("READING"))
                 .andExpect(jsonPath("$.byTaskType[0].taskType").value("READ_ACADEMIC_PASSAGE"))
                 .andExpect(jsonPath("$.byTaskType[0].paceRatio").value(1.45))
