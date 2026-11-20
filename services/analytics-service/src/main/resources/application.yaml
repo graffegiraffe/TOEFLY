@@ -26,6 +26,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
   mvc:
     problemdetails:
       enabled: true

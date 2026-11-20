@@ -1,61 +1,621 @@
 openapi: 3.1.0
 info:
-  title: analytics-service
-  version: 0.1.0
-  description: Sample endpoint of the service template; replace it with the service contract from docs/05-api-contracts.md.
+  title: TOEFLY analytics-service API
+  version: 1.0.0
+  summary: CQRS read-модели — дашборд ученика, streak и цель дня, активность по дням, время против норм ETS, продуктовые метрики и расход AI.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`. Сервис только читает: представления строятся из
+    событий Kafka (ADR-0011, docs/04 §6.7), поэтому каждый ответ несёт `asOf` — время последнего применённого события
+    (INV-ANL-04). Перестройка представления — повторный прогон `event_journal` в одной транзакции. Дашборд репетитора
+    (`/dashboards/tutor`, `/dashboards/tutor/students/{studentId}`) и доступ `T*` по `studentId` появляются вместе с
+    classroom-service (этап 10); до него запрос чужих данных возвращает `403`. Контракт — docs/05 §6.14.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
 servers:
-  - url: http://localhost:8094
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
 security:
   - bearerAuth: []
+tags:
+  - { name: Dashboards, description: 'Дашборд ученика' }
+  - { name: Streaks, description: 'Streak и цель дня' }
+  - { name: Activity, description: 'Активность по дням и время против норм ETS' }
+  - { name: AdminMetrics, description: 'Продуктовые метрики и расход AI' }
+  - { name: Projections, description: 'Перестройка read-моделей' }
 paths:
-  /api/v1/items:
-    post:
-      tags: [Items]
-      operationId: createItem
-      summary: Create an item and publish ItemCreated through the outbox
+  /dashboards/student:
+    get:
+      tags: [Dashboards]
+      operationId: getStudentDashboard
+      summary: Дашборд ученика
+      description: |
+        Текущая неделя, прогноз балла и θ, последние результаты, streak и цель дня, время за неделю, недели для графика
+        Progress и обратный отсчёт до экзамена (US-05.02, US-13.02, US-19.01). Данные — из read-модели с меткой `asOf`
+        (AC-05.02.3).
+      x-toefly-roles: [STUDENT]
       parameters:
-        - name: Idempotency-Key
-          in: header
-          required: true
-          schema: { type: string, maxLength: 100 }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/CreateItemRequest' }
+        - { $ref: '#/components/parameters/StudentId' }
       responses:
-        '201':
-          description: Created
+        '200':
+          description: Дашборд.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ItemResponse' }
-        '400':
-          description: Invalid request
+              schema: { $ref: '#/components/schemas/StudentDashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /streaks/me:
+    get:
+      tags: [Streaks]
+      operationId: getMyStreak
+      summary: Streak и цель дня
+      description: Текущий и рекордный streak, календарь 30 дней и кольцо цели дня (AC-19.01.3, AC-19.02.2).
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Streak.
           content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Problem' }
+            application/json:
+              schema: { $ref: '#/components/schemas/Streak' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /activity-days:
+    get:
+      tags: [Activity]
+      operationId: listActivityDays
+      summary: Активность по дням
+      description: Дни `[from, to)` с активным временем по разделам недели, выполненными заданиями и целью дня.
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - { $ref: '#/components/parameters/StudentId' }
+      responses:
+        '200':
+          description: Дни по возрастанию даты; дни без активности отсутствуют.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActivityDayList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /time-reports:
+    get:
+      tags: [Activity]
+      operationId: getTimeReport
+      summary: Время против норм ETS
+      description: |
+        Итоги периода `[from, to)` по разделам, типам заданий (темп против нормы ETS, отклонение > 30% выделяется,
+        AC-16.02.2) и дням; `plannedSeconds` — план `minutesPerDay × дни` до сегодняшнего дня включительно
+        (AC-16.03.1). По умолчанию — последние 7 дней.
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+        - { $ref: '#/components/parameters/StudentId' }
+      responses:
+        '200':
+          description: Отчёт.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TimeReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/metrics/product:
+    get:
+      tags: [AdminMetrics]
+      operationId: getProductMetrics
+      summary: Воронка, удержание, завершение недель и SDR
+      description: Метрики docs/01 §7 за период `[from, to)` (UTC, по умолчанию 30 дней).
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Метрики.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductMetrics' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/metrics/ai-usage:
+    get:
+      tags: [AdminMetrics]
+      operationId: getAiUsageReport
+      summary: Расход AI
+      description: |
+        Вызовы, токены и теневая стоимость по провайдерам, моделям и промптам, доля резервной цепочки и стоимость на
+        активного ученика за период `[from, to)` (UTC, по умолчанию 30 дней).
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Отчёт.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiUsageReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/projections/{projection}/rebuild:
+    post:
+      tags: [Projections]
+      operationId: rebuildProjection
+      summary: Перестроить read-модель из журнала
+      description: |
+        Запускает перестройку в фоне: журнал событий прогоняется в очищенные таблицы в одной транзакции, читатели видят
+        старое представление до фиксации. Повтор с тем же `Idempotency-Key` возвращает то же задание.
+      x-toefly-roles: [ADMIN]
+      x-toefly-idempotent: true
+      parameters:
+        - name: projection
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/ProjectionName' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '202':
+          description: Перестройка запущена.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectionRebuildJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /admin/projections/rebuilds/{jobId}:
+    get:
+      tags: [Projections]
+      operationId: getProjectionRebuild
+      summary: Состояние перестройки
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: jobId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Задание.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectionRebuildJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
-    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID операции; повтор с тем же ключом возвращает то же задание.
+      schema: { type: string, format: uuid }
+    StudentId:
+      name: studentId
+      in: query
+      required: false
+      description: Ученик репетитора (`T*`); для `STUDENT` — отсутствует или совпадает с `sub`.
+      schema: { type: string, format: uuid }
+  headers:
+    Location:
+      description: Адрес состояния задания.
+      schema: { type: string, format: uri-reference }
+    IdempotentReplayed:
+      description: "`true`, если ответ воспроизведён по `Idempotency-Key`."
+      schema: { type: boolean }
+  responses:
+    BadRequest:
+      description: "`400 validation-failed` — неверный период (`from` не раньше `to`, больше 400 дней) или параметр."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: "`401 unauthenticated` — нет или просрочен токен."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403 forbidden` — роль не подходит или ученик не связан с репетитором."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409 conflict` — перестройка этой модели уже идёт."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422 idempotency-key-reuse` — ключ уже использован для другой модели."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428 idempotency-key-required` — нет `Idempotency-Key`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
   schemas:
-    CreateItemRequest:
-      type: object
-      required: [title]
-      properties:
-        title: { type: string, minLength: 1, maxLength: 200 }
-    ItemResponse:
-      type: object
-      required: [id, title, createdAt, announced]
-      properties:
-        id: { type: string, format: uuid }
-        title: { type: string }
-        createdAt: { type: string, format: date-time }
-        announced: { type: boolean }
     Problem:
       type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
       properties:
         type: { type: string, format: uri }
         title: { type: string }
-        status: { type: integer }
+        status: { type: integer, minimum: 400, maximum: 599 }
         detail: { type: string }
-        code: { type: string }
+        instance: { type: string, format: uri-reference }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$' }
+      additionalProperties: true
+    Section:
+      type: string
+      enum: [READING, LISTENING, WRITING, SPEAKING]
+    WeekSection:
+      type: string
+      enum: [READING, LISTENING, WRITING, SPEAKING, VOCABULARY, GRAMMAR, RESOURCES]
+    TaskType:
+      type: string
+      enum: [COMPLETE_THE_WORDS, READ_DAILY_LIFE, READ_ACADEMIC_PASSAGE, LISTEN_CHOOSE_RESPONSE, LISTEN_CONVERSATION,
+             LISTEN_ANNOUNCEMENT, LISTEN_ACADEMIC_TALK, BUILD_A_SENTENCE, WRITE_EMAIL, WRITE_ACADEMIC_DISCUSSION,
+             LISTEN_AND_REPEAT, TAKE_AN_INTERVIEW, GRAMMAR_EXERCISE, VOCAB_EXERCISE, LEGACY_READING, LEGACY_LISTENING]
+    PaceVerdict:
+      type: string
+      description: Темп против нормы ETS; `SLOWER`/`FASTER` — отклонение больше 30%.
+      enum: [ON_PACE, SLOWER, FASTER, NO_NORM]
+    ProjectionName:
+      type: string
+      enum: [student-dashboard, activity, product-metrics, ai-usage]
+    Band:
+      type: number
+      minimum: 1
+      maximum: 6
+      multipleOf: 0.5
+    BandRange:
+      type: object
+      required: [point, low, high]
+      properties:
+        point: { $ref: '#/components/schemas/Band' }
+        low: { $ref: '#/components/schemas/Band' }
+        high: { $ref: '#/components/schemas/Band' }
+    SectionEstimate:
+      type: object
+      required: [section, status, n]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        status: { type: string, enum: [READY, NEED_MORE_DATA] }
+        point: { type: [number, 'null'] }
+        low: { type: [number, 'null'] }
+        high: { type: [number, 'null'] }
+        n: { type: integer, minimum: 0, description: Оценённых Item (Reading/Listening) или работ (Writing/Speaking). }
+    BandEstimateView:
+      type: object
+      required: [sections, asOf]
+      properties:
+        overall:
+          description: Общий диапазон; `null`, пока нет прогноза по всем секциям (AC-13.01.3).
+          oneOf:
+            - { $ref: '#/components/schemas/BandRange' }
+            - { type: 'null' }
+        sections:
+          type: array
+          items: { $ref: '#/components/schemas/SectionEstimate' }
+        asOf: { type: string, format: date-time }
+    CurrentWeek:
+      type: object
+      required: [weekId, weekNo, progressPercent, tasksTotal, completed]
+      properties:
+        weekId: { type: string, format: uuid }
+        weekNo: { type: integer, minimum: 1 }
+        day1: { type: [string, 'null'], format: date }
+        day: { type: [integer, 'null'], minimum: 1, description: День недели ученика сегодня. }
+        progressPercent: { type: number, minimum: 0, maximum: 100 }
+        tasksTotal: { type: integer, minimum: 0 }
+        completed: { type: boolean }
+    ThetaEntry:
+      type: object
+      required: [section, theta, standardError, asOf]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        theta: { type: number, description: θ в логитах. }
+        standardError: { type: number }
+        asOf: { type: string, format: date-time }
+    RecentResult:
+      type: object
+      required: [id, kind, taskType, at]
+      properties:
+        id: { type: string, format: uuid, description: Попытка или работа. }
+        kind: { type: string, enum: [ATTEMPT, SUBMISSION] }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        section: { oneOf: [{ $ref: '#/components/schemas/Section' }, { type: 'null' }] }
+        correctCount: { type: [integer, 'null'] }
+        totalCount: { type: [integer, 'null'] }
+        rubricScore: { type: [integer, 'null'], minimum: 0, maximum: 5 }
+        at: { type: string, format: date-time }
+    Targets:
+      type: object
+      properties:
+        overall: { type: [number, 'null'] }
+        reading: { type: [number, 'null'] }
+        listening: { type: [number, 'null'] }
+        writing: { type: [number, 'null'] }
+        speaking: { type: [number, 'null'] }
+    TodayGoal:
+      type: object
+      required: [date, activeSeconds, goalMinutes, goalProgress, goalMet, tasksDone]
+      properties:
+        date: { type: string, format: date }
+        activeSeconds: { type: integer, minimum: 0 }
+        goalMinutes: { type: integer, minimum: 0 }
+        goalProgress: { type: number, minimum: 0, maximum: 1, description: Заполнение кольца цели дня (AC-19.02.2). }
+        goalMet: { type: boolean }
+        tasksDone: { type: integer, minimum: 0 }
+    StreakSummary:
+      type: object
+      required: [current, longest, todayDone]
+      properties:
+        current: { type: integer, minimum: 0 }
+        longest: { type: integer, minimum: 0 }
+        todayDone: { type: boolean }
+    SectionBandPoint:
+      type: object
+      required: [section, point]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        point: { type: number }
+    WeekPoint:
+      type: object
+      required: [weekNo, progressPercent, tasksDone, tasksTotal, completed, sections]
+      properties:
+        weekNo: { type: integer, minimum: 1 }
+        day1: { type: [string, 'null'], format: date }
+        progressPercent: { type: number, minimum: 0, maximum: 100 }
+        tasksDone: { type: integer, minimum: 0 }
+        tasksTotal: { type: integer, minimum: 0 }
+        completed: { type: boolean }
+        overall:
+          description: Последний прогноз недели; `null` — разрыв линии графика (AC-13.02.2).
+          oneOf:
+            - { $ref: '#/components/schemas/BandRange' }
+            - { type: 'null' }
+        sections:
+          type: array
+          items: { $ref: '#/components/schemas/SectionBandPoint' }
+    StudentDashboard:
+      type: object
+      required: [userId, today, timezone, theta, lastResults, targets, todayGoal, streak, weekActiveSeconds, weeks]
+      properties:
+        userId: { type: string, format: uuid }
+        asOf: { type: [string, 'null'], format: date-time, description: Время последнего применённого события. }
+        today: { type: string, format: date }
+        timezone: { type: string }
+        currentWeek: { oneOf: [{ $ref: '#/components/schemas/CurrentWeek' }, { type: 'null' }] }
+        bandEstimate: { oneOf: [{ $ref: '#/components/schemas/BandEstimateView' }, { type: 'null' }] }
+        theta:
+          type: array
+          items: { $ref: '#/components/schemas/ThetaEntry' }
+        lastResults:
+          type: array
+          maxItems: 5
+          items: { $ref: '#/components/schemas/RecentResult' }
+        examDate: { type: [string, 'null'], format: date }
+        examCountdownDays: { type: [integer, 'null'], minimum: 0 }
+        targets: { $ref: '#/components/schemas/Targets' }
+        todayGoal: { $ref: '#/components/schemas/TodayGoal' }
+        streak: { $ref: '#/components/schemas/StreakSummary' }
+        weekActiveSeconds: { type: integer, minimum: 0, description: Активное время текущей недели или последних 7 дней. }
+        weeks:
+          type: array
+          items: { $ref: '#/components/schemas/WeekPoint' }
+    StreakDay:
+      type: object
+      required: [date, done]
+      properties:
+        date: { type: string, format: date }
+        done: { type: boolean }
+    Streak:
+      type: object
+      required: [current, longest, todayDone, goalMinutes, today, timezone, todayActiveSeconds, todayGoalProgress, days]
+      properties:
+        current: { type: integer, minimum: 0 }
+        longest: { type: integer, minimum: 0 }
+        todayDone: { type: boolean, description: Цель дня выполнена («Today done»). }
+        goalMinutes: { type: integer, minimum: 0 }
+        today: { type: string, format: date }
+        timezone: { type: string }
+        todayActiveSeconds: { type: integer, minimum: 0 }
+        todayGoalProgress: { type: number, minimum: 0, maximum: 1 }
+        days:
+          type: array
+          description: Последние 30 дней по возрастанию.
+          items: { $ref: '#/components/schemas/StreakDay' }
+        asOf: { type: [string, 'null'], format: date-time }
+    SectionTime:
+      type: object
+      required: [section, activeSeconds]
+      properties:
+        section: { $ref: '#/components/schemas/WeekSection' }
+        activeSeconds: { type: integer, minimum: 0 }
+    TaskTypeTime:
+      type: object
+      required: [taskType, activeSeconds, normSeconds, verdict, attempts, slowAttempts, fastAttempts]
+      properties:
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        activeSeconds: { type: integer, minimum: 0 }
+        normSeconds: { type: integer, minimum: 0, description: Норма ETS попыток с известной нормой. }
+        paceRatio: { type: [number, 'null'], description: '`activeSeconds / normSeconds` попыток с нормой.' }
+        verdict: { $ref: '#/components/schemas/PaceVerdict' }
+        attempts: { type: integer, minimum: 0 }
+        slowAttempts: { type: integer, minimum: 0 }
+        fastAttempts: { type: integer, minimum: 0 }
+    ActivityDay:
+      type: object
+      required: [date, activeSeconds, bySection, byTaskType, tasksDone, goalMinutes, goalMet]
+      properties:
+        date: { type: string, format: date }
+        activeSeconds: { type: integer, minimum: 0 }
+        bySection:
+          type: array
+          items: { $ref: '#/components/schemas/SectionTime' }
+        byTaskType:
+          type: array
+          items: { $ref: '#/components/schemas/TaskTypeTime' }
+        tasksDone: { type: integer, minimum: 0 }
+        goalMinutes: { type: integer, minimum: 0 }
+        goalMet: { type: boolean }
+    ActivityDayList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ActivityDay' }
+    DayTime:
+      type: object
+      required: [date, activeSeconds, bySection, goalMet]
+      properties:
+        date: { type: string, format: date }
+        activeSeconds: { type: integer, minimum: 0 }
+        bySection:
+          type: array
+          items: { $ref: '#/components/schemas/SectionTime' }
+        goalMet: { type: boolean }
+    TimeReport:
+      type: object
+      required: [from, to, totalSeconds, plannedSeconds, bySection, byTaskType, byDay]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        totalSeconds: { type: integer, minimum: 0 }
+        plannedSeconds: { type: integer, minimum: 0 }
+        bySection:
+          type: array
+          items: { $ref: '#/components/schemas/SectionTime' }
+        byTaskType:
+          type: array
+          items: { $ref: '#/components/schemas/TaskTypeTime' }
+        byDay:
+          type: array
+          items: { $ref: '#/components/schemas/DayTime' }
+    Funnel:
+      type: object
+      required: [registered, onboarded, planCreated, firstTaskDone, activated]
+      properties:
+        registered: { type: integer, minimum: 0 }
+        onboarded: { type: integer, minimum: 0 }
+        planCreated: { type: integer, minimum: 0 }
+        firstTaskDone: { type: integer, minimum: 0 }
+        activated: { type: integer, minimum: 0, description: Онбординг и первое задание в течение 48 ч после регистрации. }
+    Retention:
+      type: object
+      required: [name, startDay, endDay, eligible, retained]
+      properties:
+        name: { type: string, examples: [D7] }
+        startDay: { type: integer }
+        endDay: { type: integer }
+        eligible: { type: integer, minimum: 0 }
+        retained: { type: integer, minimum: 0 }
+        rate: { type: [number, 'null'] }
+    ProductDay:
+      type: object
+      required: [day, newUsers, onboarded, plansCreated, firstTasks, attemptsSubmitted, weeksCompleted, weeksCompletedByProgress]
+      properties:
+        day: { type: string, format: date }
+        newUsers: { type: integer }
+        onboarded: { type: integer }
+        plansCreated: { type: integer }
+        firstTasks: { type: integer }
+        attemptsSubmitted: { type: integer }
+        weeksCompleted: { type: integer }
+        weeksCompletedByProgress: { type: integer }
+    ProductMetrics:
+      type: object
+      required: [from, to, funnel, retention, learnersInSdr, daily]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        funnel: { $ref: '#/components/schemas/Funnel' }
+        retention:
+          type: array
+          items: { $ref: '#/components/schemas/Retention' }
+        weekCompletionRate: { type: [number, 'null'], description: Доля недель, закрытых с выполнением ≥ 70%. }
+        medianStudyDaysRatio: { type: [number, 'null'], description: North Star — медиана SDR (docs/01 §7.1). }
+        learnersInSdr: { type: integer, minimum: 0 }
+        daily:
+          type: array
+          items: { $ref: '#/components/schemas/ProductDay' }
+    AiTotals:
+      type: object
+      required: [calls, tokensIn, tokensOut, costMicroUsd, fallbackCalls, cacheHits]
+      properties:
+        calls: { type: integer }
+        tokensIn: { type: integer, format: int64 }
+        tokensOut: { type: integer, format: int64 }
+        costMicroUsd: { type: integer, format: int64, description: Теневая стоимость в микродолларах. }
+        fallbackCalls: { type: integer }
+        cacheHits: { type: integer }
+        fallbackShare: { type: [number, 'null'] }
+    AiBreakdown:
+      type: object
+      required: [key, totals]
+      properties:
+        key: { type: string }
+        totals: { $ref: '#/components/schemas/AiTotals' }
+    AiDailyCost:
+      type: object
+      required: [day, calls, costMicroUsd]
+      properties:
+        day: { type: string, format: date }
+        calls: { type: integer }
+        costMicroUsd: { type: integer, format: int64 }
+    AiUsageReport:
+      type: object
+      required: [from, to, totals, byProvider, byModel, byPrompt, byDay, activeLearners]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        totals: { $ref: '#/components/schemas/AiTotals' }
+        byProvider:
+          type: array
+          items: { $ref: '#/components/schemas/AiBreakdown' }
+        byModel:
+          type: array
+          items: { $ref: '#/components/schemas/AiBreakdown' }
+        byPrompt:
+          type: array
+          items: { $ref: '#/components/schemas/AiBreakdown' }
+        byDay:
+          type: array
+          items: { $ref: '#/components/schemas/AiDailyCost' }
+        activeLearners: { type: integer, minimum: 0 }
+        costPerActiveLearnerMicroUsd: { type: [integer, 'null'], format: int64 }
+    ProjectionRebuildJob:
+      type: object
+      required: [id, projection, status, requestedAt, eventsReplayed]
+      properties:
+        id: { type: string, format: uuid }
+        projection: { $ref: '#/components/schemas/ProjectionName' }
+        status: { type: string, enum: [RUNNING, COMPLETED, FAILED] }
+        requestedAt: { type: string, format: date-time }
+        finishedAt: { type: [string, 'null'], format: date-time }
+        eventsReplayed: { type: integer, format: int64, minimum: 0 }
+        error: { type: [string, 'null'] }
