@@ -51,6 +51,7 @@ jobs:
           xcodebuild test -project Toefly.xcodeproj -scheme Toefly
           -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
           -skipPackagePluginValidation -skipMacroValidation
+          -test-timeouts-enabled YES -default-test-execution-time-allowance 300 -maximum-test-execution-time-allowance 600
           -resultBundlePath build/Toefly.xcresult
           CODE_SIGNING_ALLOWED=NO
       - name: Keep the test results and screenshots
