@@ -28,7 +28,7 @@ final class OnboardingUITests: XCTestCase {
 
         // AC-02.01.4: not booked yet.
         XCTAssertTrue(app.staticTexts["When is your exam?"].waitForExistence(timeout: 3))
-        app.buttons["exam-not-booked"].tap()
+        app.switches["exam-not-booked"].tap()
         XCTAssertTrue(app.staticTexts["We’ll build an 8-week plan."].waitForExistence(timeout: 2))
         continueTapped(app)
 
@@ -65,7 +65,7 @@ final class OnboardingUITests: XCTestCase {
 
     func test_AC_02_01_2_perSectionTargetsShowAReadOnlyOverall() {
         let app = Launcher.launch(.newStudent, signedIn: true)
-        app.buttons["per-section"].waitToAppear().tap()
+        app.switches["per-section"].waitToAppear().tap()
         XCTAssertTrue(app.staticTexts["Overall target: 4.5 ≈ B2 ≈ 84+"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.buttons["choice-5.0"].exists)
     }

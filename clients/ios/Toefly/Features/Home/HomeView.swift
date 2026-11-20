@@ -87,6 +87,7 @@ struct HomeView: View {
                 .buttonStyle(.toefly(.primary, block: true))
                 .disabled(true)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home-diagnostic")
     }
 
@@ -116,6 +117,7 @@ struct HomeView: View {
                 .buttonStyle(.toefly(.primary, block: true))
                 .accessibilityIdentifier("open-today")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home-today")
     }
 
@@ -128,6 +130,7 @@ struct HomeView: View {
                     Text(mock).font(.toeflyCaption).foregroundStyle(Color.toefly.inkMuted)
                 }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("home-week")
         }
     }
@@ -160,6 +163,7 @@ struct HomeView: View {
         Card {
             BandRingInsufficient(detail: "Finish the diagnostic to see your predicted score.")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home-forecast")
     }
 }

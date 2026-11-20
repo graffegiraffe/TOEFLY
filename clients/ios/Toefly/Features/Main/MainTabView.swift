@@ -55,6 +55,7 @@ struct ComingSoonView: View {
             EmptyState(systemImage: tab.symbol, title: title, text: text)
         }
         .navigationTitle(tab.title)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("coming-soon-\(tab.rawValue)")
     }
 
@@ -102,6 +103,7 @@ struct TutorSheet: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("tutor-sheet")
     }
 }
