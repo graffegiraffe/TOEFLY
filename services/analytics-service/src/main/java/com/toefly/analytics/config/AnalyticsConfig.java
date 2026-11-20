@@ -12,10 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
-/** Clock, the executor of rebuilds and the daily maintenance of the journal. */
+/** Clock, the executor of rebuilds, method security of the admin API and the daily maintenance of the journal. */
 @Configuration(proxyBeanMethods = false)
 @EnableScheduling
+@EnableMethodSecurity
 class AnalyticsConfig {
 
     private static final Logger log = LoggerFactory.getLogger(AnalyticsConfig.class);
