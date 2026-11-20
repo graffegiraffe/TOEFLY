@@ -39,7 +39,7 @@ export function PaceTable({ rows }: { rows: TaskTypeTime[] }) {
                     <td>
                       <span
                         className={cn(
-                          'inline-flex rounded-full px-2.5 py-0.5 text-caption font-semibold',
+                          'inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-caption font-semibold',
                           value.kind === 'slower' && 'bg-warning-soft text-warning',
                           value.kind === 'faster' && 'bg-info-soft text-info',
                           value.kind === 'onPace' && 'bg-success-soft text-success',

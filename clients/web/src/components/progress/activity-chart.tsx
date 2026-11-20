@@ -24,7 +24,7 @@ export function ActivityChart({ bars, goalMinutes }: { bars: DayBar[]; goalMinut
           aria-hidden="true"
         />
         <span
-          className="absolute right-0 -translate-y-full pb-0.5 text-caption text-ink-muted"
+          className="absolute right-0 z-10 -translate-y-full rounded bg-surface px-1 pb-0.5 text-caption text-ink-muted"
           style={{ top: goalY }}
           aria-hidden="true"
         >
