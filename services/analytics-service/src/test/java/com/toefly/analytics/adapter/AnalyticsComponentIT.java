@@ -195,10 +195,19 @@ class AnalyticsComponentIT {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofMillis(500))
-                .until(() -> listenerRegistry.getAllListenerContainers().stream()
-                        .filter(MessageListenerContainer::isRunning)
-                        .allMatch(c -> c.getAssignedPartitions() != null
-                                && !c.getAssignedPartitions().isEmpty()));
+                .untilAsserted(() -> assertThat(unassignedListeners())
+                        .as("listener containers without partitions")
+                        .isEmpty());
+    }
+
+    private List<String> unassignedListeners() {
+        return listenerRegistry.getAllListenerContainers().stream()
+                .filter(MessageListenerContainer::isRunning)
+                .filter(c -> c.getAssignedPartitions() == null
+                        || c.getAssignedPartitions().isEmpty())
+                .map(MessageListenerContainer::getListenerId)
+                .sorted()
+                .toList();
     }
 
     @Test
