@@ -16,6 +16,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
       properties:
+        # 17 listeners with retry and dead-letter containers share three groups; the KIP-848 protocol (Kafka 4)
+        # assigns partitions without stopping every member on each join, so the groups settle quickly.
+        group.protocol: consumer
         apicurio.registry.url: ${toefly.events.registry-url}
         apicurio.registry.use-specific-avro-reader: true
         apicurio.registry.fault-tolerant-refresh: true
