@@ -60,6 +60,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -73,10 +74,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -93,9 +98,46 @@ import tools.jackson.databind.json.JsonMapper;
 @Import({
     PostgresTestcontainersConfiguration.class,
     KafkaTestcontainersConfiguration.class,
-    ApicurioTestcontainersConfiguration.class
+    ApicurioTestcontainersConfiguration.class,
+    AnalyticsComponentIT.Topics.class
 })
 class AnalyticsComponentIT {
+
+    /** Every consumed topic of the service. */
+    static final List<String> CONSUMED = List.of(
+            "toefly.profile.profile-created.v1",
+            "toefly.profile.onboarding-completed.v1",
+            "toefly.profile.preferences-updated.v1",
+            "toefly.profile.account-deletion-requested.v1",
+            "toefly.practice.attempt-started.v1",
+            "toefly.practice.attempt-submitted.v1",
+            "toefly.practice.attempt-scored.v1",
+            "toefly.practice.ability-updated.v1",
+            "toefly.practice.time-tracked.v1",
+            "toefly.planning.study-plan-created.v1",
+            "toefly.planning.week-published.v1",
+            "toefly.planning.week-task-completed.v1",
+            "toefly.planning.week-rebalanced.v1",
+            "toefly.planning.week-completed.v1",
+            "toefly.assessment.band-estimate-updated.v1",
+            "toefly.assessment.submission-evaluated.v1",
+            "toefly.ai-gateway.usage-recorded.v1");
+
+    /**
+     * A fresh broker has none of the consumed topics; they are created with their retry and dead-letter topics before
+     * the listeners start, so every container gets its partitions at once instead of after a metadata refresh.
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    static class Topics {
+        @Bean
+        KafkaAdmin.NewTopics consumedTopics() {
+            return new KafkaAdmin.NewTopics(CONSUMED.stream()
+                    .flatMap(topic -> Stream.of(topic, topic + ".retry", topic + ".dlq"))
+                    .map(topic ->
+                            TopicBuilder.name(topic).partitions(3).replicas(1).build())
+                    .toArray(NewTopic[]::new));
+        }
+    }
 
     static final JsonMapper JSON = JsonMapper.builder().build();
     static final Duration WAIT = Duration.ofSeconds(60);
