@@ -55,5 +55,8 @@ class TimeReportTest {
         assertThat(TimeReport.of(List.of(), TODAY.plusDays(1), TODAY.plusDays(3), TODAY, 30)
                         .plannedSeconds())
                 .isZero();
+        assertThat(TimeReport.of(List.of(), TODAY.minusDays(6), TODAY.plusDays(1), TODAY, TODAY, 30)
+                        .plannedSeconds())
+                .isEqualTo(30 * 60);
     }
 }

@@ -37,11 +37,23 @@ public record TimeReport(
         }
     }
 
-    /**
-     * Builds the report of {@code [from, to)}; {@code today} caps the plan, so future days do not count as behind.
-     */
+    /** Builds the report of {@code [from, to)} with the plan counted over all of it. */
     public static TimeReport of(
             List<ActivityDay> days, LocalDate from, LocalDate to, LocalDate today, int minutesPerDay) {
+        return of(days, from, to, from, today, minutesPerDay);
+    }
+
+    /**
+     * Builds the report of {@code [from, to)}; the plan counts the days from {@code planFrom} (no plan before the study
+     * plan started) to {@code today}, so future days do not count as behind.
+     */
+    public static TimeReport of(
+            List<ActivityDay> days,
+            LocalDate from,
+            LocalDate to,
+            LocalDate planFrom,
+            LocalDate today,
+            int minutesPerDay) {
         Map<WeekSection, Integer> bySection = new EnumMap<>(WeekSection.class);
         Map<TaskType, Integer> seconds = new EnumMap<>(TaskType.class);
         Map<TaskType, PaceTally> pace = new EnumMap<>(TaskType.class);
@@ -63,7 +75,7 @@ public record TimeReport(
                 .map(day -> new DayTime(day.date(), day.activeSeconds(), day.secondsBySection(), day.goalMet()))
                 .toList();
         LocalDate planEnd = to.isAfter(today.plusDays(1)) ? today.plusDays(1) : to;
-        long plannedDays = Math.max(0, ChronoUnit.DAYS.between(from, planEnd));
+        long plannedDays = Math.max(0, ChronoUnit.DAYS.between(planFrom.isAfter(from) ? planFrom : from, planEnd));
         return new TimeReport(from, to, total, (int) (plannedDays * minutesPerDay * 60), bySection, byType, byDay);
     }
 }

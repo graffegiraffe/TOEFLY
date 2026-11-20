@@ -177,7 +177,8 @@ class AnalyticsScenarioTest {
         assertThat(report.from()).isEqualTo(TODAY.minusDays(6));
         assertThat(report.to()).isEqualTo(TODAY.plusDays(1));
         assertThat(report.totalSeconds()).isEqualTo(600 + 300 + 522);
-        assertThat(report.plannedSeconds()).isEqualTo(7 * 20 * 60);
+        // AC-16.03.1: the plan counts only the days since the study plan started (DAY1 = today - 4).
+        assertThat(report.plannedSeconds()).isEqualTo(5 * 20 * 60);
         PaceTally pace = report.byTaskType().stream()
                 .filter(t -> t.taskType() == TaskType.READ_ACADEMIC_PASSAGE)
                 .findFirst()
@@ -319,7 +320,13 @@ class AnalyticsScenarioTest {
                 Map.of(Section.WRITING, 5.5),
                 at(DAY1.minusDays(1), 10)));
         events.add(new StudyPlanCreated(
-                user, UUID.randomUUID(), LocalDate.of(2026, 12, 27), 20, "Europe/Minsk", at(DAY1.minusDays(1), 11)));
+                user,
+                UUID.randomUUID(),
+                DAY1,
+                LocalDate.of(2026, 12, 27),
+                20,
+                "Europe/Minsk",
+                at(DAY1.minusDays(1), 11)));
         events.add(new WeekPublished(
                 user,
                 week,

@@ -22,7 +22,8 @@ public record LearnerSettings(
         @Nullable LocalDate examDate,
         @Nullable Double overallTarget,
         Map<Section, Double> sectionTargets,
-        @Nullable Instant goalAsOf) {
+        @Nullable Instant goalAsOf,
+        @Nullable LocalDate planStart) {
 
     /** Daily goal before the learner told us one: the default of the onboarding (AC-02.02.1). */
     public static final int DEFAULT_MINUTES_PER_DAY = 60;
@@ -32,14 +33,16 @@ public record LearnerSettings(
     }
 
     public static LearnerSettings unknown(UUID userId) {
-        return new LearnerSettings(userId, ZoneOffset.UTC, DEFAULT_MINUTES_PER_DAY, null, null, null, Map.of(), null);
+        return new LearnerSettings(
+                userId, ZoneOffset.UTC, DEFAULT_MINUTES_PER_DAY, null, null, null, Map.of(), null, null);
     }
 
     public LearnerSettings schedule(ZoneId zone, int minutes, Instant at) {
         if (scheduleAsOf != null && at.isBefore(scheduleAsOf)) {
             return this;
         }
-        return new LearnerSettings(userId, zone, minutes, at, examDate, overallTarget, sectionTargets, goalAsOf);
+        return new LearnerSettings(
+                userId, zone, minutes, at, examDate, overallTarget, sectionTargets, goalAsOf, planStart);
     }
 
     public LearnerSettings goal(
@@ -47,16 +50,30 @@ public record LearnerSettings(
         if (goalAsOf != null && at.isBefore(goalAsOf)) {
             return this;
         }
-        return new LearnerSettings(userId, timezone, minutesPerDay, scheduleAsOf, exam, overall, sections, at);
+        return new LearnerSettings(
+                userId, timezone, minutesPerDay, scheduleAsOf, exam, overall, sections, at, planStart);
     }
 
-    /** The plan repeats the exam date; it never clears the targets of the onboarding. */
-    public LearnerSettings examDate(@Nullable LocalDate exam, Instant at) {
+    /**
+     * The plan repeats the exam date and starts on {@code start}; it never clears the targets of the onboarding. The
+     * earliest plan start is kept, so the time plan of the learner does not count days before it (AC-16.03.1).
+     */
+    public LearnerSettings plan(@Nullable LocalDate exam, LocalDate start, Instant at) {
+        LocalDate first = planStart == null || start.isBefore(planStart) ? start : planStart;
         if (goalAsOf != null && at.isBefore(goalAsOf)) {
-            return this;
+            return new LearnerSettings(
+                    userId,
+                    timezone,
+                    minutesPerDay,
+                    scheduleAsOf,
+                    examDate,
+                    overallTarget,
+                    sectionTargets,
+                    goalAsOf,
+                    first);
         }
         return new LearnerSettings(
-                userId, timezone, minutesPerDay, scheduleAsOf, exam, overallTarget, sectionTargets, at);
+                userId, timezone, minutesPerDay, scheduleAsOf, exam, overallTarget, sectionTargets, at, first);
     }
 
     /** The learner's calendar day at {@code now}. */

@@ -34,7 +34,7 @@ class LearnerProjection implements Projection {
             case StudyPlanCreated e ->
                 learners.save(load(e.userId())
                         .schedule(zone(e.timezone()), e.minutesPerDay(), e.at())
-                        .examDate(e.examDate(), e.at()));
+                        .plan(e.examDate(), e.startDate(), e.at()));
             default -> {
                 // other events do not change the settings
             }

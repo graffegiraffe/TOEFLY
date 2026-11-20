@@ -24,7 +24,8 @@ CREATE TABLE learner (
     exam_date       date,
     overall_target  numeric(2, 1),
     section_targets jsonb        NOT NULL DEFAULT '{}',
-    goal_as_of      timestamptz
+    goal_as_of      timestamptz,
+    plan_start      date
 );
 
 CREATE TABLE student_dashboard_view (
