@@ -1,0 +1,169 @@
+{
+  "type": "record",
+  "name": "PaymentSucceededV1",
+  "namespace": "com.toefly.events.billing",
+  "doc": "A payment, first or renewal, was confirmed; the receipt data (toefly.billing.payment-succeeded.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier (request or saga); equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "paymentId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Confirmed payment; the receipt number."
+    },
+    {
+      "name": "subscriptionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Subscription the payment is for."
+    },
+    {
+      "name": "planTierCode",
+      "type": {
+        "type": "enum",
+        "name": "PlanTierCode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Plan tier (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "STUDENT_FREE",
+          "STUDENT_PRO",
+          "TUTOR",
+          "TUTOR_PLUS"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Plan tier paid for."
+    },
+    {
+      "name": "provider",
+      "type": {
+        "type": "enum",
+        "name": "PaymentProviderCode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Payment provider (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "STRIPE",
+          "BEPAID",
+          "APP_STORE",
+          "MANUAL"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Provider that charged."
+    },
+    {
+      "name": "amountMinor",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": null,
+      "doc": "Amount in minor units; null for the App Store, whose receipt Apple sends (AC-27.07.2)."
+    },
+    {
+      "name": "currency",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "ISO 4217 currency; null for the App Store."
+    },
+    {
+      "name": "paidAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When the provider confirmed the payment, UTC."
+    },
+    {
+      "name": "periodStart",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Start of the paid period, UTC."
+    },
+    {
+      "name": "periodEnd",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "End of the paid period, UTC."
+    },
+    {
+      "name": "receiptUrl",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "Payment page of the provider."
+    },
+    {
+      "name": "renewal",
+      "type": "boolean",
+      "doc": "Whether the payment renewed an existing subscription."
+    },
+    {
+      "name": "testMode",
+      "type": "boolean",
+      "doc": "Whether the provider ran in test mode: the receipt says Test payment."
+    }
+  ]
+}

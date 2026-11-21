@@ -1,0 +1,142 @@
+{
+  "type": "record",
+  "name": "PaymentFailedV1",
+  "namespace": "com.toefly.events.billing",
+  "doc": "A payment did not go through or a confirmed payment was compensated (toefly.billing.payment-failed.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier (request or saga); equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "paymentId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Failed or refunded payment, if one was recorded."
+    },
+    {
+      "name": "subscriptionId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Subscription the payment was for, if it exists."
+    },
+    {
+      "name": "planTierCode",
+      "type": {
+        "type": "enum",
+        "name": "PlanTierCode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Plan tier (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "STUDENT_FREE",
+          "STUDENT_PRO",
+          "TUTOR",
+          "TUTOR_PLUS"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Plan tier the payment was for."
+    },
+    {
+      "name": "provider",
+      "type": {
+        "type": "enum",
+        "name": "PaymentProviderCode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Payment provider (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "STRIPE",
+          "BEPAID",
+          "APP_STORE",
+          "MANUAL"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Provider that reported the failure."
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "doc": "Machine code: the provider's decline code, or SAGA_COMPENSATED after a refund."
+    },
+    {
+      "name": "message",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "Reason of the provider shown to the user; no card data."
+    },
+    {
+      "name": "graceUntil",
+      "type": [
+        "null",
+        {
+          "type": "long",
+          "logicalType": "timestamp-millis"
+        }
+      ],
+      "default": null,
+      "doc": "Rights stay until this moment for a failed renewal (AC-27.06.1), UTC."
+    }
+  ]
+}

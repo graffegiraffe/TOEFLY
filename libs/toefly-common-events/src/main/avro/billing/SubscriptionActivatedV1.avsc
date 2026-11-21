@@ -1,0 +1,140 @@
+{
+  "type": "record",
+  "name": "SubscriptionActivatedV1",
+  "namespace": "com.toefly.events.billing",
+  "doc": "A subscription became active: a paid plan, a renewal after past due, a trial or a manual grant (toefly.billing.subscription-activated.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier (request or saga); equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "subscriptionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Activated subscription."
+    },
+    {
+      "name": "planTierCode",
+      "type": {
+        "type": "enum",
+        "name": "PlanTierCode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Plan tier (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "STUDENT_FREE",
+          "STUDENT_PRO",
+          "TUTOR",
+          "TUTOR_PLUS"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Plan tier of the subscription."
+    },
+    {
+      "name": "provider",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "PaymentProviderCode",
+          "namespace": "com.toefly.events.common",
+          "doc": "Payment provider (docs/00-README.md section 5.2).",
+          "symbols": [
+            "UNKNOWN",
+            "STRIPE",
+            "BEPAID",
+            "APP_STORE",
+            "MANUAL"
+          ],
+          "default": "UNKNOWN"
+        }
+      ],
+      "default": null,
+      "doc": "Provider that charges the subscription; null for a trial."
+    },
+    {
+      "name": "trial",
+      "type": "boolean",
+      "doc": "Whether this is the 7-day Pro trial (AC-27.02.1)."
+    },
+    {
+      "name": "periodStart",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Start of the current period, UTC."
+    },
+    {
+      "name": "periodEnd",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "End of the current period or of the trial, UTC."
+    },
+    {
+      "name": "seatLimit",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": null,
+      "doc": "Seats of a tutor plan (10 or 30); null for student plans."
+    },
+    {
+      "name": "testMode",
+      "type": "boolean",
+      "default": true,
+      "doc": "Whether the provider ran in test mode (no real charges)."
+    }
+  ]
+}
