@@ -1,0 +1,94 @@
+{
+ "id": "e0a27020-7cbc-5634-8fb0-b388c147d8e3",
+ "taskType": "READ_DAILY_LIFE",
+ "section": "READING",
+ "etsNormSeconds": 120,
+ "payload": {
+  "stimulus": {
+   "genre": "EMAIL",
+   "title": "New gym hours",
+   "headers": {
+    "From": "Campus Fitness Center",
+    "To": "All students",
+    "Subject": "New gym hours"
+   },
+   "body": "Starting Monday, the campus gym will open at 6 am instead of 7 am.\nThe pool stays closed until the end of the month for repairs.\nBring your student card: you need it to enter."
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "What changes on Monday?",
+    "options": [
+     {
+      "key": "A",
+      "text": "The gym opens earlier",
+      "rationale": "A is right: 6 am is earlier than 7 am."
+     },
+     {
+      "key": "B",
+      "text": "The pool reopens",
+      "rationale": "B is wrong: the pool stays closed."
+     },
+     {
+      "key": "C",
+      "text": "The gym closes later",
+      "rationale": "C is wrong: the closing time is not mentioned."
+     },
+     {
+      "key": "D",
+      "text": "Student cards are replaced",
+      "rationale": "D is wrong: the card is only needed to enter."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The email says the gym will open at 6 am instead of 7 am."
+    }
+   },
+   {
+    "ordinal": 2,
+    "prompt": "Why is the pool closed?",
+    "options": [
+     {
+      "key": "A",
+      "text": "It is too cold",
+      "rationale": "A is wrong: the weather is not mentioned."
+     },
+     {
+      "key": "B",
+      "text": "It is being repaired",
+      "rationale": "B is right: “closed … for repairs”."
+     },
+     {
+      "key": "C",
+      "text": "It is reserved for a team",
+      "rationale": "C is wrong: no team is mentioned."
+     },
+     {
+      "key": "D",
+      "text": "It opens only on weekends",
+      "rationale": "D is wrong: weekends are not mentioned."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The email says the pool is closed for repairs."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}

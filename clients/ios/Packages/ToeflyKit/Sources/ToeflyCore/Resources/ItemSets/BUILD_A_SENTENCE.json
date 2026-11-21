@@ -1,0 +1,188 @@
+{
+ "id": "62a98f16-94bc-56df-b46f-fa0456885f2d",
+ "taskType": "BUILD_A_SENTENCE",
+ "section": "WRITING",
+ "etsNormSeconds": 108,
+ "payload": {
+  "stimulus": {},
+  "items": [
+   {
+    "ordinal": 1,
+    "contextLine": "Did you finish the report for Professor Lee?",
+    "template": [
+     {
+      "kind": "FIXED",
+      "text": "I"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s1"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s2"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s3"
+     },
+     {
+      "kind": "FIXED",
+      "text": "it yet."
+     }
+    ],
+    "chunks": [
+     {
+      "id": "c1",
+      "text": "finished"
+     },
+     {
+      "id": "c2",
+      "text": "have"
+     },
+     {
+      "id": "c3",
+      "text": "not"
+     },
+     {
+      "id": "c4",
+      "text": "already"
+     }
+    ],
+    "answerKey": [
+     "c2",
+     "c3",
+     "c1"
+    ],
+    "acceptedKeys": [],
+    "distractorChunkId": "c4",
+    "sentence": "I have not finished it yet.",
+    "explanation": {
+     "summary": "Negative present perfect: have + not + past participle."
+    }
+   },
+   {
+    "ordinal": 2,
+    "contextLine": "Where can I find the printer?",
+    "template": [
+     {
+      "kind": "SLOT",
+      "slotId": "s1"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s2"
+     },
+     {
+      "kind": "FIXED",
+      "text": "next to the library entrance."
+     }
+    ],
+    "chunks": [
+     {
+      "id": "c1",
+      "text": "It is"
+     },
+     {
+      "id": "c2",
+      "text": "right"
+     },
+     {
+      "id": "c3",
+      "text": "they are"
+     }
+    ],
+    "answerKey": [
+     "c1",
+     "c2"
+    ],
+    "acceptedKeys": [],
+    "distractorChunkId": "c3",
+    "sentence": "It is right next to the library entrance.",
+    "explanation": {
+     "summary": "One printer takes “it is”; “right” strengthens the place."
+    }
+   },
+   {
+    "ordinal": 3,
+    "contextLine": "Why were you late this morning?",
+    "template": [
+     {
+      "kind": "FIXED",
+      "text": "The bus"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s1"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s2"
+     },
+     {
+      "kind": "SLOT",
+      "slotId": "s3"
+     },
+     {
+      "kind": "FIXED",
+      "text": "in traffic."
+     }
+    ],
+    "chunks": [
+     {
+      "id": "c1",
+      "text": "stuck"
+     },
+     {
+      "id": "c2",
+      "text": "got"
+     },
+     {
+      "id": "c3",
+      "text": "for an hour"
+     },
+     {
+      "id": "c4",
+      "text": "has"
+     }
+    ],
+    "answerKey": [
+     "c2",
+     "c1",
+     "c3"
+    ],
+    "acceptedKeys": [],
+    "distractorChunkId": "c4",
+    "sentence": "The bus got stuck for an hour in traffic.",
+    "explanation": {
+     "summary": "Past simple “got stuck” for a finished event."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "SEQUENCE",
+   "fragmentIds": [
+    "c2",
+    "c3",
+    "c1"
+   ]
+  },
+  {
+   "type": "SEQUENCE",
+   "fragmentIds": [
+    "c1",
+    "c2"
+   ]
+  },
+  {
+   "type": "SEQUENCE",
+   "fragmentIds": [
+    "c2",
+    "c1",
+    "c3"
+   ]
+  }
+ ]
+}
