@@ -1,0 +1,15 @@
+# practice-service client (docs/05-api-contracts.md §1.2): only the operations the iOS client calls.
+generate: [types, client]
+accessModifier: public
+namingStrategy: idiomatic
+additionalFileComments: ["swiftlint:disable all"]
+filter:
+  operations:
+    - startAttempt
+    - listAttempts
+    - getAttempt
+    - recordAnswer
+    - clearAnswer
+    - sendAttemptHeartbeat
+    - submitAttempt
+    - getAttemptReview
