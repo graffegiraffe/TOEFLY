@@ -4,4 +4,4 @@ accessModifier: public
 namingStrategy: idiomatic
 additionalFileComments: ["swiftlint:disable all"]
 filter:
-  operations: [getCurrentStudyPlan, listCurrentPlanWeeks, getToday]
+  operations: [getCurrentStudyPlan, listCurrentPlanWeeks, getWeek, getToday]
