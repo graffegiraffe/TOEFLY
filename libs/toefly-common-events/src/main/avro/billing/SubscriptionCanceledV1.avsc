@@ -1,0 +1,135 @@
+{
+  "type": "record",
+  "name": "SubscriptionCanceledV1",
+  "namespace": "com.toefly.events.billing",
+  "doc": "A subscription ended: the paid period or trial is over, payment failed past grace, or a saga compensated (toefly.billing.subscription-canceled.v1).",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier (request or saga); equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "subscriptionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Ended subscription."
+    },
+    {
+      "name": "planTierCode",
+      "type": {
+        "type": "enum",
+        "name": "PlanTierCode",
+        "namespace": "com.toefly.events.common",
+        "doc": "Plan tier (docs/00-README.md section 5.2).",
+        "symbols": [
+          "UNKNOWN",
+          "STUDENT_FREE",
+          "STUDENT_PRO",
+          "TUTOR",
+          "TUTOR_PLUS"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Plan tier of the subscription."
+    },
+    {
+      "name": "provider",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "PaymentProviderCode",
+          "namespace": "com.toefly.events.common",
+          "doc": "Payment provider (docs/00-README.md section 5.2).",
+          "symbols": [
+            "UNKNOWN",
+            "STRIPE",
+            "BEPAID",
+            "APP_STORE",
+            "MANUAL"
+          ],
+          "default": "UNKNOWN"
+        }
+      ],
+      "default": null,
+      "doc": "Provider of the subscription; null for a trial."
+    },
+    {
+      "name": "reason",
+      "type": {
+        "type": "enum",
+        "name": "SubscriptionEndReason",
+        "namespace": "com.toefly.events.billing",
+        "doc": "Why the subscription ended.",
+        "symbols": [
+          "UNKNOWN",
+          "USER_CANCELED",
+          "TRIAL_EXPIRED",
+          "PAYMENT_FAILED",
+          "PROVIDER_CANCELED",
+          "REFUNDED",
+          "SAGA_COMPENSATED",
+          "ACCOUNT_DELETED",
+          "GRANT_ENDED",
+          "PERIOD_ENDED"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Why the subscription ended."
+    },
+    {
+      "name": "endedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When access from the subscription stopped, UTC."
+    }
+  ]
+}
