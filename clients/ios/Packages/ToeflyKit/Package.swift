@@ -29,14 +29,22 @@ let package = Package(
             plugins: [.plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")],
         ),
         .target(
+            name: "PracticeAPI",
+            dependencies: [.product(name: "OpenAPIRuntime", package: "swift-openapi-runtime")],
+            plugins: [.plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")],
+        ),
+        .target(
             name: "ToeflyCore",
             dependencies: [
                 "ProfileAPI",
                 "PlanningAPI",
+                "PracticeAPI",
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
                 .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
                 .product(name: "HTTPTypes", package: "swift-http-types"),
             ],
+            // Item sets and audio of the in-memory backend (`-fixtures`): our own texts and TTS made with `say`.
+            resources: [.copy("Resources/ItemSets"), .copy("Resources/Audio")],
         ),
         .target(name: "ToeflyFeatures", dependencies: ["ToeflyCore"]),
         .testTarget(

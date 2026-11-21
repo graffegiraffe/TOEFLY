@@ -12,6 +12,8 @@ public enum FixtureScenario: String, Sendable, CaseIterable {
     case onboarded
     /// Week 3 of the plan with tasks for today (US-05.02).
     case withPlan = "with-plan"
+    /// Week 3 with a task of yesterday still open: Today shows the Overdue group (AC-04.04.1).
+    case behind
 }
 
 /// The profile-service and planning-service operations the app calls, answered from memory through the generated
@@ -21,10 +23,16 @@ public actor FixtureBackend {
     private var onboarding: [String: Any]
     private var consents: [String: Bool] = [:]
     private var hasPlan: Bool
+    private var study: FixtureStudy
     public private(set) var savedRequests: [String] = []
 
+    /// Heartbeats the time tracker sent, in order (AC-16.01.1).
+    public var heartbeats: [(state: String, delta: Int)] {
+        study.heartbeats
+    }
+
     public init(scenario: FixtureScenario) {
-        let completed = scenario == .onboarded || scenario == .withPlan
+        let completed = scenario != .newStudent && scenario != .midOnboarding
         profile = [
             "id": Self.userId,
             "email": "maria.petrova@example.com",
@@ -42,7 +50,8 @@ public actor FixtureBackend {
             "timezone": "Europe/Minsk",
             "explanationLanguage": "en",
         ]
-        hasPlan = scenario == .withPlan
+        hasPlan = scenario == .withPlan || scenario == .behind
+        study = FixtureStudy(behind: scenario == .behind)
         if scenario == .midOnboarding {
             onboarding["status"] = "IN_PROGRESS"
             onboarding["overallTarget"] = 5.0
@@ -65,8 +74,18 @@ public actor FixtureBackend {
         return (status, json.flatMap { try? JSONSerialization.data(withJSONObject: $0) })
     }
 
-    private func respond(operationID: String, path: String, body: Data?) -> (Int, Any?) {
+    private func respond(operationID: String, path fullPath: String, body: Data?) -> (Int, Any?) {
         let json = body.flatMap { try? JSONSerialization.jsonObject(with: $0) } as? [String: Any] ?? [:]
+        let components = URLComponents(string: fullPath)
+        let path = components?.path ?? fullPath
+        let parts = path.split(separator: "/").map(String.init)
+        var query: [String: String] = [:]
+        for item in components?.queryItems ?? [] {
+            query[item.name] = item.value
+        }
+        if let response = respondStudy(operationID: operationID, parts: parts, query: query, json: json) {
+            return response
+        }
         switch operationID {
         case "getMe":
             return (200, profile)
@@ -87,11 +106,47 @@ public actor FixtureBackend {
             return studyGoal()
         case "getCurrentStudyPlan", "listCurrentPlanWeeks":
             guard hasPlan else { return (404, problem(404, "No study plan yet")) }
-            return operationID == "getCurrentStudyPlan" ? (200, Self.plan) : (200, ["items": (1 ... 8).map(Self.week)])
+            return operationID == "getCurrentStudyPlan" ? (200, Self.plan) : (200, ["items": (1 ... 8).map(week)])
         case "getToday":
             return (200, today())
         default:
             return (404, problem(404, "No fixture for \(operationID)"))
+        }
+    }
+
+    /// planning-service weeks and practice-service attempts (phase 12b).
+    private func respondStudy(
+        operationID: String,
+        parts: [String],
+        query: [String: String],
+        json: [String: Any],
+    ) -> (Int, Any?)? {
+        // /api/v1/attempts/{attemptId}/answers/{itemId}
+        let attemptId = parts.firstIndex(of: "attempts")
+            .flatMap { parts.indices.contains($0 + 1) ? parts[$0 + 1] : nil }
+        let itemId = parts.last ?? ""
+        switch operationID {
+        case "getWeek":
+            guard hasPlan, parts.last == FixtureStudy.weekId else { return (404, problem(404, "Week not found")) }
+            return (200, study.week())
+        case "startAttempt":
+            return study.startAttempt(json)
+        case "listAttempts":
+            return study.listAttempts(query: query)
+        case "getAttempt":
+            return study.attempt(attemptId ?? "")
+        case "recordAnswer":
+            return study.recordAnswer(attemptId: attemptId ?? "", itemId: itemId, body: json)
+        case "clearAnswer":
+            return study.clearAnswer(attemptId: attemptId ?? "", itemId: itemId)
+        case "sendAttemptHeartbeat":
+            return study.heartbeat(attemptId: attemptId ?? "", body: json)
+        case "submitAttempt":
+            return study.submit(attemptId: attemptId ?? "", body: json)
+        case "getAttemptReview":
+            return study.review(attemptId ?? "")
+        default:
+            return nil
         }
     }
 
@@ -125,13 +180,18 @@ public actor FixtureBackend {
         ])
     }
 
-    private static func week(_ number: Int) -> [String: Any] {
+    private func week(_ number: Int) -> [String: Any] {
         let status: String = number < 3 ? "COMPLETED" : (number == 3 ? "IN_PROGRESS" : "DRAFT")
-        let progress: Int = number < 3 ? 100 : (number == 3 ? 42 : 0)
+        let progress: Double = number < 3 ? (number == 1 ? 100 : 86) : (number == 3 ? study.progressPercent : 0)
         var week: [String: Any] = ["weekNo": number, "status": status, "progressPercent": progress]
         week["weekId"] = String(format: "0193a5b0-7c1e-7a10-9d2e-6f4b8c1a3%03d", number)
-        week["startDate"] = "2026-11-02"
-        week["endDate"] = "2026-11-08"
+        let start = Calendar(identifier: .gregorian).date(
+            byAdding: .day,
+            value: (number - 1) * 7,
+            to: LocalDateFormat.date(from: "2026-11-02", timeZone: .gmt) ?? Date(),
+        ) ?? Date()
+        week["startDate"] = LocalDateFormat.string(from: start, timeZone: .gmt)
+        week["endDate"] = LocalDateFormat.string(from: start.addingTimeInterval(6 * 86400), timeZone: .gmt)
         week["mockExam"] = number == 4 || number == 8
         return week
     }
@@ -195,34 +255,7 @@ public actor FixtureBackend {
                 "doneMinutes": 0,
             ]
         }
-        let tasks = [
-            FixtureTask(title: "Complete the Words: Coral reefs", section: "READING", status: "DONE", minutes: 3),
-            FixtureTask(title: "Academic talk: Biology", section: "LISTENING", status: "IN_PROGRESS", minutes: 6),
-            FixtureTask(title: "Take an interview: Remote work", section: "SPEAKING", status: "PENDING", minutes: 5),
-            FixtureTask(title: "Email: Missing a Meeting", section: "WRITING", status: "PENDING", minutes: 10),
-        ]
-        let entries = tasks.enumerated().map { index, task -> [String: Any] in
-            var entry: [String: Any] = ["title": task.title, "section": task.section, "status": task.status]
-            entry["taskId"] = "0193a5b0-7c1e-7a10-9d2e-6f4b8c1a400\(index + 1)"
-            entry["weekId"] = "0193a5b0-7c1e-7a10-9d2e-6f4b8c1a3003"
-            entry["kind"] = "ITEM_SET"
-            entry["dayIndex"] = 4
-            entry["ordinal"] = index + 1
-            entry["estimatedMinutes"] = task.minutes
-            return ["task": entry]
-        }
-        return [
-            "date": "2026-11-19",
-            "weekId": "0193a5b0-7c1e-7a10-9d2e-6f4b8c1a3003",
-            "weekNo": 3,
-            "dayIndex": 4,
-            "overdue": [Any](),
-            "today": entries,
-            "vocabularyReview": ["dueCount": 12],
-            "waitingForTutor": false,
-            "estimatedMinutes": 24,
-            "doneMinutes": 9,
-        ]
+        return study.today()
     }
 
     private func problem(_ status: Int, _ title: String) -> [String: Any] {
@@ -234,13 +267,6 @@ public actor FixtureBackend {
             "traceId": "fixture-trace",
         ]
     }
-}
-
-private struct FixtureTask {
-    let title: String
-    let section: String
-    let status: String
-    let minutes: Int
 }
 
 /// `ClientTransport` over `FixtureBackend`; the generated clients cannot tell it from `URLSessionTransport`.

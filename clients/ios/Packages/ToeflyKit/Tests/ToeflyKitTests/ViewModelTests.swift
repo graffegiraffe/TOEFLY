@@ -288,7 +288,7 @@ struct HomeViewModelTests {
         #expect(model.goalMinutes?.done == 9)
         #expect(model.goalMinutes?.goal == 45)
         #expect(model.weekTitle == "Week 3 progress")
-        #expect(model.week?.progressPercent == 42)
+        #expect(model.week?.progressPercent == 46.6)
         #expect(model.nextMockExamText == nil)
     }
 
@@ -324,6 +324,7 @@ struct AppModelTests {
             session: session,
             profiles: profiles,
             planning: planning,
+            practice: fixture.practice,
             now: { testNow },
         )
     }
@@ -418,6 +419,7 @@ struct AppModelTests {
             session: FakeSession(restoreResult: true),
             profiles: FailingProfiles(error: .offline),
             planning: planning,
+            practice: fixture.practice,
         )
         await app.start()
         #expect(app.phase == .signedOut)
@@ -427,6 +429,7 @@ struct AppModelTests {
             session: FakeSession(restoreResult: true),
             profiles: FailingProfiles(error: .sessionExpired),
             planning: planning,
+            practice: fixture.practice,
         )
         await expired.start()
         #expect(expired.phase == .signedOut)

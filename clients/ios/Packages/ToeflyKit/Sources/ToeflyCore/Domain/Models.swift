@@ -61,36 +61,6 @@ public enum ConsentType: String, Sendable, Equatable {
     case marketingEmails = "MARKETING_EMAILS"
 }
 
-/// Canonical `WeekSection` (docs/00-README.md); unknown values from newer servers map to `.unknown` (05 §2.1).
-public enum WeekSection: String, Sendable, Equatable, CaseIterable {
-    case reading = "READING", listening = "LISTENING", writing = "WRITING", speaking = "SPEAKING"
-    case vocabulary = "VOCABULARY", grammar = "GRAMMAR", resources = "RESOURCES"
-
-    public var label: String {
-        rawValue.capitalized
-    }
-}
-
-public enum WeekTaskStatus: String, Sendable, Equatable {
-    case pending = "PENDING", inProgress = "IN_PROGRESS", done = "DONE", skipped = "SKIPPED"
-}
-
-public struct TaskSummary: Sendable, Equatable, Identifiable {
-    public var id: UUID
-    public var title: String
-    public var section: WeekSection
-    public var status: WeekTaskStatus
-    public var estimatedMinutes: Int
-
-    public init(id: UUID, title: String, section: WeekSection, status: WeekTaskStatus, estimatedMinutes: Int) {
-        self.id = id
-        self.title = title
-        self.section = section
-        self.status = status
-        self.estimatedMinutes = estimatedMinutes
-    }
-}
-
 public struct StudyPlanSummary: Sendable, Equatable {
     public var weeksCount: Int
     public var currentWeekNo: Int?
@@ -114,41 +84,5 @@ public struct WeekProgress: Sendable, Equatable {
         self.weekNo = weekNo
         self.progressPercent = progressPercent
         self.mockExam = mockExam
-    }
-}
-
-public struct TodaySummary: Sendable, Equatable {
-    public var weekNo: Int?
-    public var dayIndex: Int?
-    public var overdue: [TaskSummary]
-    public var today: [TaskSummary]
-    public var vocabularyDue: Int
-    public var waitingForTutor: Bool
-    public var estimatedMinutes: Int
-    public var doneMinutes: Int
-
-    public init(
-        weekNo: Int?,
-        dayIndex: Int?,
-        overdue: [TaskSummary],
-        today: [TaskSummary],
-        vocabularyDue: Int,
-        waitingForTutor: Bool,
-        estimatedMinutes: Int,
-        doneMinutes: Int,
-    ) {
-        self.weekNo = weekNo
-        self.dayIndex = dayIndex
-        self.overdue = overdue
-        self.today = today
-        self.vocabularyDue = vocabularyDue
-        self.waitingForTutor = waitingForTutor
-        self.estimatedMinutes = estimatedMinutes
-        self.doneMinutes = doneMinutes
-    }
-
-    /// Overdue tasks first, then the tasks of the day (AC-05.01.1).
-    public var orderedTasks: [TaskSummary] {
-        overdue + today
     }
 }

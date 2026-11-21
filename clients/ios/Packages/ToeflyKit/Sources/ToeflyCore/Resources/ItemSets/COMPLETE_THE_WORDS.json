@@ -1,0 +1,176 @@
+{
+ "id": "2975da49-a484-5e1f-8b99-ab4c52d78fab",
+ "taskType": "COMPLETE_THE_WORDS",
+ "section": "READING",
+ "etsNormSeconds": 180,
+ "payload": {
+  "stimulus": {
+   "title": "Coral reefs",
+   "markup": "Coral reefs cover less than one percent of the ocean floor. Yet th{ey} sup{port} about a quar{ter} of al{l} known mar{ine} spe{cies}. Each re{ef} is bu{ilt} by tiny ani{mals} that live tog{ether} in huge colonies. Warmer water and pollution now threaten many reefs around the world."
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "gapId": "g1",
+    "prefix": "th",
+    "suffix": "ey",
+    "fullWord": "they",
+    "answerKey": "th{ey}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“they” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 2,
+    "gapId": "g2",
+    "prefix": "sup",
+    "suffix": "port",
+    "fullWord": "support",
+    "answerKey": "sup{port}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“support” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 3,
+    "gapId": "g3",
+    "prefix": "quar",
+    "suffix": "ter",
+    "fullWord": "quarter",
+    "answerKey": "quar{ter}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“quarter” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 4,
+    "gapId": "g4",
+    "prefix": "al",
+    "suffix": "l",
+    "fullWord": "all",
+    "answerKey": "al{l}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“all” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 5,
+    "gapId": "g5",
+    "prefix": "mar",
+    "suffix": "ine",
+    "fullWord": "marine",
+    "answerKey": "mar{ine}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“marine” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 6,
+    "gapId": "g6",
+    "prefix": "spe",
+    "suffix": "cies",
+    "fullWord": "species",
+    "answerKey": "spe{cies}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“species” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 7,
+    "gapId": "g7",
+    "prefix": "re",
+    "suffix": "ef",
+    "fullWord": "reef",
+    "answerKey": "re{ef}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“reef” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 8,
+    "gapId": "g8",
+    "prefix": "bu",
+    "suffix": "ilt",
+    "fullWord": "built",
+    "answerKey": "bu{ilt}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“built” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 9,
+    "gapId": "g9",
+    "prefix": "ani",
+    "suffix": "mals",
+    "fullWord": "animals",
+    "answerKey": "ani{mals}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“animals” completes the sentence."
+    }
+   },
+   {
+    "ordinal": 10,
+    "gapId": "g10",
+    "prefix": "tog",
+    "suffix": "ether",
+    "fullWord": "together",
+    "answerKey": "tog{ether}",
+    "acceptedAnswers": [],
+    "explanation": {
+     "summary": "“together” completes the sentence."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "TEXT",
+   "text": "ey"
+  },
+  {
+   "type": "TEXT",
+   "text": "port"
+  },
+  {
+   "type": "TEXT",
+   "text": "ter"
+  },
+  {
+   "type": "TEXT",
+   "text": "l"
+  },
+  {
+   "type": "TEXT",
+   "text": "ine"
+  },
+  {
+   "type": "TEXT",
+   "text": "cies"
+  },
+  {
+   "type": "TEXT",
+   "text": "ef"
+  },
+  {
+   "type": "TEXT",
+   "text": "ilt"
+  },
+  {
+   "type": "TEXT",
+   "text": "mals"
+  },
+  {
+   "type": "TEXT",
+   "text": "ether"
+  }
+ ]
+}

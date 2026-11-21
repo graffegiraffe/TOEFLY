@@ -31,6 +31,7 @@ struct StaticTokens: AccessTokenProviding {
 struct FixtureRepositories {
     let profiles: LiveProfileRepository
     let planning: LivePlanningRepository
+    let practice: LivePracticeRepository
     let backend: FixtureBackend
 }
 
@@ -45,6 +46,7 @@ func fixtureRepositories(_ scenario: FixtureScenario) -> FixtureRepositories {
     return FixtureRepositories(
         profiles: LiveProfileRepository(client: clients.profile, timeZone: zone),
         planning: LivePlanningRepository(client: clients.planning, timeZone: zone),
+        practice: LivePracticeRepository(client: clients.practice, timeZone: zone),
         backend: backend,
     )
 }

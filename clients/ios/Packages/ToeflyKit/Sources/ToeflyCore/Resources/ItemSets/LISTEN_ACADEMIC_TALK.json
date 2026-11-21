@@ -1,0 +1,140 @@
+{
+ "id": "ed9ba708-c1f5-5b72-9465-5836bfacd6b8",
+ "taskType": "LISTEN_ACADEMIC_TALK",
+ "section": "LISTENING",
+ "etsNormSeconds": 120,
+ "payload": {
+  "stimulus": {
+   "contextLine": "Listen to part of a talk in a biology class.",
+   "audio": {
+    "url": "bundle:talk-biology.m4a",
+    "durationSeconds": 14,
+    "origin": "TTS"
+   },
+   "speakers": [
+    {
+     "id": "s1",
+     "role": "Professor"
+    }
+   ],
+   "transcript": [
+    {
+     "speaker": "Professor",
+     "text": "Today we look at mitochondria. You probably know them as the power plants of the cell. But they have a second job: they help remove damaged cells. When a cell is badly damaged, mitochondria send signals that start its breakdown."
+    }
+   ]
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "What is the talk mainly about?",
+    "options": [
+     {
+      "key": "A",
+      "text": "How cells divide",
+      "rationale": "A is wrong: cell division is not discussed."
+     },
+     {
+      "key": "B",
+      "text": "Two jobs of mitochondria",
+      "rationale": "B is right: energy and removing damaged cells."
+     },
+     {
+      "key": "C",
+      "text": "Why cells need sugar",
+      "rationale": "C is wrong: sugar is not mentioned."
+     },
+     {
+      "key": "D",
+      "text": "How plants make energy",
+      "rationale": "D is wrong: the talk is about cells, not plants."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The professor describes the power-plant role and a second job of mitochondria."
+    }
+   },
+   {
+    "ordinal": 2,
+    "prompt": "What is the professor’s point about mitochondria?",
+    "options": [
+     {
+      "key": "A",
+      "text": "They produce energy faster than any other part",
+      "rationale": "A is wrong: speed is not compared."
+     },
+     {
+      "key": "B",
+      "text": "They also help remove damaged cells",
+      "rationale": "B is right: the second job."
+     },
+     {
+      "key": "C",
+      "text": "They are found only in animals",
+      "rationale": "C is wrong: animals are not mentioned."
+     },
+     {
+      "key": "D",
+      "text": "They protect cells from heat",
+      "rationale": "D is wrong: heat is not mentioned."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "“They have a second job: they help remove damaged cells.”"
+    }
+   },
+   {
+    "ordinal": 3,
+    "prompt": "What happens when a cell is badly damaged?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Mitochondria repair it",
+      "rationale": "A is wrong: they do not repair it."
+     },
+     {
+      "key": "B",
+      "text": "Mitochondria signal its breakdown",
+      "rationale": "B is right: they start its breakdown."
+     },
+     {
+      "key": "C",
+      "text": "The cell makes more energy",
+      "rationale": "C is wrong: energy is not mentioned here."
+     },
+     {
+      "key": "D",
+      "text": "The cell divides",
+      "rationale": "D is wrong: division is not mentioned."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "Mitochondria send signals that start the breakdown of the cell."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,104 @@
+{
+ "id": "9c87bda3-218c-5b47-bded-30aa4a2b69c7",
+ "taskType": "LISTEN_ANNOUNCEMENT",
+ "section": "LISTENING",
+ "etsNormSeconds": 80,
+ "payload": {
+  "stimulus": {
+   "contextLine": "Listen to an announcement in a biology class.",
+   "audio": {
+    "url": "bundle:announcement-lab.m4a",
+    "durationSeconds": 7,
+    "origin": "TTS"
+   },
+   "speakers": [
+    {
+     "id": "s1",
+     "role": "Instructor"
+    }
+   ],
+   "transcript": [
+    {
+     "speaker": "Instructor",
+     "text": "Attention, biology students. Tomorrow’s lab moves to room two hundred four. Please bring your lab coats and safety glasses."
+    }
+   ]
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "What is the announcement about?",
+    "options": [
+     {
+      "key": "A",
+      "text": "A new lab room",
+      "rationale": "A is right: the lab moves."
+     },
+     {
+      "key": "B",
+      "text": "A cancelled lab",
+      "rationale": "B is wrong: it is not cancelled."
+     },
+     {
+      "key": "C",
+      "text": "A new teacher",
+      "rationale": "C is wrong: no teacher is mentioned."
+     },
+     {
+      "key": "D",
+      "text": "An exam date",
+      "rationale": "D is wrong: no exam is mentioned."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The lab moves to room 204."
+    }
+   },
+   {
+    "ordinal": 2,
+    "prompt": "What should students bring?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Their textbooks",
+      "rationale": "A is wrong: textbooks are not mentioned."
+     },
+     {
+      "key": "B",
+      "text": "Lab coats and safety glasses",
+      "rationale": "B is right."
+     },
+     {
+      "key": "C",
+      "text": "A laptop",
+      "rationale": "C is wrong: laptops are not mentioned."
+     },
+     {
+      "key": "D",
+      "text": "Nothing",
+      "rationale": "D is wrong: they must bring coats and glasses."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "“Bring your lab coats and safety glasses.”"
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}

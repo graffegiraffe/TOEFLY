@@ -1,0 +1,199 @@
+{
+ "id": "7f7df183-e98e-5156-aa8c-b1e718cee34e",
+ "taskType": "READ_ACADEMIC_PASSAGE",
+ "section": "READING",
+ "etsNormSeconds": 360,
+ "payload": {
+  "stimulus": {
+   "title": "Urban heat islands",
+   "paragraphs": [
+    "Cities are often several degrees warmer than the countryside around them. Scientists call this effect an urban heat island. Dark roofs and roads absorb sunlight during the day and release the heat slowly at night.",
+    "Trees reduce the effect in two ways. Their shade keeps surfaces cool, and the water that evaporates from their leaves cools the air. For this reason, many cities now plant trees along busy streets.",
+    "Light-colored roofs offer another solution. They reflect most of the sunlight that reaches them. In some neighborhoods, painting roofs white has lowered indoor temperatures by several degrees."
+   ]
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "According to paragraph 1, why are cities warmer at night?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Roads and roofs release stored heat",
+      "rationale": "A is right: the heat stored by day is released at night."
+     },
+     {
+      "key": "B",
+      "text": "Cities receive more sunlight",
+      "rationale": "B is wrong: the amount of sunlight is not compared."
+     },
+     {
+      "key": "C",
+      "text": "There is less wind in cities",
+      "rationale": "C is wrong: wind is not mentioned."
+     },
+     {
+      "key": "D",
+      "text": "People use more heating",
+      "rationale": "D is wrong: heating is not mentioned."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "Dark surfaces absorb sunlight during the day and release the heat slowly at night."
+    },
+    "subskill": "FACTUAL"
+   },
+   {
+    "ordinal": 2,
+    "prompt": "The word “absorb” in paragraph 1 is closest in meaning to",
+    "options": [
+     {
+      "key": "A",
+      "text": "reflect",
+      "rationale": "A is wrong: reflecting is the opposite."
+     },
+     {
+      "key": "B",
+      "text": "take in",
+      "rationale": "B is right: absorb means take in."
+     },
+     {
+      "key": "C",
+      "text": "block",
+      "rationale": "C is wrong: blocking stops light without storing it."
+     },
+     {
+      "key": "D",
+      "text": "produce",
+      "rationale": "D is wrong: roofs do not produce sunlight."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "To absorb sunlight is to take it in."
+    },
+    "subskill": "VOCABULARY",
+    "targetWord": {
+     "paragraph": 0,
+     "charStart": 145,
+     "charEnd": 151,
+     "text": "absorb"
+    }
+   },
+   {
+    "ordinal": 3,
+    "prompt": "Why does the author mention white roofs?",
+    "options": [
+     {
+      "key": "A",
+      "text": "To give another way to cool cities",
+      "rationale": "A is right: “another solution”."
+     },
+     {
+      "key": "B",
+      "text": "To criticize dark roads",
+      "rationale": "B is wrong: roads are not criticized there."
+     },
+     {
+      "key": "C",
+      "text": "To explain why trees grow slowly",
+      "rationale": "C is wrong: tree growth is not discussed."
+     },
+     {
+      "key": "D",
+      "text": "To describe old buildings",
+      "rationale": "D is wrong: the age of buildings is not mentioned."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "Paragraph 3 presents light-colored roofs as another solution."
+    },
+    "subskill": "RHETORICAL_PURPOSE"
+   },
+   {
+    "ordinal": 4,
+    "prompt": "Where would the sentence best fit?",
+    "subskill": "INSERT_SENTENCE",
+    "insertion": {
+     "sentence": "A single large tree can cool the air like several air conditioners.",
+     "markers": [
+      {
+       "key": "A",
+       "paragraph": 1,
+       "afterSentence": 0
+      },
+      {
+       "key": "B",
+       "paragraph": 1,
+       "afterSentence": 1
+      },
+      {
+       "key": "C",
+       "paragraph": 1,
+       "afterSentence": 2
+      },
+      {
+       "key": "D",
+       "paragraph": 2,
+       "afterSentence": 0
+      }
+     ]
+    },
+    "options": [
+     {
+      "key": "A",
+      "text": "Position A",
+      "rationale": "A is wrong: the cooling has not been described yet."
+     },
+     {
+      "key": "B",
+      "text": "Position B",
+      "rationale": "B is right: it follows the sentence about evaporation cooling the air."
+     },
+     {
+      "key": "C",
+      "text": "Position C",
+      "rationale": "C is wrong: it would break the link between cooling and planting trees."
+     },
+     {
+      "key": "D",
+      "text": "Position D",
+      "rationale": "D is wrong: paragraph 3 is about roofs."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The sentence gives an example of the cooling described just before it."
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}

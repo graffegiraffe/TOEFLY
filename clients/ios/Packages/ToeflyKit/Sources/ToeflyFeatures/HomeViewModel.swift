@@ -56,7 +56,7 @@ public final class HomeViewModel {
     }
 
     /// The first three tasks, overdue ones first (AC-05.02.1).
-    public var topTasks: [TaskSummary] {
+    public var topTasks: [WeekTask] {
         Array(today?.orderedTasks.prefix(3) ?? [])
     }
 

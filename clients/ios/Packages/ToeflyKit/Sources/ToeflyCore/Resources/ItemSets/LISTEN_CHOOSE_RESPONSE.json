@@ -1,0 +1,133 @@
+{
+ "id": "c9f1a949-2806-577e-afb6-9b9793d6e970",
+ "taskType": "LISTEN_CHOOSE_RESPONSE",
+ "section": "LISTENING",
+ "etsNormSeconds": 90,
+ "payload": {
+  "stimulus": {},
+  "items": [
+   {
+    "ordinal": 1,
+    "options": [
+     {
+      "key": "A",
+      "text": "Sure, I’m free at noon.",
+      "rationale": "A is right: it answers the question."
+     },
+     {
+      "key": "B",
+      "text": "It was a long class.",
+      "rationale": "B is wrong: it does not answer “Do you want to grab lunch after class?”"
+     },
+     {
+      "key": "C",
+      "text": "I had pasta.",
+      "rationale": "C is wrong: it does not answer “Do you want to grab lunch after class?”"
+     },
+     {
+      "key": "D",
+      "text": "The class is in room 5.",
+      "rationale": "D is wrong: it does not answer “Do you want to grab lunch after class?”"
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The best response answers “Do you want to grab lunch after class?”"
+    },
+    "audio": {
+     "url": "bundle:response-1.m4a",
+     "durationSeconds": 2
+    },
+    "transcript": "Do you want to grab lunch after class?"
+   },
+   {
+    "ordinal": 2,
+    "options": [
+     {
+      "key": "A",
+      "text": "I posted a letter.",
+      "rationale": "A is wrong: it does not answer “Has the assignment been posted yet?”"
+     },
+     {
+      "key": "B",
+      "text": "Yes, it went up this morning.",
+      "rationale": "B is right: it answers the question."
+     },
+     {
+      "key": "C",
+      "text": "It’s a hard class.",
+      "rationale": "C is wrong: it does not answer “Has the assignment been posted yet?”"
+     },
+     {
+      "key": "D",
+      "text": "My post is long.",
+      "rationale": "D is wrong: it does not answer “Has the assignment been posted yet?”"
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "The best response answers “Has the assignment been posted yet?”"
+    },
+    "audio": {
+     "url": "bundle:response-2.m4a",
+     "durationSeconds": 2
+    },
+    "transcript": "Has the assignment been posted yet?"
+   },
+   {
+    "ordinal": 3,
+    "options": [
+     {
+      "key": "A",
+      "text": "I like music.",
+      "rationale": "A is wrong: it does not answer “Could you lend me your notes?”"
+     },
+     {
+      "key": "B",
+      "text": "Notes are on page two.",
+      "rationale": "B is wrong: it does not answer “Could you lend me your notes?”"
+     },
+     {
+      "key": "C",
+      "text": "Of course, here you go.",
+      "rationale": "C is right: it answers the question."
+     },
+     {
+      "key": "D",
+      "text": "I lent it yesterday.",
+      "rationale": "D is wrong: it does not answer “Could you lend me your notes?”"
+     }
+    ],
+    "answerKey": "C",
+    "explanation": {
+     "summary": "The best response answers “Could you lend me your notes?”"
+    },
+    "audio": {
+     "url": "bundle:response-3.m4a",
+     "durationSeconds": 2
+    },
+    "transcript": "Could you lend me your notes?"
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "C"
+   ]
+  }
+ ]
+}

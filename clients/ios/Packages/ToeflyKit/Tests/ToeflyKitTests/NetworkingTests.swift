@@ -217,11 +217,11 @@ struct RepositoryTests {
             examDate: nil,
             daysToExam: nil,
         ))
-        #expect(try await planning.currentWeek() == WeekProgress(weekNo: 3, progressPercent: 42, mockExam: false))
+        #expect(try await planning.currentWeek() == WeekProgress(weekNo: 3, progressPercent: 46.6, mockExam: false))
         let today = try await planning.today()
         #expect(today.weekNo == 3)
         #expect(today.orderedTasks.map(\.section) == [.reading, .listening, .speaking, .writing])
-        #expect(today.orderedTasks.first?.status == .done)
+        #expect(today.orderedTasks.first?.status == .pending)
         #expect(today.vocabularyDue == 12)
     }
 

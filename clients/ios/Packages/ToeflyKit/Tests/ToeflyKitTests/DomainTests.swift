@@ -132,7 +132,7 @@ struct ProfileModelTests {
 
     @Test("AC-05.01.1 overdue tasks come first")
     func ac05011OverdueTasks() {
-        let task = { (title: String) in TaskSummary(
+        let task = { (title: String) in WeekTask(
             id: UUID(),
             title: title,
             section: .reading,

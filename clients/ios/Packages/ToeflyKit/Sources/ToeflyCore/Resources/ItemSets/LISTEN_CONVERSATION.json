@@ -1,0 +1,108 @@
+{
+ "id": "5f1226e0-966d-5f3b-9857-9e672390506f",
+ "taskType": "LISTEN_CONVERSATION",
+ "section": "LISTENING",
+ "etsNormSeconds": 80,
+ "payload": {
+  "stimulus": {
+   "contextLine": "Listen to a conversation between a student and a librarian.",
+   "audio": {
+    "url": "bundle:conversation-library.m4a",
+    "durationSeconds": 9,
+    "origin": "TTS"
+   },
+   "speakers": [
+    {
+     "id": "s1",
+     "role": "Student"
+    },
+    {
+     "id": "s2",
+     "role": "Librarian"
+    }
+   ],
+   "transcript": [
+    {
+     "speaker": "",
+     "text": "Student: Hi, is the library open late this week? Librarian: Yes, until midnight because of exams. But the study rooms close at ten."
+    }
+   ]
+  },
+  "items": [
+   {
+    "ordinal": 1,
+    "prompt": "Why is the library open late?",
+    "options": [
+     {
+      "key": "A",
+      "text": "Because of exams",
+      "rationale": "A is right: “because of exams”."
+     },
+     {
+      "key": "B",
+      "text": "Because of a holiday",
+      "rationale": "B is wrong: no holiday is mentioned."
+     },
+     {
+      "key": "C",
+      "text": "For a party",
+      "rationale": "C is wrong: no party is mentioned."
+     },
+     {
+      "key": "D",
+      "text": "For repairs",
+      "rationale": "D is wrong: repairs are not mentioned."
+     }
+    ],
+    "answerKey": "A",
+    "explanation": {
+     "summary": "The librarian says it is open until midnight because of exams."
+    }
+   },
+   {
+    "ordinal": 2,
+    "prompt": "When do the study rooms close?",
+    "options": [
+     {
+      "key": "A",
+      "text": "At eight",
+      "rationale": "A is wrong: eight is not mentioned."
+     },
+     {
+      "key": "B",
+      "text": "At ten",
+      "rationale": "B is right: at ten."
+     },
+     {
+      "key": "C",
+      "text": "At midnight",
+      "rationale": "C is wrong: midnight is for the library."
+     },
+     {
+      "key": "D",
+      "text": "They stay open",
+      "rationale": "D is wrong: they close at ten."
+     }
+    ],
+    "answerKey": "B",
+    "explanation": {
+     "summary": "“The study rooms close at ten.”"
+    }
+   }
+  ]
+ },
+ "_answers": [
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "A"
+   ]
+  },
+  {
+   "type": "CHOICE",
+   "optionIds": [
+    "B"
+   ]
+  }
+ ]
+}
