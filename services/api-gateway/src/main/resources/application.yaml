@@ -73,6 +73,12 @@ spring:
               order: -1
               predicates:
                 - Path=/api/v1/dashboards/**,/api/v1/streaks/**,/api/v1/activity-days,/api/v1/time-reports,/api/v1/admin/metrics/**,/api/v1/admin/projections/student-dashboard/**,/api/v1/admin/projections/activity/**,/api/v1/admin/projections/product-metrics/**,/api/v1/admin/projections/ai-usage/**,/api/v1/admin/projections/rebuilds/**
+            # Webhooks of payment providers reach billing-service directly from the ingress (docs/05 §6.12): they carry
+            # signatures, not sessions, so they are not routed through the session-based gateway.
+            - id: billing-service
+              uri: ${toefly.gateway.services.billing-service}
+              predicates:
+                - Path=/api/v1/plan-tiers,/api/v1/checkout-sessions,/api/v1/checkout-sessions/**,/api/v1/billing-portal-sessions,/api/v1/subscriptions/**,/api/v1/payments,/api/v1/entitlements,/api/v1/billing/app-store/**,/api/v1/admin/subscriptions,/api/v1/admin/subscriptions/**,/api/v1/admin/users/*/grants,/api/v1/admin/sagas,/api/v1/admin/sagas/**
 
 server:
   port: 8080
@@ -98,6 +104,7 @@ toefly:
       assessment-service: http://localhost:8085
       ai-gateway: http://localhost:8095
       analytics-service: http://localhost:8094
+      billing-service: http://localhost:8092
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
     rate-limits:
