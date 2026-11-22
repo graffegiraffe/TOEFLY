@@ -48,10 +48,14 @@ public record EvalReport(
         }
     }
 
+    /** Hash of the anchor file itself; a walk over the anchor map depended on its unordered iteration. */
     static String currentAnchorsSha256() {
-        StringBuilder all = new StringBuilder();
-        EvalSupport.KIT.anchors().values().forEach(list -> list.forEach(a -> all.append(a.text()).append('\n')));
-        return EvalDataset.sha256(all.toString());
+        try {
+            return EvalDataset.sha256(Files.readAllBytes(
+                    EvalSupport.module().resolve("src/main/resources/grading/anchors.json")));
+        } catch (IOException failure) {
+            throw new UncheckedIOException(failure);
+        }
     }
 
     /** Body of {@code POST /api/v1/admin/ai/eval-runs}. */
