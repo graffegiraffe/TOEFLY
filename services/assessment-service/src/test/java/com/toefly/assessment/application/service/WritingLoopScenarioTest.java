@@ -77,9 +77,11 @@ class WritingLoopScenarioTest {
                 .orElseThrow();
         assertThat(request.promptKey()).isEqualTo("writing.grade.discussion");
         assertThat(request.allowList()).contains("Maya");
-        assertThat(request.variables().get("anchors").toString())
-                .contains("score 5")
-                .doesNotContain("score 4");
+        // Phase 5b decision 16: every pass sees the whole ladder, highest score first.
+        String anchors = request.variables().get("anchors").toString();
+        assertThat(anchors).contains("score 5", "score 4", "score 3", "score 2");
+        assertThat(anchors.indexOf("score 5")).isLessThan(anchors.indexOf("score 4"));
+        assertThat(anchors.indexOf("score 3")).isLessThan(anchors.indexOf("score 2"));
         assertThat(app.meters.find("toefly.assessment.evaluation.duration").timer())
                 .isNotNull();
     }

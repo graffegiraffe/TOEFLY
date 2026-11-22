@@ -121,7 +121,7 @@ public class WritingGrader {
         Map<String, Object> variables = new java.util.LinkedHashMap<>();
         variables.put("explanationLanguage", "English");
         variables.put("taskText", input.task().promptText());
-        variables.put("anchors", kit.anchorsFor(type, passTag));
+        variables.put("anchors", kit.anchorsFor(type));
         variables.put("previousVersionBlock", previousBlock(input.previous()));
         variables.put("responseText", input.responseText());
         variables.put("wordCount", input.wordCount());
