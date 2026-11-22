@@ -30,7 +30,7 @@ routes:
     cacheable: false
     timeout: PT20S
   - useCase: WRITING_GRADING
-    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:openai/gpt-oss-20b", "ZAI:glm-4.7-flash", "OLLAMA:gpt-oss:20b"]
+    candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:openai/gpt-oss-20b", "ZAI:glm-4.7-flash", "ZAI:glm-4.5-flash", "OLLAMA:gpt-oss:20b"]
     temperature: 0.1
     maxOutputTokens: 1800
     reasoningEffort: medium
@@ -38,7 +38,7 @@ routes:
     timeout: PT60S
   - useCase: WRITING_GRADING
     passTag: B
-    candidates: ["GROQ:qwen/qwen3.8-27b", "ZAI:glm-4.7-flash", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
+    candidates: ["GROQ:qwen/qwen3.8-27b", "ZAI:glm-4.7-flash", "ZAI:glm-4.5-flash", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
     temperature: 0.1
     maxOutputTokens: 1800
     cacheable: false
@@ -52,7 +52,7 @@ routes:
     timeout: PT60S
   - useCase: SPEAKING_CONTENT_GRADING
     passTag: B
-    candidates: ["GROQ:qwen/qwen3.8-27b", "ZAI:glm-4.7-flash", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
+    candidates: ["GROQ:qwen/qwen3.8-27b", "GROQ:openai/gpt-oss-20b", "OLLAMA:gpt-oss:20b"]
     temperature: 0.1
     maxOutputTokens: 900
     cacheable: false
