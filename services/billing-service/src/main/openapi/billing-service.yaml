@@ -1,0 +1,824 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY billing-service API
+  version: 1.0.0
+  summary: Тарифы, подписки, места репетитора, права доступа, платежи Stripe / bePaid / App Store и сага оплаты.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`; операции с тегом `Internal` — только внутри
+    кластера (`/internal/v1`, scope `internal`). Права выдаются только после проверенного webhook провайдера и саги
+    оплаты (docs/04 §5.10, docs/10 §17): страница возврата опрашивает `GET /checkout-sessions/{sessionId}` и
+    `GET /subscriptions/current`. Все провайдеры по умолчанию работают в тестовом режиме (US-27.08). Контракт —
+    docs/05 §6.12 и §9.3.5.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: PlanTiers, description: 'Тарифы и цены' }
+  - { name: Checkout, description: 'Сессии оплаты и портал провайдера' }
+  - { name: Subscriptions, description: 'Текущая подписка, отмена, смена тарифа, история платежей' }
+  - { name: Entitlements, description: 'Права пользователя' }
+  - { name: AppStore, description: 'Транзакции StoreKit 2' }
+  - { name: Webhooks, description: 'Уведомления провайдеров (подпись проверяется на сыром теле)' }
+  - { name: AdminBilling, description: 'Подписки, ручная выдача тарифа, саги' }
+  - { name: Internal, description: 'Внутренний API (x-toefly-internal)' }
+paths:
+  /plan-tiers:
+    get:
+      tags: [PlanTiers]
+      operationId: listPlanTiers
+      summary: Тарифы, состав прав и доступные провайдеры
+      description: |
+        Цены и состав прав берутся из `PlanTier` (AC-27.01.1). `providers` — включённые в конфигурации провайдеры веба с
+        режимом `TEST`/`LIVE` (AC-27.01.3, AC-27.08.3). Доступен без токена.
+      security: []
+      responses:
+        '200':
+          description: Тарифы.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanTierList' }
+  /checkout-sessions:
+    post:
+      tags: [Checkout]
+      operationId: createCheckoutSession
+      summary: Создать сессию оплаты провайдера
+      description: |
+        Сумма и цена провайдера определяются сервером по `planTierCode`; `returnUrl` — только из белого списка
+        (T-F6-03). `TUTOR*` — только для роли `TUTOR`, `STUDENT_PRO` — для `STUDENT`. Во время пробного периода оплата
+        разрешена (TRIALING → ACTIVE).
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCheckoutSessionRequest' }
+      responses:
+        '201':
+          description: Сессия создана; клиент переходит по `redirectUrl`.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutSession' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+  /checkout-sessions/{sessionId}:
+    get:
+      tags: [Checkout]
+      operationId: getCheckoutSession
+      summary: Состояние сессии оплаты
+      description: |
+        Экран результата опрашивает сессию после возврата с провайдера (AC-27.03.4): `OPEN` — webhook ещё не пришёл,
+        `PROCESSING` — платёж подтверждён, сага выдаёт права, `COMPLETED` — права выданы, `FAILED` — причина провайдера
+        (AC-27.03.5) или компенсация саги.
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Сессия.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutSession' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /billing-portal-sessions:
+    post:
+      tags: [Checkout]
+      operationId: createPortalSession
+      summary: Ссылка на портал провайдера (смена карты, отмена)
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePortalSessionRequest' }
+      responses:
+        '201':
+          description: Ссылка на портал.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalSession' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+  /subscriptions/current:
+    get:
+      tags: [Subscriptions]
+      operationId: getCurrentSubscription
+      summary: Текущая подписка, места и статус саги
+      description: Для ученика без подписки — `planTierCode = STUDENT_FREE`, `status = null`; для ученика на месте — `source = SEAT`.
+      x-toefly-roles: [STUDENT, TUTOR]
+      responses:
+        '200':
+          description: Подписка.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+  /subscriptions/current/cancellation:
+    post:
+      tags: [Subscriptions]
+      operationId: cancelSubscription
+      summary: Отменить в конце оплаченного периода
+      description: Права сохраняются до `currentPeriodEnd` (AC-27.05.2); подписка App Store отменяется в App Store (`409 manage-in-app-store`).
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancelSubscriptionRequest' }
+      responses:
+        '200':
+          description: Подписка помечена к отмене.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+    delete:
+      tags: [Subscriptions]
+      operationId: resumeSubscription
+      summary: Возобновить до конца периода
+      description: Переход CANCELED → ACTIVE (03 §6.13).
+      x-toefly-roles: [STUDENT, TUTOR]
+      responses:
+        '200':
+          description: Подписка возобновлена.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+  /subscriptions/current/plan-change:
+    post:
+      tags: [Subscriptions]
+      operationId: changePlan
+      summary: Сменить тариф репетитора
+      description: |
+        `TUTOR` → `TUTOR_PLUS` — немедленно, 30 мест сразу (AC-27.05.3); `TUTOR_PLUS` → `TUTOR` — с начала следующего
+        периода (AC-27.05.5), запрещено при занятых местах больше 10 (`409 seats-in-use`, AC-27.05.4).
+      x-toefly-roles: [TUTOR]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangePlanRequest' }
+      responses:
+        '200':
+          description: Тариф изменён или смена запланирована.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+  /payments:
+    get:
+      tags: [Subscriptions]
+      operationId: listMyPayments
+      summary: История платежей с квитанциями
+      x-toefly-roles: [STUDENT, TUTOR]
+      responses:
+        '200':
+          description: Платежи, новые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentList' }
+  /entitlements:
+    get:
+      tags: [Entitlements]
+      operationId: getMyEntitlements
+      summary: Мои права, остаток бесплатных AI-проверок, пробный период
+      x-toefly-roles: [STUDENT, TUTOR]
+      responses:
+        '200':
+          description: Права.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EntitlementSet' }
+  /billing/app-store/transactions:
+    post:
+      tags: [AppStore]
+      operationId: submitAppStoreTransaction
+      summary: Передать подписанную транзакцию StoreKit 2 (JWS)
+      description: Подпись проверяется цепочкой сертификатов (локально — сертификат StoreKit Testing); `appAccountToken` должен совпадать с пользователем (AC-27.04.2).
+      x-toefly-roles: [STUDENT, TUTOR]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppStoreTransactionRequest' }
+      responses:
+        '200':
+          description: Транзакция принята; подписка после саги.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /billing/webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      operationId: stripeWebhook
+      summary: Webhook Stripe (`Stripe-Signature`)
+      security: []
+      parameters:
+        - { name: Stripe-Signature, in: header, required: true, schema: { type: string, maxLength: 1000 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Событие сохранено (или уже было сохранено). }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /billing/webhooks/bepaid:
+    post:
+      tags: [Webhooks]
+      operationId: bepaidWebhook
+      summary: Уведомление bePaid (подпись `Content-Signature`, RSA-SHA256)
+      security: []
+      parameters:
+        - { name: Content-Signature, in: header, required: true, schema: { type: string, maxLength: 2000 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Уведомление сохранено (или уже было сохранено). }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /billing/webhooks/app-store:
+    post:
+      tags: [Webhooks]
+      operationId: appStoreWebhook
+      summary: App Store Server Notifications V2 (`signedPayload`)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [signedPayload]
+              properties:
+                signedPayload: { type: string, maxLength: 20000 }
+      responses:
+        '200': { description: Уведомление сохранено (или уже было сохранено). }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /admin/subscriptions:
+    get:
+      tags: [AdminBilling]
+      operationId: listSubscriptions
+      summary: Подписки с фильтрами
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/SubscriptionStatus' } }
+        - { name: tier, in: query, schema: { $ref: '#/components/schemas/PlanTierCode' } }
+        - { name: provider, in: query, schema: { $ref: '#/components/schemas/PaymentProviderCode' } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Подписки, новые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminSubscriptionPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/users/{userId}/grants:
+    post:
+      tags: [AdminBilling]
+      operationId: grantPlan
+      summary: Ручная выдача тарифа на срок (провайдер `MANUAL`)
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ManualGrantRequest' }
+      responses:
+        '200':
+          description: Права пользователя после выдачи.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EntitlementSet' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /admin/sagas:
+    get:
+      tags: [AdminBilling]
+      operationId: listSagas
+      summary: Экземпляры саг и их шаги
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/SagaStatus' } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Саги, недавно изменённые первыми.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SagaInstancePage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/sagas/{sagaId}/retry:
+    post:
+      tags: [AdminBilling]
+      operationId: retrySaga
+      summary: Повторить застрявший шаг
+      description: Шаг в ожидании повтора выполняется сейчас; завершённая или компенсированная сага — `409`.
+      x-toefly-roles: [ADMIN]
+      parameters:
+        - name: sagaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200':
+          description: Сага после повтора.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SagaInstance' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /internal/v1/users/{userId}/entitlements:
+    servers:
+      - url: http://billing-service.toefly.svc.cluster.local:8092
+        description: Кластер (не публикуется через api-gateway)
+    get:
+      tags: [Internal]
+      operationId: getEntitlementsInternal
+      summary: Снимок прав пользователя (промах кэша gateway)
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      responses:
+        '200':
+          description: Снимок; `ETag` — `entitlementsVersion`.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EntitlementSet' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /internal/v1/tutors/{tutorId}/seats:
+    servers:
+      - url: http://billing-service.toefly.svc.cluster.local:8092
+        description: Кластер (не публикуется через api-gateway)
+    get:
+      tags: [Internal]
+      operationId: getTutorSeatsInternal
+      summary: Места репетитора
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+      parameters:
+        - name: tutorId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Места; без активной подписки — `seatLimit = 0`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TutorSeats' }
+  /internal/v1/users/{userId}/export:
+    servers:
+      - url: http://billing-service.toefly.svc.cluster.local:8092
+        description: Кластер (не публикуется через api-gateway)
+    get:
+      tags: [Internal]
+      operationId: exportUserDataInternal
+      summary: Данные пользователя для экспорта (GDPR)
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      responses:
+        '200':
+          description: Подписки, платежи и права.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BillingUserDataExport' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    serviceAuth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes: { internal: Внутренние вызовы сервисов }
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 100 }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string, maxLength: 200 }
+  headers:
+    IdempotentReplayed:
+      description: "`true`, если ответ повторён по тому же `Idempotency-Key`."
+      schema: { type: boolean }
+    ETag:
+      description: Версия снимка прав.
+      schema: { type: string }
+  responses:
+    BadRequest:
+      description: "`400 validation-failed` или `webhook-signature-invalid`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403 forbidden` — тариф недоступен для роли или нет роли администратора."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409` — `subscription-exists`, `no-subscription`, `manage-in-app-store`, `seats-in-use`, `conflict`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422` — `return-url-not-allowed`, `provider-disabled`, `idempotency-key-reuse`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428 idempotency-key-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    BadGateway:
+      description: "`502 payment-provider-error` — провайдер недоступен или отказал."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }
+        code: { type: string }
+    PlanTierCode:
+      type: string
+      enum: [STUDENT_FREE, STUDENT_PRO, TUTOR, TUTOR_PLUS]
+    PaymentProviderCode:
+      type: string
+      enum: [STRIPE, BEPAID, APP_STORE, MANUAL]
+    SubscriptionStatus:
+      type: string
+      enum: [TRIALING, ACTIVE, PAST_DUE, CANCELED, EXPIRED]
+    Entitlement:
+      type: string
+      enum: [UNLIMITED_WEEKS, AI_WRITING_CHECK, AI_SPEAKING_CHECK, SPEAKING, MOCK_EXAM, AI_TUTOR_CHAT, WEEKLY_REVIEW, TUTOR_WORKSPACE, TUTOR_MATERIALS]
+    EntitlementSource:
+      type: string
+      enum: [SUBSCRIPTION, TRIAL, SEAT, MANUAL]
+    ProviderMode:
+      type: string
+      enum: [TEST, LIVE]
+    SagaStatus:
+      type: string
+      enum: [RUNNING, COMPENSATING, COMPLETED, FAILED]
+    PlanTier:
+      type: object
+      required: [code, audience, priceMinor, currency, interval, trialDays, entitlements]
+      properties:
+        code: { $ref: '#/components/schemas/PlanTierCode' }
+        audience: { type: string, enum: [STUDENT, TUTOR] }
+        priceMinor: { type: integer, minimum: 0, description: 'Цена за период в минимальных единицах (€12 = 1200).' }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        interval: { type: string, enum: [MONTH] }
+        seatLimit: { type: [integer, 'null'], description: 'Места учеников (10 или 30) для тарифов репетитора.' }
+        storageBytes: { type: [integer, 'null'], format: int64 }
+        trialDays: { type: integer, minimum: 0 }
+        freeAiCheckLimit: { type: [integer, 'null'], description: 'Пожизненный лимит AI-проверок Free.' }
+        entitlements:
+          type: array
+          items: { $ref: '#/components/schemas/Entitlement' }
+    PaymentProviderOption:
+      type: object
+      required: [code, mode]
+      properties:
+        code: { $ref: '#/components/schemas/PaymentProviderCode' }
+        mode: { $ref: '#/components/schemas/ProviderMode' }
+    PlanTierList:
+      type: object
+      required: [items, providers]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/PlanTier' }
+        providers:
+          type: array
+          description: Провайдеры оплаты на вебе в порядке показа.
+          items: { $ref: '#/components/schemas/PaymentProviderOption' }
+    CreateCheckoutSessionRequest:
+      type: object
+      required: [planTierCode, provider, returnUrl]
+      properties:
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        provider: { $ref: '#/components/schemas/PaymentProviderCode' }
+        returnUrl: { type: string, maxLength: 500, description: 'Адрес возврата; только из белого списка.' }
+    CheckoutSession:
+      type: object
+      required: [id, provider, planTierCode, status, redirectUrl, expiresAt, testMode]
+      properties:
+        id: { type: string, format: uuid }
+        provider: { $ref: '#/components/schemas/PaymentProviderCode' }
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        status: { type: string, enum: [OPEN, PROCESSING, COMPLETED, FAILED, EXPIRED] }
+        redirectUrl: { type: string }
+        expiresAt: { type: string, format: date-time }
+        testMode: { type: boolean }
+        failureReason: { type: [string, 'null'], description: 'Код провайдера или SAGA_COMPENSATED.' }
+        failureMessage: { type: [string, 'null'], description: 'Причина провайдера для пользователя.' }
+    CreatePortalSessionRequest:
+      type: object
+      required: [returnUrl]
+      properties:
+        returnUrl: { type: string, maxLength: 500 }
+    PortalSession:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+    Seat:
+      type: object
+      required: [index]
+      properties:
+        index: { type: integer, minimum: 1, maximum: 30 }
+        studentId: { type: [string, 'null'], format: uuid }
+        assignedAt: { type: [string, 'null'], format: date-time }
+    SeatSummary:
+      type: object
+      required: [limit, used, seats]
+      properties:
+        limit: { type: integer }
+        used: { type: integer }
+        seats:
+          type: array
+          items: { $ref: '#/components/schemas/Seat' }
+    Subscription:
+      type: object
+      required: [planTierCode, source, cancelAtPeriodEnd, testMode]
+      properties:
+        id: { type: [string, 'null'], format: uuid }
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        source: { type: string, enum: [NONE, SUBSCRIPTION, TRIAL, SEAT, MANUAL], description: 'Откуда эффективный тариф.' }
+        status:
+          oneOf:
+            - { $ref: '#/components/schemas/SubscriptionStatus' }
+            - { type: 'null' }
+        provider:
+          oneOf:
+            - { $ref: '#/components/schemas/PaymentProviderCode' }
+            - { type: 'null' }
+        currentPeriodStart: { type: [string, 'null'], format: date-time }
+        currentPeriodEnd: { type: [string, 'null'], format: date-time }
+        trialEndsAt: { type: [string, 'null'], format: date-time }
+        cancelAtPeriodEnd: { type: boolean }
+        canceledAt: { type: [string, 'null'], format: date-time }
+        graceUntil: { type: [string, 'null'], format: date-time }
+        pendingPlanTierCode:
+          oneOf:
+            - { $ref: '#/components/schemas/PlanTierCode' }
+            - { type: 'null' }
+        testMode: { type: boolean }
+        tutorId: { type: [string, 'null'], format: uuid, description: 'Репетитор, давший место (source SEAT).' }
+        sagaStatus:
+          oneOf:
+            - { $ref: '#/components/schemas/SagaStatus' }
+            - { type: 'null' }
+        seats:
+          oneOf:
+            - { $ref: '#/components/schemas/SeatSummary' }
+            - { type: 'null' }
+    CancelSubscriptionRequest:
+      type: object
+      properties:
+        reason: { type: [string, 'null'], maxLength: 500 }
+    ChangePlanRequest:
+      type: object
+      required: [planTierCode]
+      properties:
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+    Payment:
+      type: object
+      required: [id, provider, planTierCode, status, testMode, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        provider: { $ref: '#/components/schemas/PaymentProviderCode' }
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        amountMinor: { type: [integer, 'null'] }
+        currency: { type: [string, 'null'] }
+        status: { type: string, enum: [PENDING, SUCCEEDED, FAILED, REFUNDED] }
+        paidAt: { type: [string, 'null'], format: date-time }
+        failureReason: { type: [string, 'null'] }
+        receiptUrl: { type: [string, 'null'] }
+        testMode: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    PaymentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Payment' }
+    EntitlementGrant:
+      type: object
+      required: [entitlement, source]
+      properties:
+        entitlement: { $ref: '#/components/schemas/Entitlement' }
+        source: { $ref: '#/components/schemas/EntitlementSource' }
+        limit: { type: [integer, 'null'] }
+        used: { type: [integer, 'null'] }
+        validUntil: { type: [string, 'null'], format: date-time }
+    FreeAiChecks:
+      type: object
+      required: [limit, used, remaining]
+      properties:
+        limit: { type: integer }
+        used: { type: integer }
+        remaining: { type: integer }
+    EntitlementSet:
+      type: object
+      required: [userId, entitlementsVersion, planTierCode, entitlements, grants, freeAiChecks, changedAt]
+      properties:
+        userId: { type: string, format: uuid }
+        entitlementsVersion: { type: integer, format: int64 }
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        entitlements:
+          type: array
+          items: { $ref: '#/components/schemas/Entitlement' }
+        grants:
+          type: array
+          items: { $ref: '#/components/schemas/EntitlementGrant' }
+        trialEndsAt: { type: [string, 'null'], format: date-time }
+        tutorId: { type: [string, 'null'], format: uuid }
+        freeAiChecks: { $ref: '#/components/schemas/FreeAiChecks' }
+        changedAt: { type: string, format: date-time }
+    AppStoreTransactionRequest:
+      type: object
+      required: [signedTransactionInfo]
+      properties:
+        signedTransactionInfo: { type: string, maxLength: 20000 }
+    AdminSubscription:
+      type: object
+      required: [id, userId, planTierCode, status, cancelAtPeriodEnd, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        status: { $ref: '#/components/schemas/SubscriptionStatus' }
+        provider:
+          oneOf:
+            - { $ref: '#/components/schemas/PaymentProviderCode' }
+            - { type: 'null' }
+        currentPeriodEnd: { type: [string, 'null'], format: date-time }
+        trialEndsAt: { type: [string, 'null'], format: date-time }
+        cancelAtPeriodEnd: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    AdminSubscriptionPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AdminSubscription' }
+        nextCursor: { type: [string, 'null'] }
+    ManualGrantRequest:
+      type: object
+      required: [planTierCode, until, reason]
+      properties:
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        until: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    SagaStep:
+      type: object
+      required: [stepNo, name, status, attempts]
+      properties:
+        stepNo: { type: integer }
+        name: { type: string }
+        status: { type: string, enum: [PENDING, DONE, FAILED, SKIPPED, COMPENSATED] }
+        attempts: { type: integer }
+        nextAttemptAt: { type: [string, 'null'], format: date-time }
+        lastError: { type: [string, 'null'] }
+    SagaInstance:
+      type: object
+      required: [id, sagaType, status, currentStep, userId, planTierCode, provider, updatedAt, steps]
+      properties:
+        id: { type: string, format: uuid }
+        sagaType: { type: string }
+        status: { $ref: '#/components/schemas/SagaStatus' }
+        currentStep: { type: integer }
+        userId: { type: string, format: uuid }
+        planTierCode: { $ref: '#/components/schemas/PlanTierCode' }
+        provider: { $ref: '#/components/schemas/PaymentProviderCode' }
+        updatedAt: { type: string, format: date-time }
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/SagaStep' }
+    SagaInstancePage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/SagaInstance' }
+        nextCursor: { type: [string, 'null'] }
+    TutorSeats:
+      type: object
+      required: [tutorId, seatLimit, seatsUsed, seatsFree]
+      properties:
+        tutorId: { type: string, format: uuid }
+        planTierCode:
+          oneOf:
+            - { $ref: '#/components/schemas/PlanTierCode' }
+            - { type: 'null' }
+        seatLimit: { type: integer }
+        seatsUsed: { type: integer }
+        seatsFree: { type: integer }
+    BillingUserDataExport:
+      type: object
+      required: [userId, subscriptions, payments, entitlements]
+      properties:
+        userId: { type: string, format: uuid }
+        subscriptions:
+          type: array
+          items: { $ref: '#/components/schemas/AdminSubscription' }
+        payments:
+          type: array
+          items: { $ref: '#/components/schemas/Payment' }
+        entitlements: { $ref: '#/components/schemas/EntitlementSet' }

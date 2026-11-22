@@ -1,0 +1,21 @@
+name: payment_failed
+description: notification-service sends the email and IN_APP with the reason of the provider (AC-27.06.1)
+input:
+  triggeredBy: paymentFailed()
+outputMessage:
+  sentTo: toefly.billing.payment-failed.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/billing-service
+    content-type: application/avro
+    ce_type: toefly.billing.payment-failed.v1
+  body:
+    provider: STRIPE
+    planTierCode: STUDENT_PRO
+    reason: generic_decline
+    message: Your card was declined.
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid

@@ -1,0 +1,27 @@
+name: payment_succeeded
+description: notification-service sends the receipt within 5 minutes, marked Test payment in test mode (AC-27.07.1)
+input:
+  triggeredBy: paymentSucceeded()
+outputMessage:
+  sentTo: toefly.billing.payment-succeeded.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/billing-service
+    content-type: application/avro
+    ce_type: toefly.billing.payment-succeeded.v1
+  body:
+    provider: STRIPE
+    planTierCode: STUDENT_PRO
+    amountMinor: 1200
+    currency: EUR
+    renewal: false
+    testMode: true
+  matchers:
+    body:
+      - path: $.paymentId
+        type: by_regex
+        predefined: uuid
+      - path: $.periodStart
+        type: by_type
+      - path: $.periodEnd
+        type: by_type

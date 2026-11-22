@@ -1,0 +1,24 @@
+name: get_entitlements
+description: api-gateway reads the rights on a cache miss of ent:{userId} (docs/05 §9.3.5)
+request:
+  method: GET
+  url: /internal/v1/users/3c0b7a52-9d1e-4f6a-8b2c-5e7d9f1a2b3c/entitlements
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    userId: 3c0b7a52-9d1e-4f6a-8b2c-5e7d9f1a2b3c
+    planTierCode: STUDENT_PRO
+  matchers:
+    body:
+      - path: $.entitlementsVersion
+        type: by_type
+      - path: $.entitlements
+        type: by_type
+        minOccurrence: 1
+      - path: $.grants
+        type: by_type
+        minOccurrence: 1
+      - path: $.freeAiChecks.remaining
+        type: by_type

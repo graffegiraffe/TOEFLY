@@ -1,0 +1,21 @@
+name: subscription_canceled
+description: notification-service tells that Pro ended; the trial ended without payment here
+input:
+  triggeredBy: subscriptionCanceled()
+outputMessage:
+  sentTo: toefly.billing.subscription-canceled.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/billing-service
+    content-type: application/avro
+    ce_type: toefly.billing.subscription-canceled.v1
+  body:
+    planTierCode: STUDENT_PRO
+    reason: TRIAL_EXPIRED
+  matchers:
+    body:
+      - path: $.subscriptionId
+        type: by_regex
+        predefined: uuid
+      - path: $.endedAt
+        type: by_type
