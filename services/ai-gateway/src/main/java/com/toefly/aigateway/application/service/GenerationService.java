@@ -402,8 +402,13 @@ class GenerationService implements CompleteUseCase {
         }
     }
 
-    private static Duration timeout(ModelRef model, RouteParams params) {
-        return model.provider() == AiProvider.OLLAMA ? Duration.ofSeconds(180) : params.timeout();
+    /** Local models and the free Z.ai tier (about 10 tokens/s, ADR-0032) answer slower than the route expects. */
+    static Duration timeout(ModelRef model, RouteParams params) {
+        return switch (model.provider()) {
+            case OLLAMA -> Duration.ofSeconds(180);
+            case ZAI -> Duration.ofSeconds(240);
+            default -> params.timeout();
+        };
     }
 
     private @Nullable ModelRef override(@Nullable String value) {
