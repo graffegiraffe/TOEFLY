@@ -8,6 +8,7 @@ import com.toefly.common.test.contract.ContractCoverage;
 import com.toefly.common.test.contract.ContractTests;
 import com.toefly.common.test.contract.WebTestClientExchanger;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
@@ -63,6 +65,17 @@ class GatewayComponentIT {
             }))
             .bindNow();
 
+    /** tutor-agent-service: the first SSE event at once, the last one two seconds later (docs/06 §4.9). */
+    static final DisposableServer TUTOR_AGENT = HttpServer.create()
+            .port(0)
+            .route(routes -> routes.route(
+                    request -> true,
+                    (request, response) -> response.header("Content-Type", MediaType.TEXT_EVENT_STREAM_VALUE)
+                            .sendString(Flux.concat(
+                                    Mono.just("id: 1\nevent: meta\ndata: {\"messageId\":\"m1\"}\n\n"),
+                                    Mono.delay(Duration.ofSeconds(2)).thenReturn("id: 2\nevent: done\ndata: {}\n\n")))))
+            .bindNow();
+
     static final Map<String, Jwt> TOKENS = new ConcurrentHashMap<>();
     static final Path CONTRACTS = Path.of("src/test/resources/contracts");
 
@@ -71,6 +84,7 @@ class GatewayComponentIT {
         registry.add("spring.data.redis.host", VALKEY::getHost);
         registry.add("spring.data.redis.port", () -> VALKEY.getMappedPort(6379));
         registry.add("toefly.gateway.services.profile-service", () -> "http://localhost:" + PROFILE.port());
+        registry.add("toefly.gateway.services.tutor-agent-service", () -> "http://localhost:" + TUTOR_AGENT.port());
         // The cluster value (docs/10 §4.2); local runs use Lax.
         registry.add("toefly.gateway.session.same-site", () -> "Strict");
         registry.add("toefly.gateway.rate-limits.STUDENT_PRO.GENERAL.replenish-rate", () -> "0.5");
@@ -80,6 +94,7 @@ class GatewayComponentIT {
     @AfterAll
     static void stop() {
         PROFILE.disposeNow();
+        TUTOR_AGENT.disposeNow();
     }
 
     @Autowired
@@ -221,6 +236,31 @@ class GatewayComponentIT {
         assertThat(seen.getFirst(HttpHeaders.AUTHORIZATION)).isEqualTo("Bearer " + token);
         assertThat(seen.getFirst("X-Request-Id")).isNotBlank();
         assertThat(seen.containsHeader(HttpHeaders.COOKIE)).isFalse();
+    }
+
+    @Test
+    @DisplayName("AC-17.01.1 the chat answer streams through the gateway without buffering")
+    void streamsChatAnswer() {
+        String token = student();
+        long started = System.nanoTime();
+
+        Flux<String> events = client.post()
+                .uri("/api/v1/chat-threads/" + UUID.randomUUID() + "/messages")
+                .headers(h -> h.setBearerAuth(token))
+                .accept(MediaType.TEXT_EVENT_STREAM)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"text\":\"Why is B wrong?\"}")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .returnResult(String.class)
+                .getResponseBody();
+
+        String first = events.blockFirst(Duration.ofSeconds(5));
+        Duration firstAfter = Duration.ofNanos(System.nanoTime() - started);
+        assertThat(first).contains("m1");
+        // the stub holds the last event for two seconds: a buffering proxy would deliver both together
+        assertThat(firstAfter).isLessThan(Duration.ofMillis(1800));
     }
 
     @Test

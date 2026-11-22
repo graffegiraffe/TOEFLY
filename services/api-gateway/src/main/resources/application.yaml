@@ -84,6 +84,11 @@ spring:
               uri: ${toefly.gateway.services.vocabulary-service}
               predicates:
                 - Path=/api/v1/word-lookups,/api/v1/vocabulary-entries,/api/v1/vocabulary-entries/**,/api/v1/vocabulary-entry-batches,/api/v1/review-cards/**,/api/v1/review-sessions,/api/v1/review-sessions/**,/api/v1/word-sets,/api/v1/word-sets/**,/api/v1/word-suggestions,/api/v1/vocabulary-settings
+            # The chat answer is an SSE stream (docs/06 §4.9): the gateway flushes text/event-stream as it arrives.
+            - id: tutor-agent-service
+              uri: ${toefly.gateway.services.tutor-agent-service}
+              predicates:
+                - Path=/api/v1/chat-threads,/api/v1/chat-threads/**,/api/v1/pending-actions/**,/api/v1/weekly-reviews,/api/v1/weekly-reviews/**,/api/v1/learner-model,/api/v1/interview-sessions,/api/v1/interview-sessions/**,/api/v1/admin/agent-runs
 
 server:
   port: 8080
@@ -111,6 +116,7 @@ toefly:
       analytics-service: http://localhost:8094
       billing-service: http://localhost:8092
       vocabulary-service: http://localhost:8090
+      tutor-agent-service: http://localhost:8088
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
     rate-limits:
