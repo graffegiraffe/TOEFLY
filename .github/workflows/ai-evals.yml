@@ -3,7 +3,8 @@ name: ai-evals
 # Evals of the AI workers (docs/06-ai-agent.md §7.4). Until the private bucket of phase 13 exists, the eval sets stay
 # with the author: the live run is local and its report without texts is committed to src/evals/reports/. On a pull
 # request this workflow replays that report: the prompts and anchors must be the ones the report was made with, and
-# the metrics recomputed from the per-case results must meet the thresholds (docs/12, phase 5b, decision 3).
+# the metrics must equal the ones recomputed from the per-case results; thresholds are warnings while the gold scores
+# come from an AI rater (docs/12, phase 5b, decision 3).
 on:
   pull_request:
     paths:
