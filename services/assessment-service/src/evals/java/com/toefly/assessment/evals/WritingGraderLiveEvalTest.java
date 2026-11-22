@@ -14,7 +14,7 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Live run of WritingGrader over the author's anonymised drafts and their distortions against the real ai-gateway
@@ -26,8 +26,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 @EnabledIfSystemProperty(named = "evals.live", matches = "true")
 class WritingGraderLiveEvalTest {
 
+    /** {@code -Devals.suites=writing-discussion} runs one suite when the free quotas do not carry both. */
+    static List<String> suites() {
+        return List.of(System.getProperty("evals.suites", "writing-email,writing-discussion").split(","));
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = {"writing-email", "writing-discussion"})
+    @MethodSource("suites")
     @DisplayName("WritingGrader meets the thresholds of docs/06 §7.3 on the writing suites")
     void runSuite(String suite) throws Exception {
         List<EvalCase> data = EvalDataset.load(EvalSupport.root(), suite);
