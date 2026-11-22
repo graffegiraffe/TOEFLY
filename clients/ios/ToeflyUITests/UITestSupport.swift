@@ -8,6 +8,7 @@ enum Launcher {
         case midOnboarding = "mid-onboarding"
         case onboarded
         case withPlan = "with-plan"
+        case behind
     }
 
     /// Content size categories: AX3 is the largest size the layouts are checked at (phase 12 DoD).

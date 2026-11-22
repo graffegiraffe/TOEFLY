@@ -1,6 +1,6 @@
 import XCTest
 
-/// EP-05 in 12a: Home, the five tabs and the floating AI Tutor button.
+/// EP-05: Home, the five tabs and the floating AI Tutor button.
 @MainActor
 final class HomeUITests: XCTestCase {
     override func setUp() {
@@ -27,7 +27,7 @@ final class HomeUITests: XCTestCase {
     func test_US_05_02_openTodaySwitchesToTheTodayTab() {
         let app = Launcher.launch(.withPlan, signedIn: true)
         app.buttons["open-today"].waitToAppear().tap()
-        app.otherElements["coming-soon-today"].waitToAppear()
+        app.otherElements["today-tasks"].waitToAppear()
     }
 
     func test_AC_02_04_4_withoutAPlanHomeLeadsWithTheDiagnostic() {
@@ -44,9 +44,15 @@ final class HomeUITests: XCTestCase {
         for title in ["Home", "Today", "Weeks", "Library", "Progress"] {
             XCTAssertTrue(tabBar.buttons[title].exists, "Tab \(title)")
         }
-        for (title, id) in [("Today", "today"), ("Weeks", "weeks"), ("Library", "library"), ("Progress", "progress")] {
+        let roots = [
+            ("Today", app.otherElements["today-tasks"]),
+            ("Weeks", app.buttons["week-card-3"]),
+            ("Library", app.otherElements["coming-soon-library"]),
+            ("Progress", app.otherElements["coming-soon-progress"]),
+        ]
+        for (title, root) in roots {
             tabBar.buttons[title].tap()
-            app.otherElements["coming-soon-\(id)"].waitToAppear()
+            root.waitToAppear()
             XCTAssertTrue(app.buttons["tutor-fab"].isHittable, "The tutor button stays over \(title)")
         }
         tabBar.buttons["Home"].tap()

@@ -35,6 +35,8 @@ enum AppEnvironment {
             session: session,
             profiles: LiveProfileRepository(client: clients.profile),
             planning: LivePlanningRepository(client: clients.planning),
+            practice: LivePracticeRepository(client: clients.practice),
+            pendingAnswers: FilePendingAnswerStore(),
             notifications: SystemNotificationPermission(),
         )
     }
@@ -70,6 +72,7 @@ enum AppEnvironment {
             session: session,
             profiles: LiveProfileRepository(client: clients.profile),
             planning: LivePlanningRepository(client: clients.planning),
+            practice: LivePracticeRepository(client: clients.practice),
         )
     }
 
