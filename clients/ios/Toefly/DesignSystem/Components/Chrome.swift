@@ -75,7 +75,7 @@ struct GlassPanel<Content: View>: View {
 
 /// Row of a task: section icon, title, section and time, status (docs/07-ux-ui.md §5.5, iOS without the tag column).
 struct TaskRow: View {
-    let task: TaskSummary
+    let task: WeekTask
 
     var body: some View {
         HStack(spacing: Space.s3) {

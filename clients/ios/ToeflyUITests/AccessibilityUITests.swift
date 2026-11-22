@@ -82,9 +82,58 @@ final class AccessibilityUITests: XCTestCase {
         _ = home.staticTexts["Toefly Tutor"].waitForExistence(timeout: 3)
         attachScreenshot(home, named: "tutor-\(suffix)")
 
+        studyScreens(contentSize: contentSize, suffix: suffix, check: check)
+
         let diagnostic = Launcher.launch(.onboarded, signedIn: true, contentSize: contentSize)
         diagnostic.otherElements["home-diagnostic"].waitToAppear()
         attachScreenshot(diagnostic, named: "home-diagnostic-\(suffix)")
+    }
+
+    /// Phase 12b: Today, Weeks, the week page, a section, the players and the review.
+    private func studyScreens(contentSize: String?, suffix: String, check: Bool) {
+        let study = Launcher.launch(.withPlan, signedIn: true, contentSize: contentSize)
+        study.tabBars.firstMatch.buttons["Today"].waitToAppear().tap()
+        study.otherElements["today-tasks"].waitToAppear()
+        capture(study, "today", suffix: suffix, run: check)
+        study.tabBars.firstMatch.buttons["Weeks"].tap()
+        study.buttons["week-card-3"].waitToAppear()
+        capture(study, "weeks", suffix: suffix, run: check)
+        study.buttons["week-card-3"].tap()
+        study.staticTexts["week-title"].waitToAppear()
+        capture(study, "week", suffix: suffix, run: check)
+        let card = study.buttons["section-card-listening"]
+        card.scrollIntoView(in: study)
+        attachScreenshot(study, named: "week-sections-\(suffix)")
+        card.tap()
+        _ = study.navigationBars["Listening · Week 3"].waitForExistence(timeout: 5)
+        capture(study, "section", suffix: suffix, run: check)
+        study.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Academic talk: Biology")).firstMatch.tap()
+        _ = study.staticTexts["Question 2 of 3"].waitForExistence(timeout: 5)
+        capture(study, "player-listening", suffix: suffix, run: check)
+        study.buttons["player-exit"].tap()
+
+        let review = Launcher.launch(.withPlan, signedIn: true, contentSize: contentSize)
+        review.tabBars.firstMatch.buttons["Weeks"].waitToAppear().tap()
+        review.buttons["week-card-3"].waitToAppear().tap()
+        let done = review.buttons["week-task-Daily life: Campus Gym Email"].waitToAppear()
+        done.scrollIntoView(in: review)
+        done.tap()
+        review.staticTexts["review-score"].waitToAppear()
+        capture(review, "review", suffix: suffix, run: check)
+
+        let player = Launcher.launch(.withPlan, signedIn: true, contentSize: contentSize)
+        player.tabBars.firstMatch.buttons["Today"].waitToAppear().tap()
+        player.buttons["today-start"].waitToAppear().tap()
+        _ = player.textFields["gap-1"].waitForExistence(timeout: 5)
+        capture(player, "player-cloze", suffix: suffix, run: check)
+    }
+
+    private func capture(_ app: XCUIApplication, _ name: String, suffix: String, run: Bool) {
+        attachScreenshot(app, named: "\(name)-\(suffix)")
+        if run {
+            assertLabels(app, screen: name)
+            audit(app, screen: name)
+        }
     }
 
     func test_lightThemeLabelsAndAudit() {

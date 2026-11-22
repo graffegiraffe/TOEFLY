@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		01823D67F0B6EDC09428ECFF /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A59B2A6CEB28BCBE132F8C0 /* MainTabView.swift */; };
+		05BC715B5BD1CCAEA8064BD4 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D9B990301958CFE9848526 /* ReviewView.swift */; };
 		0ACB73108BB732B59C1204D2 /* ToeflyCore in Frameworks */ = {isa = PBXBuildFile; productRef = B5EE47F1421813528AFC46E6 /* ToeflyCore */; };
 		2EFAD3C3D34C0496FBF9F839 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAC0BBA294585BCDF19761 /* OnboardingUITests.swift */; };
 		4FF94135761972BE73718C27 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0200F9321CDD8291BC980A /* Card.swift */; };
@@ -15,20 +16,28 @@
 		842B52A03A8EAC6E6432F5DE /* Chrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F39851558167F1A892182A /* Chrome.swift */; };
 		84FB6259468213A67EBAFE21 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A010DEFAB2BC6A56F1327DBE /* Tokens.swift */; };
 		8501E1AFB5C7BACEEAB778E6 /* HomeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2492E21F5F7BA7C0C2144B02 /* HomeUITests.swift */; };
+		8A31490059D8C37D57FD3D2F /* PlayerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C11969F844DF50AF74992D /* PlayerUITests.swift */; };
 		8AE4B171554946C4699EFA3E /* ToeflyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AE5CA7DA7C7CA90931CA25 /* ToeflyApp.swift */; };
 		8D5FE2E95F20631C90D843E3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630984AA9A93AC023AD52461 /* ProfileView.swift */; };
 		8D99B88553EA7A206BB0E467 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7D5EA18102EA4FFD656E71D /* Assets.xcassets */; };
+		98C18007C004BB28397A3194 /* WeeksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD90618C264F671F91942169 /* WeeksView.swift */; };
+		A34B5F3CDE18B6F48A33D271 /* TaskPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745A7628F681A583DCC086E8 /* TaskPlayerView.swift */; };
 		A69E7B4691F9FB3800D60C9C /* ToeflyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F50573EB6CA479B38E01EB8 /* ToeflyButton.swift */; };
 		ABFBD5E94834B0E5BE025BD5 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A388FD1E50C2335EF450A5B1 /* HomeView.swift */; };
 		BEC095185321569DBDC5D9B5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B4EB635C4B3A87EAD8E3C3 /* WelcomeView.swift */; };
+		C15056304A1C7AD071445C9B /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635AEC5E58CC492F56689219 /* TodayView.swift */; };
 		C61565C61CCCDA8749ED8FD8 /* SignInUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C114F63E10BE951CC13D111F /* SignInUITests.swift */; };
 		CF20D3673148FE3A362A250E /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DC426488BDF69DEB4C3DA9 /* Progress.swift */; };
+		DF5C52D1C36D20423DC3AD16 /* Weeks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3FD95AD82DB13A5DC6ED219 /* Weeks.swift */; };
 		E5846128D8DE28175F206D60 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B86CFE19AA4BCFB6096A4F /* Feedback.swift */; };
 		E5B051BEE8B09C3F201EA81D /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753DFB09CA75532929378CD6 /* AppEnvironment.swift */; };
 		E67DDC83407D4B66E10E45F6 /* Controls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E8FBB8AD0C7AFF4D36723 /* Controls.swift */; };
+		EAA7C4126582F61FFFF71791 /* AudioPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3351AA8B5E365E8C4372AB /* AudioPlayerView.swift */; };
+		F2EFE79EF91A5FE9CC55B82C /* WeeksUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B703DE601F95DAB5450EB903 /* WeeksUITests.swift */; };
 		F7387760A51106FC5288D2B4 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D14BC98B0419EB3F3EF99AA /* OnboardingView.swift */; };
 		FA3F698E58C1C87E8D2F19FE /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 875AF43948CD0D749AEF889B /* AccessibilityUITests.swift */; };
 		FB0C078E3D3C268EC16CEEA3 /* ToeflyFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = 8658418D4BE7A017A5DF085D /* ToeflyFeatures */; };
+		FBFA0BA2FE6C67E4BEDE2418 /* PlayerLayouts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FD70B20D391265B1E05736 /* PlayerLayouts.swift */; };
 		FEB896F2EE1E66B370147612 /* WebAuthenticationSessionAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91EDA95C8B214F7D5168057 /* WebAuthenticationSessionAuthenticator.swift */; };
 /* End PBXBuildFile section */
 
@@ -46,21 +55,30 @@
 		04B86CFE19AA4BCFB6096A4F /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		138E8FBB8AD0C7AFF4D36723 /* Controls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controls.swift; sourceTree = "<group>"; };
 		13AE5CA7DA7C7CA90931CA25 /* ToeflyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToeflyApp.swift; sourceTree = "<group>"; };
+		19D9B990301958CFE9848526 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		1C5C45CCE8A73D52BA23146C /* ToeflyUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ToeflyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2492E21F5F7BA7C0C2144B02 /* HomeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeUITests.swift; sourceTree = "<group>"; };
 		35DC426488BDF69DEB4C3DA9 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
 		4B0200F9321CDD8291BC980A /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		4BFF07D5D28C5E29EE87FBF1 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
 		630984AA9A93AC023AD52461 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		635AEC5E58CC492F56689219 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		69C11969F844DF50AF74992D /* PlayerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerUITests.swift; sourceTree = "<group>"; };
 		6F50573EB6CA479B38E01EB8 /* ToeflyButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToeflyButton.swift; sourceTree = "<group>"; };
+		745A7628F681A583DCC086E8 /* TaskPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskPlayerView.swift; sourceTree = "<group>"; };
 		745ECC304B6FCDB6946DE3E5 /* Toefly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Toefly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		753DFB09CA75532929378CD6 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		7D14BC98B0419EB3F3EF99AA /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		875AF43948CD0D749AEF889B /* AccessibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUITests.swift; sourceTree = "<group>"; };
 		9A59B2A6CEB28BCBE132F8C0 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		9B3351AA8B5E365E8C4372AB /* AudioPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerView.swift; sourceTree = "<group>"; };
 		A010DEFAB2BC6A56F1327DBE /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		A1FD70B20D391265B1E05736 /* PlayerLayouts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLayouts.swift; sourceTree = "<group>"; };
 		A388FD1E50C2335EF450A5B1 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A3FD95AD82DB13A5DC6ED219 /* Weeks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weeks.swift; sourceTree = "<group>"; };
 		AAAAC0BBA294585BCDF19761 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
+		B703DE601F95DAB5450EB903 /* WeeksUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeksUITests.swift; sourceTree = "<group>"; };
+		BD90618C264F671F91942169 /* WeeksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeksView.swift; sourceTree = "<group>"; };
 		C114F63E10BE951CC13D111F /* SignInUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInUITests.swift; sourceTree = "<group>"; };
 		CC2717458B562AA39ACF559F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D1F39851558167F1A892182A /* Chrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chrome.swift; sourceTree = "<group>"; };
@@ -124,6 +142,24 @@
 			path = Packages;
 			sourceTree = "<group>";
 		};
+		320D6850B69171E8A01DEB0C /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				9B3351AA8B5E365E8C4372AB /* AudioPlayerView.swift */,
+				A1FD70B20D391265B1E05736 /* PlayerLayouts.swift */,
+				745A7628F681A583DCC086E8 /* TaskPlayerView.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		38AB27F3AFF79492FC62B689 /* Weeks */ = {
+			isa = PBXGroup;
+			children = (
+				BD90618C264F671F91942169 /* WeeksView.swift */,
+			);
+			path = Weeks;
+			sourceTree = "<group>";
+		};
 		40BEF24781FD1C4D7EB1E58D /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -149,10 +185,22 @@
 				F21E4B9B9BA4B0635CFB27C0 /* Home */,
 				0A423A9952774EA55563C420 /* Main */,
 				2FB4A7C8FC93FD9A048C7032 /* Onboarding */,
+				320D6850B69171E8A01DEB0C /* Player */,
 				2FD4552D99288B360FC20780 /* Profile */,
+				BA91C3DB7F8AC287037B2741 /* Review */,
+				A05AFE3059E4057301F4DF8A /* Today */,
+				38AB27F3AFF79492FC62B689 /* Weeks */,
 				A1BD0C430E08E80D5A059A77 /* Welcome */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		A05AFE3059E4057301F4DF8A /* Today */ = {
+			isa = PBXGroup;
+			children = (
+				635AEC5E58CC492F56689219 /* TodayView.swift */,
+			);
+			path = Today;
 			sourceTree = "<group>";
 		};
 		A1BD0C430E08E80D5A059A77 /* Welcome */ = {
@@ -182,6 +230,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BA91C3DB7F8AC287037B2741 /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				19D9B990301958CFE9848526 /* ReviewView.swift */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
 		CE025E09B40CE7DA37486CD0 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -191,6 +247,7 @@
 				04B86CFE19AA4BCFB6096A4F /* Feedback.swift */,
 				35DC426488BDF69DEB4C3DA9 /* Progress.swift */,
 				6F50573EB6CA479B38E01EB8 /* ToeflyButton.swift */,
+				A3FD95AD82DB13A5DC6ED219 /* Weeks.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -212,8 +269,10 @@
 				875AF43948CD0D749AEF889B /* AccessibilityUITests.swift */,
 				2492E21F5F7BA7C0C2144B02 /* HomeUITests.swift */,
 				AAAAC0BBA294585BCDF19761 /* OnboardingUITests.swift */,
+				69C11969F844DF50AF74992D /* PlayerUITests.swift */,
 				C114F63E10BE951CC13D111F /* SignInUITests.swift */,
 				4BFF07D5D28C5E29EE87FBF1 /* UITestSupport.swift */,
+				B703DE601F95DAB5450EB903 /* WeeksUITests.swift */,
 			);
 			path = ToeflyUITests;
 			sourceTree = "<group>";
@@ -326,6 +385,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5B051BEE8B09C3F201EA81D /* AppEnvironment.swift in Sources */,
+				EAA7C4126582F61FFFF71791 /* AudioPlayerView.swift in Sources */,
 				4FF94135761972BE73718C27 /* Card.swift in Sources */,
 				842B52A03A8EAC6E6432F5DE /* Chrome.swift in Sources */,
 				E67DDC83407D4B66E10E45F6 /* Controls.swift in Sources */,
@@ -333,12 +393,18 @@
 				ABFBD5E94834B0E5BE025BD5 /* HomeView.swift in Sources */,
 				01823D67F0B6EDC09428ECFF /* MainTabView.swift in Sources */,
 				F7387760A51106FC5288D2B4 /* OnboardingView.swift in Sources */,
+				FBFA0BA2FE6C67E4BEDE2418 /* PlayerLayouts.swift in Sources */,
 				8D5FE2E95F20631C90D843E3 /* ProfileView.swift in Sources */,
 				CF20D3673148FE3A362A250E /* Progress.swift in Sources */,
+				05BC715B5BD1CCAEA8064BD4 /* ReviewView.swift in Sources */,
+				A34B5F3CDE18B6F48A33D271 /* TaskPlayerView.swift in Sources */,
+				C15056304A1C7AD071445C9B /* TodayView.swift in Sources */,
 				8AE4B171554946C4699EFA3E /* ToeflyApp.swift in Sources */,
 				A69E7B4691F9FB3800D60C9C /* ToeflyButton.swift in Sources */,
 				84FB6259468213A67EBAFE21 /* Tokens.swift in Sources */,
 				FEB896F2EE1E66B370147612 /* WebAuthenticationSessionAuthenticator.swift in Sources */,
+				DF5C52D1C36D20423DC3AD16 /* Weeks.swift in Sources */,
+				98C18007C004BB28397A3194 /* WeeksView.swift in Sources */,
 				BEC095185321569DBDC5D9B5 /* WelcomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -350,8 +416,10 @@
 				FA3F698E58C1C87E8D2F19FE /* AccessibilityUITests.swift in Sources */,
 				8501E1AFB5C7BACEEAB778E6 /* HomeUITests.swift in Sources */,
 				2EFAD3C3D34C0496FBF9F839 /* OnboardingUITests.swift in Sources */,
+				8A31490059D8C37D57FD3D2F /* PlayerUITests.swift in Sources */,
 				C61565C61CCCDA8749ED8FD8 /* SignInUITests.swift in Sources */,
 				69839BDEEBE201AC525256B9 /* UITestSupport.swift in Sources */,
+				F2EFE79EF91A5FE9CC55B82C /* WeeksUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

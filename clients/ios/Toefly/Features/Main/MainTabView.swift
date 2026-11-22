@@ -1,4 +1,5 @@
 import SwiftUI
+import ToeflyCore
 import ToeflyFeatures
 
 /// Five tabs of the student with the system iOS 26 `TabView` (glass from the system) and the floating AI Tutor
@@ -10,17 +11,18 @@ struct MainTabView: View {
         TabView(selection: $app.selectedTab) {
             ForEach(AppTab.allCases, id: \.self) { tab in
                 Tab(tab.title, systemImage: tab.symbol, value: tab) {
-                    NavigationStack {
-                        screen(for: tab)
-                    }
+                    stack(for: tab)
                 }
                 .accessibilityIdentifier("tab-\(tab.rawValue)")
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            TutorFab { app.isTutorPresented = true }
-                .padding(.trailing, Space.s4)
-                .padding(.bottom, 72)
+            // The player has its own "Ask Toefly Tutor" in the toolbar and needs the bottom edge for its footer.
+            if !app.isPlayerOpen {
+                TutorFab { app.isTutorPresented = true }
+                    .padding(.trailing, Space.s4)
+                    .padding(.bottom, 72)
+            }
         }
         .sheet(isPresented: $app.isTutorPresented) {
             TutorSheet(tab: app.selectedTab)
@@ -29,6 +31,29 @@ struct MainTabView: View {
         .sheet(isPresented: $app.isProfilePresented) {
             NavigationStack {
                 ProfileView(app: app)
+            }
+        }
+    }
+
+    @ViewBuilder private func stack(for tab: AppTab) -> some View {
+        switch tab {
+        case .today:
+            NavigationStack(path: $app.todayPath) {
+                if let today = app.today {
+                    TodayView(model: today, route: app.route(for:))
+                        .navigationDestination(for: AppRoute.self) { RouteView(app: app, route: $0, tab: .today) }
+                }
+            }
+        case .weeks:
+            NavigationStack(path: $app.weeksPath) {
+                if let weeks = app.weeks {
+                    WeeksView(model: weeks)
+                        .navigationDestination(for: AppRoute.self) { RouteView(app: app, route: $0, tab: .weeks) }
+                }
+            }
+        default:
+            NavigationStack {
+                screen(for: tab)
             }
         }
     }
@@ -65,8 +90,7 @@ struct ComingSoonView: View {
 
     private var text: String {
         switch tab {
-        case .today: "Your tasks for the day, in any order, with the time for each."
-        case .weeks: "Every week of your plan with its cover, progress and sections."
+        case .today, .weeks: ""
         case .library: "Grammar, vocabulary and practice by task type."
         case .progress: "Your band forecast, time spent and progress by section."
         case .home: ""
@@ -105,5 +129,68 @@ struct TutorSheet: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("tutor-sheet")
+    }
+}
+
+/// A screen of the Today or Weeks stack (docs/07-ux-ui.md §4.3).
+struct RouteView: View {
+    let app: AppModel
+    let route: AppRoute
+    let tab: AppTab
+
+    var body: some View {
+        switch route {
+        case let .week(id):
+            WeekView(model: app.weekModel(id), route: app.route(for:))
+        case let .section(weekId, section):
+            SectionView(model: app.weekModel(weekId), section: section, route: app.route(for:))
+        case let .task(task):
+            TaskScreen(app: app, task: task, tab: tab)
+        case let .review(attemptId):
+            ReviewView(model: app.reviewModel(attemptId)) { app.isTutorPresented = true }
+        }
+    }
+}
+
+/// A task: the player of a closed item set, or a note that it opens in a later update (AC-05.01.4).
+struct TaskScreen: View {
+    let app: AppModel
+    let task: WeekTask
+    let tab: AppTab
+    @State private var player: TaskPlayerViewModel?
+
+    init(app: AppModel, task: WeekTask, tab: AppTab) {
+        self.app = app
+        self.task = task
+        self.tab = tab
+        _player = State(initialValue: TaskDestination.of(task) == .player ? app.playerModel(for: task) : nil)
+    }
+
+    var body: some View {
+        if let player {
+            TaskPlayerView(
+                model: player,
+                onSubmitted: { app.showReview($0, in: tab) },
+                askTutor: { app.isTutorPresented = true },
+            )
+            .onAppear { app.isPlayerOpen = true }
+            .onDisappear { app.isPlayerOpen = false }
+        } else {
+            ZStack {
+                MeshBackground(variant: .app)
+                EmptyState(systemImage: WeekSectionStyle.symbol(task.section), title: task.title, text: laterText)
+            }
+            .navigationTitle(task.section.label)
+            .navigationBarTitleDisplayMode(.inline)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("task-later")
+        }
+    }
+
+    private var laterText: String {
+        if case let .later(text) = TaskDestination.of(task) {
+            return text
+        }
+        return "This task opens in the next update of TOEFLY."
     }
 }
