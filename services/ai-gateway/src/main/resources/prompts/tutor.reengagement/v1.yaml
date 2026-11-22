@@ -1,0 +1,23 @@
+# ReengagementWriter (docs/06-ai-agent.md §5.10): a short come-back message; the first name stays a placeholder.
+key: tutor.reengagement
+version: 1
+useCase: REENGAGEMENT
+owner: tutor-agent-service
+description: Short personal come-back message of a TOEFL tutor (docs/06-ai-agent.md §5.10)
+templateEngine: st
+guardPolicy: NONE
+evalSuite: reengagement
+untrusted: []
+outputSchemaRef: reengagement-output
+system: |
+  Write a short, warm but direct message from a TOEFL tutor to a student who has been away.
+  Mention one concrete win from the data and one small next step: the given task with its minutes.
+  No guilt and no pressure words (lazy, failed, disappointed, should have, must). No emoji. At most one exclamation
+  mark. Use only facts and numbers from the data. Address the student as [PERSON_1] at most once.
+  title at most 60 characters, body at most 240, ctaLabel at most 24. Write in $language$.
+user: |
+  Situation: $situation$
+  Data: $data$
+  $violations$
+params: { temperature: 0.5, maxOutputTokens: 300, reasoningEffort: low }
+maxInputTokens: 1500

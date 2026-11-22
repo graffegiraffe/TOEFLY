@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["headline", "summary", "topMistakes", "strengths", "nextWeekFocus", "motivation"],
+  "properties": {
+    "headline": { "type": "string", "maxLength": 90 },
+    "summary": { "type": "string", "maxLength": 600 },
+    "topMistakes": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subcategory", "count", "pattern", "advice"],
+        "properties": {
+          "subcategory": { "type": "string" },
+          "count": { "type": "integer", "minimum": 1 },
+          "pattern": { "type": "string", "maxLength": 160 },
+          "example": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wrong", "right"],
+            "properties": {
+              "wrong": { "type": "string", "maxLength": 200 },
+              "right": { "type": "string", "maxLength": 200 }
+            }
+          },
+          "advice": { "type": "string", "maxLength": 200 },
+          "unitRefs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "strengths": { "type": "array", "minItems": 1, "maxItems": 3, "items": { "type": "string", "maxLength": 160 } },
+    "nextWeekFocus": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subcategory", "why"],
+        "properties": {
+          "subcategory": { "type": "string" },
+          "why": { "type": "string", "maxLength": 160 }
+        }
+      }
+    },
+    "motivation": { "type": "string", "maxLength": 200 }
+  }
+}
