@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { onboardingQuery } from '@/api/queries';
 import { logout } from '@/api/session';
+import { PaywallHost } from '@/components/billing/paywall';
 import { AppShell } from '@/components/shell/app-shell';
 import { resumeStep } from '@/lib/onboarding';
 
@@ -32,6 +33,7 @@ function AppLayout() {
       onSignOut={() => void signOut()}
     >
       <Outlet />
+      <PaywallHost />
     </AppShell>
   );
 }

@@ -18,6 +18,7 @@ describe('docs/07 §5.19 settings tabs', () => {
       'appearance',
       'privacy',
       'account',
+      'billing',
     ]);
     expect(settingsTabsFor(['TUTOR'])).not.toContain('goal');
     expect(settingsTabsFor(['TUTOR'])).not.toContain('schedule');

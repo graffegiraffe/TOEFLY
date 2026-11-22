@@ -1,6 +1,16 @@
-// Settings tabs of docs/07-ux-ui.md §5.19. Notifications open with notification-service (phase 11b).
+// Settings tabs of docs/07-ux-ui.md §5.19. Notifications open with notification-service (phase 11b); Billing
+// (phase 11a) leads to its own page /billing (§5.20).
 
-export const SETTINGS_TABS = ['profile', 'goal', 'schedule', 'learning', 'appearance', 'privacy', 'account'] as const;
+export const SETTINGS_TABS = [
+  'profile',
+  'goal',
+  'schedule',
+  'learning',
+  'appearance',
+  'privacy',
+  'account',
+  'billing',
+] as const;
 
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
