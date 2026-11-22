@@ -6,7 +6,6 @@ import com.toefly.aigateway.adapter.out.persistence.JdbcAiCallRepositoryAdapter;
 import com.toefly.aigateway.adapter.out.persistence.JdbcEvalRunAdapter;
 import com.toefly.aigateway.adapter.out.persistence.JdbcPromptRepositoryAdapter;
 import com.toefly.aigateway.adapter.out.persistence.JdbcProviderQuotaAdapter;
-import com.toefly.aigateway.adapter.out.provider.GroqChatAdapter;
 import com.toefly.aigateway.adapter.out.provider.GroqTranscriptionAdapter;
 import com.toefly.aigateway.adapter.out.provider.HttpAudioSourceAdapter;
 import com.toefly.aigateway.adapter.out.provider.JtokkitTokenCounter;
@@ -14,6 +13,7 @@ import com.toefly.aigateway.adapter.out.provider.OllamaChatAdapter;
 import com.toefly.aigateway.adapter.out.provider.OllamaEmbeddingAdapter;
 import com.toefly.aigateway.adapter.out.provider.OllamaGuardAdapter;
 import com.toefly.aigateway.adapter.out.provider.OllamaNerAdapter;
+import com.toefly.aigateway.adapter.out.provider.OpenAiCompatibleChatAdapter;
 import com.toefly.aigateway.adapter.out.resilience.Resilience4jAdapter;
 import com.toefly.aigateway.adapter.out.schema.JsonOutputSchemaAdapter;
 import com.toefly.aigateway.adapter.out.template.PromptFileSource;
@@ -29,6 +29,7 @@ import com.toefly.aigateway.domain.quota.ProviderQuota;
 import com.toefly.aigateway.domain.quota.QuotaDimension;
 import com.toefly.aigateway.domain.quota.QuotaLimit;
 import com.toefly.aigateway.domain.quota.ReservePolicy;
+import com.toefly.aigateway.domain.routing.AiProvider;
 import com.toefly.aigateway.domain.routing.ModelRef;
 import com.toefly.common.outbox.IntegrationEventPublisher;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -87,11 +88,23 @@ class AiGatewayConfig {
     }
 
     @Bean
-    GroqChatAdapter groqChatAdapter(AiGatewayProperties properties) {
-        return new GroqChatAdapter(
+    OpenAiCompatibleChatAdapter groqChatAdapter(AiGatewayProperties properties) {
+        return new OpenAiCompatibleChatAdapter(
+                AiProvider.GROQ,
+                "GROQ_API_KEY",
                 properties.groq().openAiBaseUrl(),
                 properties.groq().apiKey(),
                 properties.groq().timeout());
+    }
+
+    @Bean
+    OpenAiCompatibleChatAdapter zaiChatAdapter(AiGatewayProperties properties) {
+        return new OpenAiCompatibleChatAdapter(
+                AiProvider.ZAI,
+                "ZAI_API_KEY",
+                properties.zai().baseUrl(),
+                properties.zai().apiKey(),
+                properties.zai().timeout());
     }
 
     @Bean

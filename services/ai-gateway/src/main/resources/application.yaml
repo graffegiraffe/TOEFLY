@@ -53,6 +53,10 @@ toefly:
       base-url: https://api.groq.com
       api-key: ${GROQ_API_KEY:}
       timeout: PT60S
+    zai:
+      base-url: https://api.z.ai/api/paas/v4
+      api-key: ${ZAI_API_KEY:}
+      timeout: PT90S
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
     azure-speech:
@@ -79,6 +83,8 @@ toefly:
       retry-jitter: PT0.3S
       concurrency:
         OLLAMA: 2
+        # Free GLM Flash models are limited by parallel requests, not tokens (ADR-0032).
+        ZAI: 2
         "[AZURE_SPEECH:pronunciation-assessment]": 1
     quotas:
       reserve-floor:

@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record AiGatewayProperties(
         @Nullable String routesConfig,
         @DefaultValue Groq groq,
+        @DefaultValue Zai zai,
         @DefaultValue Ollama ollama,
         @DefaultValue AzureSpeech azureSpeech,
         @DefaultValue Quotas quotas,
@@ -37,6 +38,12 @@ public record AiGatewayProperties(
             return baseUrl.endsWith("/") ? baseUrl + "openai/v1" : baseUrl + "/openai/v1";
         }
     }
+
+    /** Z.ai (GLM) through its OpenAI-compatible API (ADR-0032). */
+    public record Zai(
+            @DefaultValue("https://api.z.ai/api/paas/v4") String baseUrl,
+            @DefaultValue("") String apiKey,
+            @DefaultValue("PT90S") Duration timeout) {}
 
     public record Ollama(
             @DefaultValue("http://localhost:11434") String baseUrl) {}

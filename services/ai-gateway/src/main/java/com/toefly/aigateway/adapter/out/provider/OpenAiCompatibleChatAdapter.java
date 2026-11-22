@@ -11,17 +11,22 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 
 /**
- * Groq through its OpenAI-compatible endpoint with Spring AI {@link OpenAiChatModel} (§2.1). Retries of the SDK are
- * off: the fallback chain owns repeats, quota and breakers.
+ * A provider with an OpenAI-compatible endpoint (Groq, Z.ai) through Spring AI {@link OpenAiChatModel} (§2.1, ADR-0032).
+ * Retries of the SDK are off: the fallback chain owns repeats, quota and breakers.
  */
-public class GroqChatAdapter extends SpringAiChatSupport {
+public class OpenAiCompatibleChatAdapter extends SpringAiChatSupport {
 
+    private final AiProvider provider;
+    private final String keyName;
     private final String baseUrl;
     private final String apiKey;
     private final Duration timeout;
     private final Map<String, OpenAiChatModel> models = new ConcurrentHashMap<>();
 
-    public GroqChatAdapter(String baseUrl, String apiKey, Duration timeout) {
+    public OpenAiCompatibleChatAdapter(
+            AiProvider provider, String keyName, String baseUrl, String apiKey, Duration timeout) {
+        this.provider = provider;
+        this.keyName = keyName;
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.timeout = timeout;
@@ -29,7 +34,7 @@ public class GroqChatAdapter extends SpringAiChatSupport {
 
     @Override
     public AiProvider provider() {
-        return AiProvider.GROQ;
+        return provider;
     }
 
     @Override
@@ -37,7 +42,7 @@ public class GroqChatAdapter extends SpringAiChatSupport {
         if (apiKey.isBlank()) {
             throw new com.toefly.aigateway.application.port.out.ProviderFailure(
                     com.toefly.aigateway.application.port.out.ProviderFailure.Kind.REJECTED,
-                    "GROQ_API_KEY is not set",
+                    keyName + " is not set",
                     null,
                     null);
         }
@@ -69,6 +74,10 @@ public class GroqChatAdapter extends SpringAiChatSupport {
         }
         if (name.startsWith("openai/gpt-oss") && request.params().reasoningEffort() != null) {
             options.reasoningEffort(request.params().reasoningEffort());
+        }
+        if (provider == AiProvider.ZAI) {
+            // GLM thinks by default and spends the output budget on it; grading needs the JSON answer (ADR-0032).
+            options.extraBody(Map.of("thinking", Map.of("type", "disabled")));
         }
         if (request.jsonSchema() != null) {
             OpenAiChatModel.ResponseFormat format = new OpenAiChatModel.ResponseFormat();
