@@ -1,0 +1,473 @@
+{
+  "suite": "writing-discussion",
+  "promptKey": "writing.grade.discussion",
+  "promptVersion": 2,
+  "promptSha256": "0cac4e1bff6430d21fcb6e33f5b17f22c1b04f8fe7c0fcb2187883ac35baa9ed",
+  "anchorsSha256": "f0d440502b36e658896c97ba5974211615facda5eafebebe509d35fa1b80f207",
+  "mode": "FULL",
+  "ranAt": "2026-11-22T16:15:49.100696Z",
+  "metrics": {
+    "cases": 26.0,
+    "goldCases": 15.0,
+    "within05": 0.8,
+    "within10": 1.0,
+    "mae": 0.36666666666666664,
+    "bias": -0.23333333333333334,
+    "absBias": 0.23333333333333334,
+    "qwk": 0.4117647058823529,
+    "monotonicity": 1.0,
+    "tutorErrorRecall": 0.625,
+    "anchoring": 0.9772727272727273,
+    "errors": 0.0
+  },
+  "thresholds": {
+    "within05": [
+      0.8,
+      "NaN"
+    ],
+    "within10": [
+      0.95,
+      "NaN"
+    ],
+    "qwk": [
+      0.7,
+      "NaN"
+    ],
+    "absBias": [
+      "NaN",
+      0.3
+    ],
+    "monotonicity": [
+      0.95,
+      "NaN"
+    ],
+    "tutorErrorRecall": [
+      0.7,
+      "NaN"
+    ],
+    "anchoring": [
+      0.97,
+      "NaN"
+    ]
+  },
+  "passed": false,
+  "cases": [
+    {
+      "caseId": "wd-01-v1",
+      "split": "eval",
+      "gold": 3.5,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 6,
+      "commentsAnchored": 6
+    },
+    {
+      "caseId": "wd-01-v1-truncated",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 2.0,
+      "passes": [
+        2,
+        2
+      ],
+      "flags": [],
+      "distortionOf": "wd-01-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-02-v1",
+      "split": "eval",
+      "gold": 4.0,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-02-v1-typos",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": "wd-02-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 11,
+      "commentsAnchored": 11
+    },
+    {
+      "caseId": "wd-03-v1",
+      "split": "eval",
+      "gold": 3.5,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 12,
+      "commentsAnchored": 9
+    },
+    {
+      "caseId": "wd-03-v1-run_on",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 2.0,
+      "passes": [
+        2,
+        2
+      ],
+      "flags": [],
+      "distortionOf": "wd-03-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 7,
+      "commentsAnchored": 6
+    },
+    {
+      "caseId": "wd-04-v1",
+      "split": "eval",
+      "gold": 4.0,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 2,
+      "tutorErrorsFound": 0,
+      "comments": 5,
+      "commentsAnchored": 5
+    },
+    {
+      "caseId": "wd-04-v1-truncated",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 1.5,
+      "passes": [
+        2,
+        1
+      ],
+      "flags": [],
+      "distortionOf": "wd-04-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 5,
+      "commentsAnchored": 5
+    },
+    {
+      "caseId": "wd-05-v1",
+      "split": "eval",
+      "gold": 3.0,
+      "predicted": 2.5,
+      "passes": [
+        2,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 11,
+      "commentsAnchored": 11
+    },
+    {
+      "caseId": "wd-05-v1-typos",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 2.0,
+      "passes": [
+        2,
+        2
+      ],
+      "flags": [],
+      "distortionOf": "wd-05-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 14,
+      "commentsAnchored": 14
+    },
+    {
+      "caseId": "wd-06-v1",
+      "split": "eval",
+      "gold": 3.5,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 6,
+      "commentsAnchored": 6
+    },
+    {
+      "caseId": "wd-06-v1-run_on",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": "wd-06-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-07-v1",
+      "split": "eval",
+      "gold": 3.0,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 12,
+      "commentsAnchored": 12
+    },
+    {
+      "caseId": "wd-07-v1-truncated",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 2.0,
+      "passes": [
+        3,
+        1,
+        2
+      ],
+      "flags": [],
+      "distortionOf": "wd-07-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 5,
+      "commentsAnchored": 5
+    },
+    {
+      "caseId": "wd-08-v1",
+      "split": "eval",
+      "gold": 3.0,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 2,
+      "tutorErrorsFound": 1,
+      "comments": 5,
+      "commentsAnchored": 5
+    },
+    {
+      "caseId": "wd-08-v1-typos",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": "wd-08-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-08-v2",
+      "split": "eval",
+      "gold": 3.5,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 6,
+      "commentsAnchored": 6
+    },
+    {
+      "caseId": "wd-09-v1",
+      "split": "eval",
+      "gold": 3.5,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-09-v1-run_on",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": "wd-09-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 11,
+      "commentsAnchored": 11
+    },
+    {
+      "caseId": "wd-09-v2",
+      "split": "eval",
+      "gold": 4.0,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 7,
+      "commentsAnchored": 7
+    },
+    {
+      "caseId": "wd-10-v1",
+      "split": "eval",
+      "gold": 2.5,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 4,
+      "tutorErrorsFound": 4,
+      "comments": 10,
+      "commentsAnchored": 9
+    },
+    {
+      "caseId": "wd-10-v1-truncated",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 1.5,
+      "passes": [
+        2,
+        1
+      ],
+      "flags": [],
+      "distortionOf": "wd-10-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 4,
+      "commentsAnchored": 4
+    },
+    {
+      "caseId": "wd-10-v3",
+      "split": "eval",
+      "gold": 3.5,
+      "predicted": 3.5,
+      "passes": [
+        3,
+        4
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 6,
+      "commentsAnchored": 6
+    },
+    {
+      "caseId": "wd-11-v1",
+      "split": "eval",
+      "gold": 4.0,
+      "predicted": 3.0,
+      "passes": [
+        3,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-11-v1-typos",
+      "split": "distortion",
+      "gold": null,
+      "predicted": 2.5,
+      "passes": [
+        2,
+        3
+      ],
+      "flags": [],
+      "distortionOf": "wd-11-v1",
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 10,
+      "commentsAnchored": 10
+    },
+    {
+      "caseId": "wd-11-v2",
+      "split": "eval",
+      "gold": 4.0,
+      "predicted": 3.5,
+      "passes": [
+        4,
+        3
+      ],
+      "flags": [],
+      "distortionOf": null,
+      "tutorErrors": 0,
+      "tutorErrorsFound": 0,
+      "comments": 7,
+      "commentsAnchored": 7
+    }
+  ]
+}
