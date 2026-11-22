@@ -1,0 +1,677 @@
+openapi: 3.1.0
+info:
+  title: TOEFLY tutor-agent-service API
+  version: 1.0.0
+  summary: Toefly Tutor — чат с контекстом экрана, модель ученика, разборы недель.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`. Ответ агента — поток SSE
+    (`meta`, `tool`, `token`, `action`, `retract`, `done`, `error`, комментарий `: ping` каждые 15 с; docs/06 §4.9).
+    Поведение — docs/06 §4–§6, §5.3, §5.10; контракт — docs/05 §6.8; временные решения — docs/12, этап 5c.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: ChatThreads, description: 'Треды чата и история сообщений' }
+  - { name: ChatStreams, description: 'Отправка сообщения и поток ответа SSE; контроллер пишется вручную' }
+  - { name: PendingActions, description: 'Подтверждение изменяющих действий агента' }
+  - { name: WeeklyReviews, description: 'Разборы недель' }
+  - { name: LearnerModel, description: 'Модель ученика' }
+  - { name: InterviewSessions, description: 'AI-интервьюер Take an Interview (этап 6)' }
+  - { name: AdminAgent, description: 'Трассы запусков агента (этап 15)' }
+paths:
+  /chat-threads:
+    post:
+      tags: [ChatThreads]
+      operationId: createChatThread
+      summary: Новый тред
+      description: |
+        Тред с необязательным контекстом экрана (ссылка, а не текст: сервис сам загружает данные у владельцев).
+        Недоступно без права `AI_TUTOR_CHAT` (`403 entitlement-required`) и во время экзамена (`409 exam-in-progress`).
+      x-toefly-roles: [STUDENT]
+      x-toefly-idempotent: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateChatThreadRequest' }
+      responses:
+        '201':
+          description: Тред создан.
+          headers:
+            Location: { $ref: '#/components/headers/Location' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatThread' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+    get:
+      tags: [ChatThreads]
+      operationId: listChatThreads
+      summary: Мои треды
+      description: Сначала треды с последним сообщением позже.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница тредов.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatThreadPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /chat-threads/{threadId}:
+    parameters:
+      - { $ref: '#/components/parameters/ThreadId' }
+    get:
+      tags: [ChatThreads]
+      operationId: getChatThread
+      summary: Тред
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Тред.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatThread' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [ChatThreads]
+      operationId: patchChatThread
+      summary: Переименовать тред или сменить язык объяснений треда
+      description: Язык треда перекрывает настройку профиля только для этого треда (docs/06 §4.1).
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChatThreadPatch' }
+      responses:
+        '200':
+          description: Тред.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatThread' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [ChatThreads]
+      operationId: deleteChatThread
+      summary: Удалить тред
+      description: Удаляет тред, его сообщения и окно памяти.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '204': { description: Удалён. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /chat-threads/{threadId}/messages:
+    parameters:
+      - { $ref: '#/components/parameters/ThreadId' }
+    get:
+      tags: [ChatThreads]
+      operationId: listChatMessages
+      summary: История сообщений
+      description: Сначала старые; `cursor` ведёт к более новым.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница сообщений.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatMessagePage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [ChatStreams]
+      operationId: sendChatMessage
+      summary: Отправить сообщение, ответ потоком SSE
+      description: |
+        Поток событий docs/06 §4.9. Отказы до вызова LLM (право, экзамен, частота, длина, guard) приходят
+        обычным Problem Details, а не потоком. Отказ guard по содержанию ответа — событие `retract`.
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendChatMessageRequest' }
+      responses:
+        '200':
+          description: Поток ответа.
+          content:
+            text/event-stream:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /chat-threads/{threadId}/messages/{messageId}/stream:
+    parameters:
+      - { $ref: '#/components/parameters/ThreadId' }
+      - { $ref: '#/components/parameters/MessageId' }
+    get:
+      tags: [ChatStreams]
+      operationId: resumeChatStream
+      summary: Возобновить поток
+      description: |
+        Повторяет события после `Last-Event-ID` (номер события) и продолжает поток, если генерация ещё идёт;
+        для завершённого ответа — оставшиеся события и `done`.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { name: Last-Event-ID, in: header, required: false, schema: { type: string, maxLength: 20 } }
+      responses:
+        '200':
+          description: Поток.
+          content:
+            text/event-stream:
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [ChatStreams]
+      operationId: stopChatStream
+      summary: Прервать генерацию
+      description: Частичный текст сохраняется со статусом `INTERRUPTED`.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '204': { description: Остановлено. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /pending-actions/{actionId}:confirm:
+    post:
+      tags: [PendingActions]
+      operationId: confirmPendingAction
+      summary: Подтвердить действие агента
+      description: Выполняет действие (например, добавление задания в неделю) от имени ученика; повтор возвращает тот же результат.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { name: actionId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Результат.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PendingActionResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /weekly-reviews:
+    get:
+      tags: [WeeklyReviews]
+      operationId: listWeeklyReviews
+      summary: Разборы недель
+      description: Сначала последние. Параметр `studentId` для репетитора — этап 10.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { name: weekId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Страница разборов.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeeklyReviewPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /weekly-reviews/{reviewId}:
+    parameters:
+      - { $ref: '#/components/parameters/ReviewId' }
+    get:
+      tags: [WeeklyReviews]
+      operationId: getWeeklyReview
+      summary: Разбор недели
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Разбор.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeeklyReview' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /weekly-reviews/{reviewId}/tutor-note:
+    parameters:
+      - { $ref: '#/components/parameters/ReviewId' }
+    put:
+      tags: [WeeklyReviews]
+      operationId: putWeeklyReviewTutorNote
+      summary: Комментарий репетитора к разбору (этап 10)
+      description: До этапа 10 отвечает `501 not-implemented`.
+      x-toefly-roles: [TUTOR]
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TutorNoteRequest' }
+      responses:
+        '200':
+          description: Разбор.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeeklyReview' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '501': { $ref: '#/components/responses/NotImplemented' }
+  /learner-model:
+    get:
+      tags: [LearnerModel]
+      operationId: getLearnerModel
+      summary: Модель ученика
+      description: Топ ошибок с динамикой и юнитами учебников, прогноз балла. Параметр `studentId` для репетитора — этап 10.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Модель ученика; пустая до первых событий.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearnerModel' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /interview-sessions:
+    post:
+      tags: [InterviewSessions]
+      operationId: startInterviewSession
+      summary: Начать сессию AI-интервьюера (этап 6)
+      description: До этапа 6 отвечает `501 not-implemented`.
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '501': { $ref: '#/components/responses/NotImplemented' }
+  /interview-sessions/{sessionId}:
+    get:
+      tags: [InterviewSessions]
+      operationId: getInterviewSession
+      summary: Сессия AI-интервьюера (этап 6)
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { name: sessionId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '501': { $ref: '#/components/responses/NotImplemented' }
+  /admin/agent-runs:
+    get:
+      tags: [AdminAgent]
+      operationId: listAgentRuns
+      summary: Трассы запусков агента (этап 15)
+      x-toefly-roles: [ADMIN]
+      responses:
+        '501': { $ref: '#/components/responses/NotImplemented' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+  parameters:
+    ThreadId:
+      name: threadId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    MessageId:
+      name: messageId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID операции; повтор с тем же ключом и телом возвращает сохранённый ответ (хранится 24 ч).
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Сильный ETag ресурса (номер версии агрегата), например `"7"`.
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Непрозрачный курсор из `page.nextCursor`.
+      schema: { type: string, maxLength: 1024 }
+  headers:
+    Location:
+      description: Адрес созданного ресурса.
+      schema: { type: string, format: uri-reference }
+    RetryAfter:
+      description: Секунды до повтора.
+      schema: { type: integer, minimum: 0 }
+  responses:
+    BadRequest:
+      description: "`400` — `validation-failed`, `malformed-request`, `invalid-cursor`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: "`401 unauthenticated`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: "`403` — `forbidden`, `entitlement-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409` — `exam-in-progress`, `message-in-progress`, `action-expired`, `conflict`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionFailed:
+      description: "`412 version-mismatch`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428 idempotency-key-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: "`422` — `guardrail-rejected` (поле `category`) или `idempotency-key-reuse`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: "`429 rate-limited` — больше 20 сообщений за 10 мин или 200 в сутки."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: "`503` — `ai-unavailable` или `dependency-unavailable`."
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotImplemented:
+      description: "`501 not-implemented` — операция появится в указанном этапе."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }
+        instance: { type: string, format: uri-reference }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$' }
+        requestId: { type: string }
+        traceId: { type: string }
+      additionalProperties: true
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'] }
+        hasMore: { type: boolean }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    ExplanationLanguage:
+      type: string
+      enum: [EN, RU]
+    ChatContextType:
+      type: string
+      description: Контекст экрана (docs/06 §4.5). `ATTEMPT_IN_PROGRESS` и `SUBMISSION_DRAFT` сервис определяет сам по состоянию у владельца.
+      enum: [GENERAL, WEEK, ATTEMPT_IN_PROGRESS, ATTEMPT_REVIEW, SUBMISSION_DRAFT, SUBMISSION_REVIEW, WEEKLY_REVIEW, VOCABULARY, GRAMMAR_UNIT]
+    ChatContext:
+      type: object
+      required: [type]
+      properties:
+        type: { $ref: '#/components/schemas/ChatContextType' }
+        ref: { type: [string, 'null'], format: uuid, description: 'attemptId, submissionId, weekId или reviewId.' }
+        itemId: { type: [string, 'null'], format: uuid, description: Вопрос внутри попытки. }
+        label: { type: [string, 'null'], maxLength: 120, readOnly: true, description: 'Текст чипа, например «Academic Discussion — Week 3».' }
+    CreateChatThreadRequest:
+      type: object
+      properties:
+        title: { type: [string, 'null'], maxLength: 120 }
+        context: { oneOf: [{ $ref: '#/components/schemas/ChatContext' }, { type: 'null' }] }
+    ChatThreadPatch:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        language: { $ref: '#/components/schemas/ExplanationLanguage' }
+    ChatThread:
+      type: object
+      required: [threadId, title, language, createdAt, messageCount]
+      properties:
+        threadId: { type: string, format: uuid }
+        title: { type: string }
+        context: { oneOf: [{ $ref: '#/components/schemas/ChatContext' }, { type: 'null' }] }
+        language: { $ref: '#/components/schemas/ExplanationLanguage' }
+        createdAt: { type: string, format: date-time }
+        lastMessageAt: { type: [string, 'null'], format: date-time }
+        messageCount: { type: integer, minimum: 0 }
+    ChatThreadPage:
+      type: object
+      required: [items, page]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ChatThread' } }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    ChatMessageRole:
+      type: string
+      enum: [USER, ASSISTANT]
+    ChatMessageStatus:
+      type: string
+      description: "`STREAMING` — генерация идёт; `INTERRUPTED` — остановлена учеником или обрывом; `RETRACTED` — заменена отказом output guard."
+      enum: [COMPLETE, STREAMING, INTERRUPTED, RETRACTED, FAILED]
+    TutorIntent:
+      type: string
+      enum: [EXPLAIN_MISTAKE, WRITING_FEEDBACK, SPEAKING_FEEDBACK, GRAMMAR_QUESTION, VOCABULARY_QUESTION, PLAN_QUESTION, PROGRESS_QUESTION, STRATEGY_QUESTION, MOTIVATION, PRACTICE_REQUEST, SOLVE_IN_PROGRESS, OFF_TOPIC]
+    ChatAction:
+      type: object
+      required: [actionId, type, title, status]
+      properties:
+        actionId: { type: string, format: uuid }
+        type: { type: string, enum: [ASSIGN_EXTRA_TASK] }
+        title: { type: string, maxLength: 120 }
+        status: { type: string, enum: [PENDING, CONFIRMED, EXPIRED] }
+        confirmUrl: { type: string, format: uri-reference }
+    ChatMessage:
+      type: object
+      required: [messageId, role, text, status, createdAt]
+      properties:
+        messageId: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/ChatMessageRole' }
+        text: { type: string }
+        status: { $ref: '#/components/schemas/ChatMessageStatus' }
+        intent: { oneOf: [{ $ref: '#/components/schemas/TutorIntent' }, { type: 'null' }] }
+        context: { oneOf: [{ $ref: '#/components/schemas/ChatContext' }, { type: 'null' }] }
+        actions: { type: array, items: { $ref: '#/components/schemas/ChatAction' } }
+        tools: { type: array, items: { type: string }, description: Имена вызванных инструментов. }
+        createdAt: { type: string, format: date-time }
+    ChatMessagePage:
+      type: object
+      required: [items, page]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ChatMessage' } }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    SendChatMessageRequest:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 2000 }
+        context:
+          description: Контекст экрана этого сообщения (чип); `null` — ученик снял чип, отсутствие — контекст треда.
+          oneOf: [{ $ref: '#/components/schemas/ChatContext' }, { type: 'null' }]
+    PendingActionResult:
+      type: object
+      required: [actionId, type, status]
+      properties:
+        actionId: { type: string, format: uuid }
+        type: { type: string, enum: [ASSIGN_EXTRA_TASK] }
+        status: { type: string, enum: [CONFIRMED, EXPIRED] }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+    MistakeExample:
+      type: object
+      required: [wrong, right]
+      properties:
+        wrong: { type: string, maxLength: 200 }
+        right: { type: string, maxLength: 200 }
+    ReviewMistake:
+      type: object
+      required: [subcategory, category, count, pattern, advice, unitRefs]
+      properties:
+        subcategory: { type: string }
+        category: { type: string }
+        count: { type: integer, minimum: 1 }
+        pattern: { type: string }
+        example: { oneOf: [{ $ref: '#/components/schemas/MistakeExample' }, { type: 'null' }] }
+        advice: { type: string }
+        unitRefs: { type: array, items: { $ref: '#/components/schemas/UnitRef' } }
+    UnitRef:
+      type: object
+      required: [code, title]
+      properties:
+        code: { type: string, description: 'Например `ROUNDUP5.U10`.' }
+        title: { type: string }
+    FocusItem:
+      type: object
+      required: [subcategory, why]
+      properties:
+        subcategory: { type: string }
+        why: { type: string }
+    SectionStats:
+      type: object
+      required: [section, tasksTotal, tasksDone, minutesPlanned, minutesDone]
+      properties:
+        section: { type: string }
+        tasksTotal: { type: integer }
+        tasksDone: { type: integer }
+        minutesPlanned: { type: integer }
+        minutesDone: { type: integer }
+    TaskTypeScore:
+      type: object
+      required: [taskType, attempts]
+      properties:
+        taskType: { type: string }
+        attempts: { type: integer, minimum: 0 }
+        accuracyPercent: { type: [number, 'null'], description: Доля верных ответов закрытых заданий. }
+        averageScore: { type: [number, 'null'], description: Средний балл 0–5 Writing/Speaking. }
+    WeekStats:
+      type: object
+      required: [tasksTotal, tasksDone, progressPercent, sections]
+      properties:
+        tasksTotal: { type: integer }
+        tasksDone: { type: integer }
+        progressPercent: { type: number }
+        activeMinutes: { type: [integer, 'null'] }
+        sections: { type: array, items: { $ref: '#/components/schemas/SectionStats' } }
+    BandSnapshot:
+      type: object
+      properties:
+        overall: { type: [number, 'null'] }
+        reading: { type: [number, 'null'] }
+        listening: { type: [number, 'null'] }
+        writing: { type: [number, 'null'] }
+        speaking: { type: [number, 'null'] }
+        overallDelta: { type: [number, 'null'], description: Изменение за неделю. }
+    WeeklyReview:
+      type: object
+      required: [reviewId, weekId, weekNo, generatedAt, language, aiFallback, lowActivity, headline, summary, stats, scores, topMistakes, strengths, nextWeekFocus, motivation]
+      properties:
+        reviewId: { type: string, format: uuid }
+        weekId: { type: string, format: uuid }
+        weekNo: { type: integer, minimum: 1 }
+        generatedAt: { type: string, format: date-time }
+        language: { $ref: '#/components/schemas/ExplanationLanguage' }
+        aiFallback: { type: boolean }
+        lowActivity: { type: boolean, description: 'Выполнено < 3 заданий: разбор без топ-5 ошибок (AC-18.01.5).' }
+        headline: { type: string }
+        summary: { type: string }
+        stats: { $ref: '#/components/schemas/WeekStats' }
+        scores: { type: array, items: { $ref: '#/components/schemas/TaskTypeScore' } }
+        bandSnapshot: { oneOf: [{ $ref: '#/components/schemas/BandSnapshot' }, { type: 'null' }] }
+        topMistakes: { type: array, maxItems: 5, items: { $ref: '#/components/schemas/ReviewMistake' } }
+        strengths: { type: array, items: { type: string } }
+        nextWeekFocus: { type: array, maxItems: 3, items: { $ref: '#/components/schemas/FocusItem' } }
+        motivation: { type: string }
+        tutorNote: { type: [string, 'null'] }
+    WeeklyReviewPage:
+      type: object
+      required: [items, page]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/WeeklyReview' } }
+        page: { $ref: '#/components/schemas/PageInfo' }
+    TutorNoteRequest:
+      type: object
+      required: [note]
+      properties:
+        note: { type: string, maxLength: 5000 }
+    MistakeStat:
+      type: object
+      required: [subcategory, category, weight, errorRate, trend, status, occurrences, unitRefs]
+      properties:
+        subcategory: { type: string }
+        category: { type: string }
+        title: { type: string }
+        weight: { type: number }
+        errorRate: { type: number }
+        trend: { type: string, enum: [IMPROVING, STABLE, WORSENING] }
+        status: { type: string, enum: [ACTIVE, WATCH, RESOLVED] }
+        occurrences: { type: integer, minimum: 0, description: Ошибок за 28 дней. }
+        lastSeenAt: { type: [string, 'null'], format: date-time }
+        unitRefs: { type: array, items: { $ref: '#/components/schemas/UnitRef' } }
+    LearnerModel:
+      type: object
+      required: [version, mistakeStats, language]
+      properties:
+        version: { type: integer, minimum: 0 }
+        updatedAt: { type: [string, 'null'], format: date-time }
+        mistakeStats: { type: array, items: { $ref: '#/components/schemas/MistakeStat' } }
+        bands: { oneOf: [{ $ref: '#/components/schemas/BandSnapshot' }, { type: 'null' }] }
+        language: { $ref: '#/components/schemas/ExplanationLanguage' }

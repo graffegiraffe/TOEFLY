@@ -1,0 +1,12 @@
+# Values of tutor-agent-service for the shared chart infra/helm/toefly-service-lib (phase 13 fills in the rest).
+image:
+  repository: ghcr.io/OWNER/toefly-tutor-agent-service
+  digest: ""
+service:
+  port: 8088
+database:
+  name: tutor_agent_db
+  role: tutor_agent_app
+resources:
+  requests: { cpu: 50m, memory: 320Mi }
+  limits: { memory: 448Mi }
