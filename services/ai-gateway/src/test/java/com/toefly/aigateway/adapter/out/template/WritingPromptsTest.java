@@ -9,7 +9,6 @@ import com.toefly.aigateway.domain.routing.AiUseCase;
 import com.toefly.aigateway.domain.safety.GuardPolicy;
 import java.time.Clock;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,17 +31,20 @@ class WritingPromptsTest {
             """;
 
     @Test
-    @DisplayName("both prompts load with the output schema, the guard of submissions and their eval suites")
+    @DisplayName(
+            "every writing prompt version loads with the output schema, the guard of submissions and their eval suites")
     void loadsWritingPrompts() {
         List<PromptSourcePort.Source> sources = new PromptFileSource("classpath:prompts", Clock.systemUTC()).load();
-        Map<String, PromptVersion> writing = new java.util.HashMap<>();
-        sources.stream()
+        List<PromptVersion> writing = sources.stream()
                 .map(PromptSourcePort.Source::version)
                 .filter(v -> v.key().startsWith("writing.grade."))
-                .forEach(v -> writing.put(v.key(), v));
-        assertThat(writing).containsOnlyKeys("writing.grade.email", "writing.grade.discussion");
+                .toList();
+        assertThat(writing)
+                .extracting(v -> v.key() + ":" + v.version())
+                .containsExactlyInAnyOrder(
+                        "writing.grade.email:1", "writing.grade.discussion:1", "writing.grade.discussion:2");
         JsonOutputSchemaAdapter schemas = new JsonOutputSchemaAdapter();
-        for (PromptVersion version : writing.values()) {
+        for (PromptVersion version : writing) {
             assertThat(version.useCase()).isEqualTo(AiUseCase.WRITING_GRADING);
             assertThat(version.guardPolicy()).isEqualTo(GuardPolicy.STUDENT_SUBMISSION);
             assertThat(version.untrusted()).containsExactly("responseText");
