@@ -42,14 +42,16 @@ class WritingGraderLiveEvalTest {
             }
         }
         String runId = suite + "-" + Instant.now().toString().replace(':', '-');
+        String promptKey = suite.equals("writing-email") ? "writing.grade.email" : "writing.grade.discussion";
+        int promptVersion = EvalSupport.latestPromptVersion(promptKey);
         LiveGateway gateway = LiveGateway.fromEnvironment(
-                EvalSupport.root().resolve("evals/data/recordings/" + runId));
+                        EvalSupport.root().resolve("evals/data/recordings/" + runId))
+                .promptVersion(promptVersion);
         EvalRunner runner = new EvalRunner(EvalSupport.grader(gateway));
         List<CaseResult> results = runner.run(cases);
         Map<String, Double> metrics = Metrics.compute(results);
         metrics.put("errors", (double) runner.errors.size());
-        String promptKey = suite.equals("writing-email") ? "writing.grade.email" : "writing.grade.discussion";
-        EvalReport report = EvalReport.of(suite, promptKey, 1, metrics, results);
+        EvalReport report = EvalReport.of(suite, promptKey, promptVersion, metrics, results);
         Files.createDirectories(EvalSupport.reports());
         Path file = EvalSupport.reports().resolve(suite + ".json");
         Files.writeString(file, EvalDataset.JSON.writerWithDefaultPrettyPrinter().writeValueAsString(report) + "\n");
