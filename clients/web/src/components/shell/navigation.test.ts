@@ -28,8 +28,13 @@ describe('navigation', () => {
     ]);
   });
 
-  it('only an administrator sees the content, AI and metrics administration', () => {
+  it('only an administrator sees the content, AI, metrics and billing administration', () => {
     expect(navFor(['STUDENT']).admin).toEqual([]);
-    expect(navFor(['ADMIN']).admin.map((item) => item.to)).toEqual(['/admin/content', '/admin/ai', '/admin/metrics']);
+    expect(navFor(['ADMIN']).admin.map((item) => item.to)).toEqual([
+      '/admin/content',
+      '/admin/ai',
+      '/admin/metrics',
+      '/admin/billing',
+    ]);
   });
 });

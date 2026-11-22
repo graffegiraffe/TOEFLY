@@ -3,6 +3,7 @@ import {
   Bot,
   CalendarDays,
   ClipboardList,
+  CreditCard,
   Dumbbell,
   FileText,
   Home,
@@ -45,6 +46,7 @@ export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/content', labelKey: 'nav.adminContent', icon: Library },
   { to: '/admin/ai', labelKey: 'nav.adminAi', icon: Bot },
   { to: '/admin/metrics', labelKey: 'nav.adminMetrics', icon: BarChart3 },
+  { to: '/admin/billing', labelKey: 'nav.adminBilling', icon: CreditCard },
 ];
 
 export const SETTINGS_NAV: NavItem = { to: '/settings', labelKey: 'nav.settings', icon: Settings };

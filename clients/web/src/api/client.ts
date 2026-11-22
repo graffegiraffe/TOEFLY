@@ -42,6 +42,15 @@ import {
   ProjectionsApi as AnalyticsProjectionsApi,
   StreaksApi as AnalyticsStreaksApi,
 } from './generated/analytics';
+import {
+  AdminBillingApi as BillingAdminApi,
+  CheckoutApi as BillingCheckoutApi,
+  Configuration as BillingConfiguration,
+  EntitlementsApi as BillingEntitlementsApi,
+  PlanTiersApi as BillingPlanTiersApi,
+  SubscriptionsApi as BillingSubscriptionsApi,
+} from './generated/billing';
+import { reportRefusal } from '@/lib/paywall';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
 
@@ -62,53 +71,73 @@ export const csrfMiddleware: Middleware = {
   },
 };
 
+/** A `403 entitlement-required` from any service opens the Paywall (docs/05 §2.9, docs/07 §3.21). */
+export const paywallMiddleware: Middleware = {
+  post: async ({ response }) => {
+    await reportRefusal(response);
+    return response;
+  },
+};
+
 const configuration = new Configuration({
   basePath: API_URL,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 const contentConfiguration = new ContentConfiguration({
   basePath: API_URL,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 const practiceConfiguration = new PracticeConfiguration({
   basePath: API_URL,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 // planning-service.yaml keeps its paths relative to the server /api/v1 (docs/05 §7.2).
 const planningConfiguration = new PlanningConfiguration({
   basePath: `${API_URL}/api/v1`,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 // ai-gateway.yaml also keeps its admin paths relative to /api/v1; only the AdminAi tag is public (docs/05 §6.15).
 const aiGatewayConfiguration = new AiGatewayConfiguration({
   basePath: `${API_URL}/api/v1`,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 // assessment-service.yaml keeps its paths relative to /api/v1 as well (docs/05 §6.5).
 const assessmentConfiguration = new AssessmentConfiguration({
   basePath: `${API_URL}/api/v1`,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 // analytics-service.yaml keeps its paths relative to /api/v1 too (docs/05 §6.14).
 const analyticsConfiguration = new AnalyticsConfiguration({
   basePath: `${API_URL}/api/v1`,
   credentials: 'include',
-  middleware: [csrfMiddleware],
+  middleware: [csrfMiddleware, paywallMiddleware],
+});
+
+// billing-service.yaml keeps its paths relative to /api/v1 as well (docs/05 §6.12).
+const billingConfiguration = new BillingConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware, paywallMiddleware],
 });
 
 export const api = {
+  planTiers: new BillingPlanTiersApi(billingConfiguration),
+  checkout: new BillingCheckoutApi(billingConfiguration),
+  subscriptions: new BillingSubscriptionsApi(billingConfiguration),
+  entitlements: new BillingEntitlementsApi(billingConfiguration),
+  billingAdmin: new BillingAdminApi(billingConfiguration),
   dashboards: new AnalyticsDashboardsApi(analyticsConfiguration),
   streaks: new AnalyticsStreaksApi(analyticsConfiguration),
   activity: new AnalyticsActivityApi(analyticsConfiguration),
