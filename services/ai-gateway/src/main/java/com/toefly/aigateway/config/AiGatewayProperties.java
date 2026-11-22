@@ -43,7 +43,7 @@ public record AiGatewayProperties(
     public record Zai(
             @DefaultValue("https://api.z.ai/api/paas/v4") String baseUrl,
             @DefaultValue("") String apiKey,
-            @DefaultValue("PT90S") Duration timeout) {}
+            @DefaultValue("PT240S") Duration timeout) {}
 
     public record Ollama(
             @DefaultValue("http://localhost:11434") String baseUrl) {}
