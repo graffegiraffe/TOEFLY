@@ -1,5 +1,6 @@
 package com.toefly.assessment.application.port.out;
 
+import com.toefly.assessment.domain.submission.ModelAnswer;
 import com.toefly.assessment.domain.submission.TaskType;
 import java.util.List;
 import java.util.UUID;
@@ -25,5 +26,10 @@ public record TaskContent(
     public TaskContent {
         sourceTexts = List.copyOf(sourceTexts);
         allowList = List.copyOf(allowList);
+    }
+
+    /** The model answer of the task, or null if it has none. */
+    public @Nullable ModelAnswer model() {
+        return modelAnswer == null || modelAnswer.isBlank() ? null : new ModelAnswer(modelAnswer, modelAnswerSource);
     }
 }

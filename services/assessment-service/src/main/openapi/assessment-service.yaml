@@ -23,6 +23,7 @@ tags:
   - { name: SubmissionStreams, description: 'SSE статуса проверки; контроллер пишется вручную' }
   - { name: BandEstimates, description: 'Прогноз балла' }
   - { name: AdminAssessment, description: 'Очередь отложенных проверок' }
+  - { name: InternalAssessment, description: 'Внутренние чтения для tutor-agent-service (docs/05 §9.3)' }
 paths:
   /submissions:
     post:
@@ -350,6 +351,62 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /internal/v1/submissions/{submissionId}:
+    servers:
+      - url: http://assessment-service.toefly.svc.cluster.local:8085
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/SubmissionId' }
+    get:
+      tags: [InternalAssessment]
+      operationId: getSubmissionInternal
+      summary: Работа с версиями и оценками (для инструментов агента)
+      description: |
+        Версии, оценка (итоговый балл, уровни критериев, инлайн-комментарии) и образец ответа. Образец — только если
+        показанная версия (`version` или последняя) в `EVALUATED` или `TUTOR_REVIEWED`, иначе `null` (docs/06 §4.5).
+        Допустим scope `internal` или JWT владельца работы; чужая работа — `404`. Ответ — из assessment_db.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - { name: version, in: query, required: false, description: Только эта версия; по умолчанию все., schema: { type: integer, minimum: 1, maximum: 3 } }
+      responses:
+        '200':
+          description: Работа.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InternalSubmission' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /internal/v1/users/{userId}/band-estimate:
+    servers:
+      - url: http://assessment-service.toefly.svc.cluster.local:8085
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalAssessment]
+      operationId: getBandEstimateInternal
+      summary: Прогноз балла пользователя (для инструментов агента)
+      description: Тот же ответ, что `GET /band-estimates/current`. Допустим scope `internal` или JWT с `sub == userId`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Прогноз.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BandEstimate' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
 components:
   securitySchemes:
     bearerAuth:
@@ -368,6 +425,11 @@ components:
   parameters:
     SubmissionId:
       name: submissionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UserId:
+      name: userId
       in: path
       required: true
       schema: { type: string, format: uuid }
@@ -764,3 +826,55 @@ components:
       properties:
         items: { type: array, items: { $ref: '#/components/schemas/DeferredEvaluation' } }
         page: { $ref: '#/components/schemas/PageInfo' }
+    InternalSubmission:
+      type: object
+      description: Работа для инструмента `getSubmission` агента (docs/06 §4.5).
+      required: [submissionId, userId, itemSetId, taskType, status, versions]
+      properties:
+        submissionId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        itemSetId: { type: string, format: uuid }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        status: { $ref: '#/components/schemas/SubmissionStatus' }
+        versions: { type: array, items: { $ref: '#/components/schemas/InternalSubmissionVersion' } }
+        modelAnswer:
+          description: 'Только если показанная версия (`version` или последняя) в `EVALUATED` или `TUTOR_REVIEWED`.'
+          oneOf: [{ $ref: '#/components/schemas/InternalModelAnswer' }, { type: 'null' }]
+    InternalSubmissionVersion:
+      type: object
+      required: [versionNo, status, text, wordCount, tutorReviewed]
+      properties:
+        versionNo: { type: integer, minimum: 1, maximum: 3 }
+        status: { $ref: '#/components/schemas/SubmissionStatus' }
+        text: { type: string }
+        wordCount: { type: integer, minimum: 0 }
+        submittedAt: { type: [string, 'null'], format: date-time }
+        evaluation: { oneOf: [{ $ref: '#/components/schemas/InternalEvaluation' }, { type: 'null' }] }
+        evaluatedAt: { type: [string, 'null'], format: date-time, description: 'Время действующей оценки.' }
+        tutorReviewed: { type: boolean, description: 'Есть оценка репетитора; она действующая (INV-SUB-10).' }
+    InternalEvaluation:
+      type: object
+      description: 'Действующая оценка версии: балл и критерии репетитора, если он оценил, иначе AI; комментарии — AI.'
+      required: [finalScore, rubricScore, criteria, comments]
+      properties:
+        finalScore: { type: number, minimum: 0, maximum: 5, description: 'Шаг 0.5.' }
+        rubricScore: { type: integer, minimum: 0, maximum: 5, description: 'Целый балл рубрики ETS.' }
+        criteria: { type: array, items: { $ref: '#/components/schemas/CriterionScore' } }
+        comments: { type: array, items: { $ref: '#/components/schemas/InternalComment' } }
+    InternalComment:
+      type: object
+      required: [quote, comment, category, subcategory, severity]
+      properties:
+        quote: { type: string, description: 'Цитата из текста версии.' }
+        comment: { type: string }
+        suggestion: { type: [string, 'null'] }
+        category: { $ref: '#/components/schemas/MistakeCategory' }
+        subcategory: { type: string, description: 'Код `<CATEGORY>.<NAME>` (06 §6.3).' }
+        severity: { $ref: '#/components/schemas/Severity' }
+    InternalModelAnswer:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string }
+        source: { type: [string, 'null'], description: 'Источник образца.' }

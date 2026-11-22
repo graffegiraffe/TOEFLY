@@ -29,6 +29,7 @@ import com.toefly.common.test.OutboxAssertions;
 import com.toefly.common.test.PostgresTestcontainersConfiguration;
 import com.toefly.common.test.contract.ContractCoverage;
 import com.toefly.common.test.contract.ContractTests;
+import com.toefly.common.test.contract.MockMvcExchanger;
 import com.toefly.common.test.contract.OutboxMessageReceiver;
 import com.toefly.events.assessment.EvaluationRequestedV1;
 import com.toefly.events.common.AttemptMode;
@@ -107,6 +108,7 @@ class AssessmentComponentIT {
     static final Path FIXTURES = Path.of("src/test/resources/ai-fixtures");
     static final Path CONTRACTS = Path.of("src/test/resources/contracts");
     static final String ITEM_SET = "6f1e2d3c-4b5a-4c6d-8e7f-90a1b2c3d4e5";
+    static final String CONTRACT_SUBMISSION = "0c7d3e2a-5b6f-4a1c-9d8e-2f3a4b5c6d7e";
     static final String REQUESTED = "toefly.assessment.evaluation-requested.v1";
     static final String EVALUATED = "toefly.assessment.submission-evaluated.v1";
     static final String ESTIMATE = "toefly.assessment.band-estimate-updated.v1";
@@ -457,7 +459,119 @@ class AssessmentComponentIT {
                 .andExpect(jsonPath("$.items[0].estimate.sections.length()").value(4));
     }
 
+    // ---- internal reads for tutor-agent-service (docs/12 phase 5c, decision 2) ----
+
+    @Test
+    @DisplayName("getSubmissionInternal: the model answer appears once the version is evaluated; owner or service only")
+    void internalSubmission() throws Exception {
+        UUID user = UUID.randomUUID();
+        String id = create(user);
+        save(user, id, essay(1), 0);
+        submit(user, id, 1);
+        mvc.perform(get("/internal/v1/submissions/" + id).with(service()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("EVALUATING"))
+                .andExpect(jsonPath("$.modelAnswer").doesNotExist());
+        deliver(id, 1, 1);
+        awaitStatus(user, id, "EVALUATED");
+
+        JsonNode internal =
+                body(mvc.perform(get("/internal/v1/submissions/" + id).with(student(user)))
+                        .andExpect(status().isOk())
+                        .andReturn());
+        assertThat(internal.path("submissionId").asString()).isEqualTo(id);
+        assertThat(internal.path("taskType").asString()).isEqualTo("WRITE_ACADEMIC_DISCUSSION");
+        JsonNode v1 = internal.path("versions").path(0);
+        assertThat(v1.path("text").asString()).isEqualTo(essay(1));
+        assertThat(v1.path("tutorReviewed").asBoolean()).isFalse();
+        assertThat(v1.path("evaluatedAt").asString()).isNotBlank();
+        assertThat(v1.path("evaluation").path("criteria")).hasSize(6);
+        assertThat(v1.path("evaluation").path("comments")).isNotEmpty();
+        assertThat(v1.path("evaluation").path("comments").path(0).path("quote").asString())
+                .isNotBlank();
+        assertThat(internal.path("modelAnswer").path("source").asString()).isEqualTo("GENERATED");
+        assertThat(internal.path("modelAnswer").path("text").asString()).startsWith("I agree with Felix");
+
+        mvc.perform(get("/internal/v1/submissions/" + id + "?version=2").with(service()))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/internal/v1/submissions/" + id).with(student(UUID.randomUUID())))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/internal/v1/submissions/" + id)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("getBandEstimateInternal: the service token or the learner's own JWT; another user is 403")
+    void internalBandEstimate() throws Exception {
+        UUID user = UUID.randomUUID();
+        mvc.perform(get("/internal/v1/users/" + user + "/band-estimate").with(service()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sections.length()").value(4))
+                .andExpect(jsonPath("$.needsMoreData.length()").value(4));
+        mvc.perform(get("/internal/v1/users/" + user + "/band-estimate").with(student(user)))
+                .andExpect(status().isOk());
+        mvc.perform(get("/internal/v1/users/" + user + "/band-estimate").with(student(UUID.randomUUID())))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/internal/v1/users/" + user + "/export").with(student(user)))
+                .andExpect(status().isForbidden());
+    }
+
     // ---- contracts (ADR-0031) ----
+
+    @TestFactory
+    @DisplayName("ADR-0031: the internal API fulfils the contracts of tutor-agent-service")
+    Stream<DynamicTest> restContracts() {
+        prepareContractData();
+        return ContractTests.rest(CONTRACTS.resolve("tutor-agent-service"), MockMvcExchanger.of(mvc, service()));
+    }
+
+    /** An evaluated draft with a fixed id for the contract get_submission_internal. */
+    private void prepareContractData() {
+        UUID submission = UUID.fromString(CONTRACT_SUBMISSION);
+        if (jdbc.sql("SELECT count(*) FROM submission WHERE id = :id")
+                        .param("id", submission)
+                        .query(Integer.class)
+                        .single()
+                > 0) {
+            return;
+        }
+        UUID user = UUID.fromString("5d2e8f10-3a4b-4c5d-9e6f-7a8b9c0d1e2f");
+        jdbc.sql("""
+                        INSERT INTO submission (id, user_id, item_set_id, item_set_version, task_type, mode,
+                            week_task_id, exam_session_id, status, current_version_no, version, created_at)
+                        VALUES (:id, :user, :set::uuid, 1, 'WRITE_ACADEMIC_DISCUSSION', 'PRACTICE', NULL, NULL,
+                            'EVALUATED', 1, 3, '2026-11-20T10:00:00Z')
+                        """)
+                .param("id", submission)
+                .param("user", user)
+                .param("set", ITEM_SET)
+                .update();
+        jdbc.sql("""
+                        INSERT INTO submission_version (id, submission_id, version_no, status, body, word_count,
+                            active_seconds, overtime_seconds, counts_for_estimate, submitted_at)
+                        VALUES (:vid, :id, 1, 'EVALUATED', 'I think people lives longer in small towns.', 8, 540, 0,
+                            true, '2026-11-20T10:09:00Z')
+                        """).param("vid", UUID.randomUUID()).param("id", submission).update();
+        UUID evaluation = UUID.randomUUID();
+        jdbc.sql("""
+                        INSERT INTO evaluation (id, submission_id, version_no, evaluator, rubric_id, final_score,
+                            overall_score, criteria, strengths, priorities, passes, agreement, needs_human_review,
+                            caps_applied, integrity_flags, prompt_key, prompt_version, model_id, degraded, created_at)
+                        VALUES (:eid, :id, 1, 'AI', 'ETS_DISCUSSION_V1', 3.5, 4,
+                            '[{"criterion":"accuracy","level":3,"note":"Agreement errors."}]'::jsonb,
+                            '[]'::jsonb, '[]'::jsonb, '[]'::jsonb, 'AGREED', false, '[]'::jsonb, '[]'::jsonb,
+                            'writing.grade.discussion', 1, 'openai/gpt-oss-120b', false, '2026-11-20T10:10:00Z')
+                        """).param("eid", evaluation).param("id", submission).update();
+        jdbc.sql("""
+                        INSERT INTO inline_annotation (id, evaluation_id, ordinal, range_start, range_end,
+                            anchor_quote, category, subcategory, severity, message, suggestion, status)
+                        VALUES (:aid, :eid, 0, 8, 20, 'people lives', 'GRAMMAR', 'GRAMMAR.SUBJECT_VERB_AGREEMENT',
+                            'MAJOR', 'A plural subject takes live.', 'people live', 'OPEN')
+                        """).param("aid", UUID.randomUUID()).param("eid", evaluation).update();
+        jdbc.sql("""
+                        INSERT INTO submission_model_answer (submission_id, body, source)
+                        VALUES (:id, 'Small towns are calmer, so people live longer there.', 'GENERATED')
+                        """).param("id", submission).update();
+    }
 
     @TestFactory
     @DisplayName("ADR-0031: assessment events fulfil the contracts of their consumers")
@@ -669,6 +783,10 @@ class AssessmentComponentIT {
                     .JwtRequestPostProcessor
             student(UUID user) {
         return JwtFixtures.student(user);
+    }
+
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor service() {
+        return JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE");
     }
 
     private static JsonNode body(MvcResult result) throws Exception {

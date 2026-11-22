@@ -13,6 +13,7 @@ import com.toefly.assessment.application.port.out.TaskContentPort;
 import com.toefly.assessment.domain.evaluation.CriterionScore;
 import com.toefly.assessment.domain.evaluation.Evaluation;
 import com.toefly.assessment.domain.evaluation.EvaluatorType;
+import com.toefly.assessment.domain.submission.ModelAnswer;
 import com.toefly.assessment.domain.submission.Submission;
 import com.toefly.assessment.domain.submission.SubmissionRuleException;
 import com.toefly.assessment.domain.submission.SubmissionVersion;
@@ -67,8 +68,12 @@ class SubmissionService implements SubmissionCommandUseCase {
                 command.weekTaskId(),
                 command.examSessionId(),
                 clock.instant());
+        ModelAnswer model = task.model();
         transactions.once(() -> {
             submissions.insert(submission);
+            if (model != null) {
+                submissions.saveModelAnswer(submission.id(), model);
+            }
             return submission;
         });
         return submission;

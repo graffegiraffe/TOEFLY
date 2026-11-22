@@ -1,0 +1,46 @@
+name: get_submission_internal
+description: the getSubmission tool of the tutor agent reads a Writing submission with its evaluation and model answer (docs/06 §4.5, docs/12 phase 5c decision 2)
+request:
+  method: GET
+  url: /internal/v1/submissions/0c7d3e2a-5b6f-4a1c-9d8e-2f3a4b5c6d7e
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    submissionId: 0c7d3e2a-5b6f-4a1c-9d8e-2f3a4b5c6d7e
+    userId: 5d2e8f10-3a4b-4c5d-9e6f-7a8b9c0d1e2f
+    itemSetId: 6f1e2d3c-4b5a-4c6d-8e7f-90a1b2c3d4e5
+    taskType: WRITE_ACADEMIC_DISCUSSION
+    status: EVALUATED
+    versions:
+      - versionNo: 1
+        status: EVALUATED
+        text: I think people lives longer in small towns.
+        wordCount: 8
+        tutorReviewed: false
+        evaluation:
+          finalScore: 3.5
+          rubricScore: 4
+          criteria:
+            - criterion: accuracy
+              level: 3
+              note: Agreement errors.
+          comments:
+            - quote: people lives
+              comment: A plural subject takes live.
+              suggestion: people live
+              category: GRAMMAR
+              subcategory: GRAMMAR.SUBJECT_VERB_AGREEMENT
+              severity: MAJOR
+    modelAnswer:
+      text: Small towns are calmer, so people live longer there.
+      source: GENERATED
+  matchers:
+    body:
+      - path: $.versions[0].submittedAt
+        type: by_regex
+        predefined: iso_date_time
+      - path: $.versions[0].evaluatedAt
+        type: by_regex
+        predefined: iso_date_time

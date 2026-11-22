@@ -1,0 +1,28 @@
+name: get_band_estimate_internal
+description: the getBandEstimate tool of the tutor agent reads the band estimate of the learner (docs/06 §4.5, docs/12 phase 5c decision 2)
+request:
+  method: GET
+  url: /internal/v1/users/9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d/band-estimate
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    overall: null
+  matchers:
+    body:
+      - path: $.sections
+        type: by_type
+        minOccurrence: 4
+        maxOccurrence: 4
+      - path: $.sections[0].section
+        type: by_regex
+        regex: READING|LISTENING|WRITING|SPEAKING
+      - path: $.sections[0].status
+        type: by_regex
+        regex: READY|NEED_MORE_DATA
+      - path: $.needsMoreData
+        type: by_type
+      - path: $.asOf
+        type: by_regex
+        predefined: iso_date_time

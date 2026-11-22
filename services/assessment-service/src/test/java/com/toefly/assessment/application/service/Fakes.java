@@ -30,6 +30,7 @@ import com.toefly.assessment.domain.grading.PassOutput;
 import com.toefly.assessment.domain.grading.RawComment;
 import com.toefly.assessment.domain.grading.Taxonomy;
 import com.toefly.assessment.domain.submission.DeferredEvaluation;
+import com.toefly.assessment.domain.submission.ModelAnswer;
 import com.toefly.assessment.domain.submission.Submission;
 import com.toefly.assessment.domain.submission.TaskType;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -234,6 +235,7 @@ final class Fakes {
         final Map<UUID, Submission> byId = new LinkedHashMap<>();
         final Map<UUID, Integer> stored = new HashMap<>();
         final List<Evaluation> evaluations = new ArrayList<>();
+        final Map<UUID, ModelAnswer> modelAnswers = new HashMap<>();
 
         @Override
         public void insert(Submission submission) {
@@ -289,6 +291,16 @@ final class Fakes {
         @Override
         public void updateAnnotations(UUID evaluationId, List<InlineAnnotation> annotations) {
             evaluations.replaceAll(e -> e.id().equals(evaluationId) ? e.withAnnotations(annotations) : e);
+        }
+
+        @Override
+        public void saveModelAnswer(UUID submissionId, ModelAnswer answer) {
+            modelAnswers.put(submissionId, answer);
+        }
+
+        @Override
+        public Optional<ModelAnswer> modelAnswer(UUID submissionId) {
+            return Optional.ofNullable(modelAnswers.get(submissionId));
         }
 
         @Override

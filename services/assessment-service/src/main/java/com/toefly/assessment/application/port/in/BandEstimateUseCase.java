@@ -14,6 +14,9 @@ public interface BandEstimateUseCase {
 
     BandEstimate current(Caller caller, @Nullable UUID studentId);
 
+    /** The estimate of a user for an internal call; who may ask is checked by the security chain. */
+    BandEstimate ofUser(UUID userId);
+
     List<WeeklyEstimate> history(Caller caller, @Nullable UUID studentId);
 
     void abilityUpdated(

@@ -1,6 +1,7 @@
 package com.toefly.assessment.application.service;
 
 import com.toefly.assessment.application.port.in.Caller;
+import com.toefly.assessment.application.port.in.InternalSubmissionView;
 import com.toefly.assessment.application.port.in.SubmissionFilter;
 import com.toefly.assessment.application.port.in.SubmissionQueryUseCase;
 import com.toefly.assessment.application.port.in.SubmissionView;
@@ -9,8 +10,11 @@ import com.toefly.assessment.application.port.out.DependencyUnavailableException
 import com.toefly.assessment.application.port.out.SubmissionRepository;
 import com.toefly.assessment.application.port.out.TaskContent;
 import com.toefly.assessment.application.port.out.TaskContentPort;
+import com.toefly.assessment.domain.evaluation.Evaluation;
 import com.toefly.assessment.domain.submission.Submission;
 import com.toefly.assessment.domain.submission.SubmissionRuleException;
+import com.toefly.assessment.domain.submission.SubmissionStatus;
+import com.toefly.assessment.domain.submission.SubmissionVersion;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -53,6 +57,27 @@ class SubmissionQueryService implements SubmissionQueryUseCase {
                 submissions.evaluations(submissionId),
                 task,
                 deferred.find(submissionId, submission.current().versionNo()).orElse(null));
+    }
+
+    @Override
+    public InternalSubmissionView internal(Caller caller, UUID submissionId, @Nullable Integer versionNo) {
+        Submission submission = submissions
+                .find(submissionId)
+                .filter(found ->
+                        caller.is(Caller.Role.SERVICE) || found.userId().equals(caller.userId()))
+                .orElseThrow(() -> new SubmissionRuleException("not-found", "No such submission."));
+        List<SubmissionVersion> versions =
+                versionNo == null ? submission.versions() : List.of(submission.version(versionNo));
+        SubmissionStatus shown = versions.getLast().status();
+        boolean evaluated = shown == SubmissionStatus.EVALUATED || shown == SubmissionStatus.TUTOR_REVIEWED;
+        List<Evaluation> evaluations = submissions.evaluations(submissionId).stream()
+                .filter(e -> versions.stream().anyMatch(v -> v.versionNo() == e.versionNo()))
+                .toList();
+        return new InternalSubmissionView(
+                submission,
+                versions,
+                evaluations,
+                evaluated ? submissions.modelAnswer(submissionId).orElse(null) : null);
     }
 
     @Override
