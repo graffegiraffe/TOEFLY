@@ -35,14 +35,14 @@ struct FixtureRepositories {
     let backend: FixtureBackend
 }
 
-func fixtureRepositories(_ scenario: FixtureScenario) -> FixtureRepositories {
+func fixtureRepositories(_ scenario: FixtureScenario, timeZone: TimeZone = minsk) -> FixtureRepositories {
     let backend = FixtureBackend(scenario: scenario)
     let clients = APIClients(
         configuration: .local,
         transport: FixtureTransport(backend: backend),
         tokens: StaticTokens(),
     )
-    let zone: @Sendable () -> TimeZone = { minsk }
+    let zone: @Sendable () -> TimeZone = { timeZone }
     return FixtureRepositories(
         profiles: LiveProfileRepository(client: clients.profile, timeZone: zone),
         planning: LivePlanningRepository(client: clients.planning, timeZone: zone),

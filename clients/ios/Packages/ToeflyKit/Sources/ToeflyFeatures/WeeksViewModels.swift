@@ -37,26 +37,27 @@ public enum TaskDestination: Equatable, Sendable {
     }
 }
 
-/// Dates of the English UI (the web formats them with `en-US` too), in the learner's time zone.
+/// Dates of the English UI (the web formats them with `en-US` too). Server dates (`format: date`) are read as midnight
+/// in the learner's time zone, so they must be formatted in that same zone: there is no default on purpose.
 enum DateText {
     static let locale = Locale(identifier: "en_US")
 
-    static func style(_ timeZone: TimeZone = .current) -> Date.FormatStyle {
+    static func style(_ timeZone: TimeZone) -> Date.FormatStyle {
         Date.FormatStyle(locale: locale, timeZone: timeZone)
     }
 
-    static func shortDay(_ date: Date, timeZone: TimeZone = .current) -> String {
+    static func shortDay(_ date: Date, timeZone: TimeZone) -> String {
         date.formatted(style(timeZone).month(.abbreviated).day())
     }
 
-    static func weekday(_ date: Date, wide: Bool, timeZone: TimeZone = .current) -> String {
+    static func weekday(_ date: Date, wide: Bool, timeZone: TimeZone) -> String {
         date.formatted(style(timeZone).weekday(wide ? .wide : .abbreviated))
     }
 
     /// "Nov 16 – Nov 22, 2026" (docs/07-ux-ui.md §5.7).
-    static func range(_ start: Date, _ end: Date, year: Bool = true) -> String {
-        let tail = year ? ", \(end.formatted(style().year()))" : ""
-        return "\(shortDay(start)) – \(shortDay(end))\(tail)"
+    static func range(_ start: Date, _ end: Date, year: Bool = true, timeZone: TimeZone) -> String {
+        let tail = year ? ", \(end.formatted(style(timeZone).year()))" : ""
+        return "\(shortDay(start, timeZone: timeZone)) – \(shortDay(end, timeZone: timeZone))\(tail)"
     }
 }
 
@@ -101,9 +102,12 @@ public final class WeeksViewModel {
     public var showsCompleted = false
 
     private let planning: any PlanningRepository
+    private let timeZone: TimeZone
 
-    public init(planning: any PlanningRepository) {
+    /// `timeZone` is the zone the repository reads the dates in (the learner's).
+    public init(planning: any PlanningRepository, timeZone: TimeZone = .current) {
         self.planning = planning
+        self.timeZone = timeZone
     }
 
     public func load() async {
@@ -126,7 +130,7 @@ public final class WeeksViewModel {
     /// "8-week plan · exam on Dec 27".
     public var subtitle: String {
         guard let plan else { return "" }
-        let exam = plan.examDate.map { " · exam on \(DateText.shortDay($0))" } ?? ""
+        let exam = plan.examDate.map { " · exam on \(DateText.shortDay($0, timeZone: timeZone))" } ?? ""
         return "\(plan.weeksCount)-week plan\(exam)"
     }
 
@@ -173,7 +177,7 @@ public final class WeeksViewModel {
         return Card(
             week: week,
             title: "Week \(week.weekNo)",
-            dates: DateText.range(week.startDate, week.endDate, year: false),
+            dates: DateText.range(week.startDate, week.endDate, year: false, timeZone: timeZone),
             badges: badges,
             note: note,
             coverId: Covers.week(week.weekNo, mockExam: week.mockExam),
@@ -242,7 +246,7 @@ public final class WeekViewModel {
 
     public var dates: String {
         guard let week else { return "" }
-        return DateText.range(week.startDate, week.endDate)
+        return DateText.range(week.startDate, week.endDate, timeZone: calendar.timeZone)
     }
 
     /// Shown for weeks that are not in progress (§5.7 "Status").
@@ -362,10 +366,16 @@ public final class TodayViewModel {
 
     private let planning: any PlanningRepository
     private let now: @Sendable () -> Date
+    private let timeZone: TimeZone
 
-    public init(planning: any PlanningRepository, now: @escaping @Sendable () -> Date = Date.init) {
+    public init(
+        planning: any PlanningRepository,
+        now: @escaping @Sendable () -> Date = Date.init,
+        timeZone: TimeZone = .current,
+    ) {
         self.planning = planning
         self.now = now
+        self.timeZone = timeZone
     }
 
     public func load() async {
@@ -387,7 +397,7 @@ public final class TodayViewModel {
 
     /// "Thursday, Nov 19 · Week 3, day 4".
     public var caption: String {
-        let date = (today?.date ?? now()).formatted(DateText.style().weekday(.wide).month(.abbreviated).day())
+        let date = (today?.date ?? now()).formatted(DateText.style(timeZone).weekday(.wide).month(.abbreviated).day())
         guard let week = today?.weekNo, let day = today?.dayIndex else { return date }
         return "\(date) · Week \(week), day \(day)"
     }

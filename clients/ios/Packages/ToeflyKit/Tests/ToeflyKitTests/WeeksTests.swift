@@ -9,7 +9,7 @@ struct WeeksTests {
     @Test("AC-04.01.3 AC-04.09.1 the gallery: current week first, upcoming ones built later, completed ones folded")
     func ac04013Gallery() async {
         let fixture = fixtureRepositories(.withPlan)
-        let model = WeeksViewModel(planning: fixture.planning)
+        let model = WeeksViewModel(planning: fixture.planning, timeZone: minsk)
         await model.load()
         #expect(model.loadState == .loaded)
         #expect(model.subtitle == "8-week plan")
@@ -26,6 +26,28 @@ struct WeeksTests {
         #expect(model.completed.map(\.title) == ["Week 2", "Week 1"])
         #expect(model.completed.first?.badges == [.done])
         #expect(model.completed.first?.dates == "Nov 9 – Nov 15")
+    }
+
+    @Test(
+        "Week dates are the server's calendar dates in every time zone",
+        arguments: ["UTC", "Pacific/Kiritimati", "America/Los_Angeles", "Europe/Minsk"],
+    )
+    func datesInEveryZone(_ identifier: String) async throws {
+        let zone = try #require(TimeZone(identifier: identifier))
+        let fixture = fixtureRepositories(.withPlan, timeZone: zone)
+        let gallery = WeeksViewModel(planning: fixture.planning, timeZone: zone)
+        await gallery.load()
+        #expect(gallery.current?.dates == "Nov 16 – Nov 22")
+        #expect(gallery.completed.first?.dates == "Nov 9 – Nov 15")
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let week = WeekViewModel(weekId: weekThree, planning: fixture.planning, calendar: calendar)
+        await week.load()
+        #expect(week.dates == "Nov 16 – Nov 22, 2026")
+        #expect(week.days(of: .listening).first?.title == "Thursday · day 4")
+        let today = TodayViewModel(planning: fixture.planning, timeZone: zone)
+        await today.load()
+        #expect(today.caption.hasPrefix("Thursday, Nov 19"))
     }
 
     @Test("AC-04.02.4 weeks waiting for the tutor or locked cannot be opened")
@@ -131,7 +153,7 @@ struct WeeksTests {
     @Test("AC-05.01.1 Today: the tasks of the day with times and the total, then the words to review")
     func ac05011Today() async {
         let fixture = fixtureRepositories(.withPlan)
-        let model = TodayViewModel(planning: fixture.planning, now: { testNow })
+        let model = TodayViewModel(planning: fixture.planning, now: { testNow }, timeZone: minsk)
         await model.load()
         #expect(model.loadState == .loaded)
         #expect(model.caption.hasSuffix("· Week 3, day 4"))
@@ -153,7 +175,7 @@ struct WeeksTests {
     @Test("AC-04.04.1 tasks of past days stay in the Overdue group above today")
     func ac04041Overdue() async {
         let fixture = fixtureRepositories(.behind)
-        let model = TodayViewModel(planning: fixture.planning, now: { testNow })
+        let model = TodayViewModel(planning: fixture.planning, now: { testNow }, timeZone: minsk)
         await model.load()
         #expect(model.overdue.map(\.title) == ["Conversation: Library hours"])
         #expect(model.overdue.first?.overdueDays == 1)
