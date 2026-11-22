@@ -31,6 +31,7 @@ public final class LiveGateway implements AiGradingPort {
     private final String tokenUrl;
     private final String clientSecret;
     private final @Nullable Path recordings;
+    private @Nullable Integer promptVersion;
     private @Nullable String token;
     private long tokenAt;
 
@@ -49,12 +50,18 @@ public final class LiveGateway implements AiGradingPort {
                 recordings);
     }
 
+    /** Pins every call to one prompt version instead of the active one (the candidate under evaluation). */
+    public LiveGateway promptVersion(int version) {
+        this.promptVersion = version;
+        return this;
+    }
+
     @Override
     public PassOutput grade(GradingRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("useCase", "WRITING_GRADING");
         body.put("promptKey", request.promptKey());
-        body.put("promptVersion", request.promptVersion());
+        body.put("promptVersion", promptVersion != null ? promptVersion : request.promptVersion());
         body.put("variables", request.variables());
         body.put("userId", request.userId());
         body.put("allowList", request.allowList());
