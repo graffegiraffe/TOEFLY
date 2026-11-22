@@ -3,9 +3,11 @@ package com.toefly.planning.application.service;
 import com.toefly.planning.application.port.in.SyncLearnerUseCase;
 import com.toefly.planning.application.port.out.ItemSetCatalogPort;
 import com.toefly.planning.application.port.out.ItemSetCatalogPort.CatalogEntry;
+import com.toefly.planning.application.port.out.LearnerModelPort;
 import com.toefly.planning.application.port.out.LearnerSignalPort;
 import com.toefly.planning.application.port.out.StudyPlanRepository;
 import com.toefly.planning.application.port.out.WeekRepository;
+import com.toefly.planning.domain.learner.LearnerModelView;
 import com.toefly.planning.domain.week.TaskType;
 import com.toefly.planning.domain.week.WeekSection;
 import java.time.Instant;
@@ -22,13 +24,19 @@ public class LearnerSyncService implements SyncLearnerUseCase {
     private final ItemSetCatalogPort catalog;
     private final StudyPlanRepository plans;
     private final WeekRepository weeks;
+    private final LearnerModelPort models;
 
     public LearnerSyncService(
-            LearnerSignalPort signals, ItemSetCatalogPort catalog, StudyPlanRepository plans, WeekRepository weeks) {
+            LearnerSignalPort signals,
+            ItemSetCatalogPort catalog,
+            StudyPlanRepository plans,
+            WeekRepository weeks,
+            LearnerModelPort models) {
         this.signals = signals;
         this.catalog = catalog;
         this.plans = plans;
         this.weeks = weeks;
+        this.models = models;
     }
 
     @Override
@@ -59,9 +67,15 @@ public class LearnerSyncService implements SyncLearnerUseCase {
     }
 
     @Override
+    public void learnerModelUpdated(LearnerModelView model) {
+        models.save(model);
+    }
+
+    @Override
     public void deleteUser(UUID userId) {
         weeks.deleteByUser(userId);
         plans.deleteByUser(userId);
         signals.deleteByUser(userId);
+        models.deleteByUser(userId);
     }
 }

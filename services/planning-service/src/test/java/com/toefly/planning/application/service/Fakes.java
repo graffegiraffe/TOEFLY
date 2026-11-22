@@ -3,6 +3,7 @@ package com.toefly.planning.application.service;
 import com.toefly.planning.application.port.out.Cause;
 import com.toefly.planning.application.port.out.ConcurrencyConflictException;
 import com.toefly.planning.application.port.out.ItemSetCatalogPort;
+import com.toefly.planning.application.port.out.LearnerModelPort;
 import com.toefly.planning.application.port.out.LearnerSignalPort;
 import com.toefly.planning.application.port.out.PlanningEventPublisherPort;
 import com.toefly.planning.application.port.out.StudyPlanRepository;
@@ -12,6 +13,7 @@ import com.toefly.planning.domain.composition.CompositionRules;
 import com.toefly.planning.domain.composition.ResourceLink;
 import com.toefly.planning.domain.composition.UnitRef;
 import com.toefly.planning.domain.composition.WeakTypes.Accuracy;
+import com.toefly.planning.domain.learner.LearnerModelView;
 import com.toefly.planning.domain.plan.StudyPlan;
 import com.toefly.planning.domain.week.Rebalance;
 import com.toefly.planning.domain.week.TaskType;
@@ -49,6 +51,7 @@ final class Fakes {
     final Catalog catalog = new Catalog();
     final Units units = new Units();
     final Signals signals = new Signals();
+    final LearnerModels models = new LearnerModels();
     final Events events = new Events();
     final StudyPlanService planService;
     final AttemptTrackingService attempts;
@@ -92,7 +95,7 @@ final class Fakes {
         tasks = new WeekTaskService(weeks, plans, events, lifecycle, clock);
         queries = new PlanQueryService(plans, weeks, clock);
         rollover = new RolloverService(plans, weeks, lifecycle, events, transactions, clock);
-        sync = new LearnerSyncService(signals, catalog, plans, weeks);
+        sync = new LearnerSyncService(signals, catalog, plans, weeks, models);
     }
 
     // ---- clock ----
@@ -379,6 +382,28 @@ final class Fakes {
         public void deleteByUser(UUID userId) {
             results.removeIf(result -> result.userId().equals(userId));
             theta.remove(userId);
+        }
+    }
+
+    static final class LearnerModels implements LearnerModelPort {
+        final Map<UUID, LearnerModelView> byUser = new HashMap<>();
+
+        @Override
+        public void save(LearnerModelView view) {
+            LearnerModelView current = byUser.get(view.userId());
+            if (current == null || current.version() < view.version()) {
+                byUser.put(view.userId(), view);
+            }
+        }
+
+        @Override
+        public Optional<LearnerModelView> find(UUID userId) {
+            return Optional.ofNullable(byUser.get(userId));
+        }
+
+        @Override
+        public void deleteByUser(UUID userId) {
+            byUser.remove(userId);
         }
     }
 

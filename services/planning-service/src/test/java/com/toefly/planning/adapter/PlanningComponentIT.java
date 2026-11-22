@@ -23,10 +23,15 @@ import com.toefly.common.test.contract.MockMvcExchanger;
 import com.toefly.common.test.contract.OutboxMessageReceiver;
 import com.toefly.events.assessment.SubmissionEvaluatedV1;
 import com.toefly.events.common.AttemptMode;
+import com.toefly.events.common.MistakeCategory;
 import com.toefly.events.common.Section;
 import com.toefly.events.practice.AttemptScoredV1;
 import com.toefly.events.practice.AttemptStartedV1;
 import com.toefly.events.profile.OnboardingCompletedV1;
+import com.toefly.events.tutoragent.LearnerModelUpdatedV1;
+import com.toefly.events.tutoragent.MistakeStatV1;
+import com.toefly.events.tutoragent.MistakeStatus;
+import com.toefly.events.tutoragent.MistakeTrend;
 import com.toefly.planning.application.port.in.BuildStudyPlanUseCase;
 import com.toefly.planning.application.port.in.OnboardingGoal;
 import com.toefly.planning.application.port.in.RolloverUseCase;
@@ -303,6 +308,65 @@ class PlanningComponentIT {
         mvc.perform(get("/api/v1/weeks/" + weekOf(user).id()).with(student(user)))
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
                 .andExpect(jsonPath("$.progressPercent").isNumber());
+    }
+
+    @Test
+    @DisplayName("docs/12 5c decision 1: learner-model-updated keeps the newest learner model once per event")
+    void learnerModelFromKafka() throws Exception {
+        UUID user = UUID.randomUUID();
+        LearnerModelUpdatedV1 newer = learnerModel(user, 7, 4);
+        LearnerModelUpdatedV1 older = learnerModel(user, 6, 1);
+        send("toefly.tutor-agent.learner-model-updated.v1", user.toString(), newer.getEventId(), newer);
+        send("toefly.tutor-agent.learner-model-updated.v1", user.toString(), newer.getEventId(), newer);
+        send("toefly.tutor-agent.learner-model-updated.v1", user.toString(), older.getEventId(), older);
+
+        Awaitility.await()
+                .atMost(KAFKA_WAIT)
+                .untilAsserted(() -> assertThat(jdbc.sql("SELECT count(*) FROM processed_events WHERE event_id = :id")
+                                .param("id", older.getEventId())
+                                .query(Integer.class)
+                                .single())
+                        .isEqualTo(1));
+        assertThat(jdbc.sql("""
+                        SELECT version || ':' || (mistake_stats -> 0 ->> 'subcategory') || ':'
+                            || (mistake_stats -> 0 ->> 'occurrencesLast7Days') || ':' || (bands ->> 'WRITING')
+                        FROM learner_model_view WHERE user_id = :user
+                        """).param("user", user).query(String.class).single())
+                .isEqualTo("7:GRAMMAR.ARTICLES:4:3.5");
+    }
+
+    static LearnerModelUpdatedV1 learnerModel(UUID user, long version, int articles) {
+        return LearnerModelUpdatedV1.newBuilder()
+                .setEventId(UUID.randomUUID())
+                .setOccurredAt(Instant.now())
+                .setUserId(user)
+                .setVersion(version)
+                .setUpdatedAt(Instant.now())
+                .setMistakeStats(List.of(
+                        MistakeStatV1.newBuilder()
+                                .setCategory(MistakeCategory.GRAMMAR)
+                                .setSubcategory("ARTICLES")
+                                .setWeight(3.2)
+                                .setErrorRate(0.3)
+                                .setPriority(2.4)
+                                .setTrend(MistakeTrend.WORSENING)
+                                .setStatus(MistakeStatus.ACTIVE)
+                                .setOccurrencesLast7Days(articles)
+                                .setUnitRefs(List.of("ROUNDUP5.U10", "COLLINS_GR.U02"))
+                                .build(),
+                        MistakeStatV1.newBuilder()
+                                .setCategory(MistakeCategory.TASK_RESPONSE)
+                                .setSubcategory("TASK_RESPONSE.ELABORATION")
+                                .setWeight(1.1)
+                                .setErrorRate(0.2)
+                                .setPriority(0.9)
+                                .setTrend(MistakeTrend.STABLE)
+                                .setStatus(MistakeStatus.WATCH)
+                                .setOccurrencesLast7Days(2)
+                                .setUnitRefs(List.of())
+                                .build()))
+                .setBands(Map.of("WRITING", 3.5, "OVERALL", 4.0))
+                .build();
     }
 
     // ---- REST ----
