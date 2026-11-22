@@ -1,0 +1,188 @@
+{
+  "type": "record",
+  "name": "LearnerModelUpdatedV1",
+  "namespace": "com.toefly.events.tutoragent",
+  "doc": "The learner model changed (toefly.tutor-agent.learner-model-updated.v1); debounced to one event per learner in 5 minutes.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "version",
+      "type": "long",
+      "doc": "Version of the learner model."
+    },
+    {
+      "name": "updatedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment of the change, UTC."
+    },
+    {
+      "name": "mistakeStats",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "MistakeStatV1",
+          "namespace": "com.toefly.events.tutoragent",
+          "doc": "Statistics of one mistake subcategory (docs/06 section 6.2).",
+          "fields": [
+            {
+              "name": "category",
+              "type": {
+                "type": "enum",
+                "name": "MistakeCategory",
+                "namespace": "com.toefly.events.common",
+                "doc": "Mistake category.",
+                "symbols": [
+                  "UNKNOWN",
+                  "GRAMMAR",
+                  "VOCABULARY",
+                  "SPELLING",
+                  "COHERENCE",
+                  "TASK_RESPONSE",
+                  "PRONUNCIATION",
+                  "FLUENCY",
+                  "COMPREHENSION",
+                  "TIME_MANAGEMENT"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Category."
+            },
+            {
+              "name": "subcategory",
+              "type": "string",
+              "doc": "Subcategory code."
+            },
+            {
+              "name": "weight",
+              "type": "double",
+              "doc": "Decayed weight, half-life 21 days."
+            },
+            {
+              "name": "errorRate",
+              "type": "double",
+              "doc": "Errors per opportunity over 28 days."
+            },
+            {
+              "name": "priority",
+              "type": "double",
+              "doc": "Ranking priority: weight x category impact x status factor."
+            },
+            {
+              "name": "trend",
+              "type": {
+                "type": "enum",
+                "name": "MistakeTrend",
+                "namespace": "com.toefly.events.tutoragent",
+                "doc": "Trend of a subcategory.",
+                "symbols": [
+                  "UNKNOWN",
+                  "IMPROVING",
+                  "STABLE",
+                  "WORSENING"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Trend over the last 14 days against the 14 before."
+            },
+            {
+              "name": "status",
+              "type": {
+                "type": "enum",
+                "name": "MistakeStatus",
+                "namespace": "com.toefly.events.tutoragent",
+                "doc": "Status of a subcategory.",
+                "symbols": [
+                  "UNKNOWN",
+                  "ACTIVE",
+                  "WATCH",
+                  "RESOLVED"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "ACTIVE, WATCH or RESOLVED."
+            },
+            {
+              "name": "occurrencesLast7Days",
+              "type": "int",
+              "doc": "Mistakes in the last 7 days (AC-14.05.2)."
+            },
+            {
+              "name": "unitRefs",
+              "type": {
+                "type": "array",
+                "items": "string"
+              },
+              "doc": "Textbook units, e.g. ROUNDUP5.U10.",
+              "default": []
+            }
+          ]
+        }
+      },
+      "doc": "Top 10 subcategories by priority, without text examples.",
+      "default": []
+    },
+    {
+      "name": "bands",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "double"
+        }
+      ],
+      "doc": "Band estimate by section and overall (keys READING, LISTENING, WRITING, SPEAKING, OVERALL).",
+      "default": null
+    }
+  ]
+}

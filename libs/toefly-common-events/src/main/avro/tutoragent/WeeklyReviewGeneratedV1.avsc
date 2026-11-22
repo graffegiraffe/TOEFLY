@@ -1,0 +1,175 @@
+{
+  "type": "record",
+  "name": "WeeklyReviewGeneratedV1",
+  "namespace": "com.toefly.events.tutoragent",
+  "doc": "A weekly review is ready (toefly.tutor-agent.weekly-review-generated.v1); planning-service builds the next week from its focus.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "reviewId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Weekly review."
+    },
+    {
+      "name": "weekId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Closed week the review is about."
+    },
+    {
+      "name": "weekNo",
+      "type": "int",
+      "doc": "Number of the closed week."
+    },
+    {
+      "name": "generatedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the review was stored, UTC."
+    },
+    {
+      "name": "language",
+      "type": "string",
+      "doc": "Explanation language of the texts: EN or RU."
+    },
+    {
+      "name": "aiFallback",
+      "type": "boolean",
+      "doc": "The review was built by the template without AI."
+    },
+    {
+      "name": "lowActivity",
+      "type": "boolean",
+      "doc": "Fewer than 3 tasks were done; the review has no top mistakes (AC-18.01.5)."
+    },
+    {
+      "name": "topMistakes",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "ReviewMistakeV1",
+          "namespace": "com.toefly.events.tutoragent",
+          "doc": "One recurring mistake of the week.",
+          "fields": [
+            {
+              "name": "category",
+              "type": {
+                "type": "enum",
+                "name": "MistakeCategory",
+                "namespace": "com.toefly.events.common",
+                "doc": "Mistake category.",
+                "symbols": [
+                  "UNKNOWN",
+                  "GRAMMAR",
+                  "VOCABULARY",
+                  "SPELLING",
+                  "COHERENCE",
+                  "TASK_RESPONSE",
+                  "PRONUNCIATION",
+                  "FLUENCY",
+                  "COMPREHENSION",
+                  "TIME_MANAGEMENT"
+                ],
+                "default": "UNKNOWN"
+              },
+              "doc": "Category of the subcategory."
+            },
+            {
+              "name": "subcategory",
+              "type": "string",
+              "doc": "Subcategory code, e.g. GRAMMAR.ARTICLES."
+            },
+            {
+              "name": "count",
+              "type": "int",
+              "doc": "Mistakes of the week."
+            }
+          ]
+        }
+      },
+      "doc": "Up to 5 recurring mistakes of the week, most important first.",
+      "default": []
+    },
+    {
+      "name": "nextWeekFocus",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "FocusItemV1",
+          "namespace": "com.toefly.events.tutoragent",
+          "doc": "One focus point of the next week.",
+          "fields": [
+            {
+              "name": "subcategory",
+              "type": "string",
+              "doc": "Subcategory code."
+            },
+            {
+              "name": "why",
+              "type": "string",
+              "doc": "Short reason shown to the learner."
+            }
+          ]
+        }
+      },
+      "doc": "1 to 3 focus points of the next week.",
+      "default": []
+    }
+  ]
+}

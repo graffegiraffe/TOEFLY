@@ -1,0 +1,112 @@
+{
+  "type": "record",
+  "name": "ReengagementMessageCreatedV1",
+  "namespace": "com.toefly.events.tutoragent",
+  "doc": "A personal come-back message was written (toefly.tutor-agent.reengagement-message-created.v1); notification-service delivers it.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id and is the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Learner the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier; equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "messageId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Message."
+    },
+    {
+      "name": "situation",
+      "type": {
+        "type": "enum",
+        "name": "ReengagementSituation",
+        "namespace": "com.toefly.events.tutoragent",
+        "doc": "Why the message was written (docs/06 section 5.10).",
+        "symbols": [
+          "UNKNOWN",
+          "AWAY_2_DAYS",
+          "AWAY_7_DAYS",
+          "WEEK_BEHIND",
+          "EXAM_SOON_INACTIVE"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "Situation."
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "doc": "Title, up to 60 characters."
+    },
+    {
+      "name": "body",
+      "type": "string",
+      "doc": "Body, up to 240 characters; the first name is the placeholder [PERSON_1]."
+    },
+    {
+      "name": "ctaLabel",
+      "type": "string",
+      "doc": "Button label, up to 24 characters."
+    },
+    {
+      "name": "deepLink",
+      "type": "string",
+      "doc": "Deep link, e.g. toefly://today."
+    },
+    {
+      "name": "language",
+      "type": "string",
+      "doc": "EN or RU."
+    },
+    {
+      "name": "aiFallback",
+      "type": "boolean",
+      "doc": "The text comes from the template without AI."
+    }
+  ]
+}
