@@ -80,9 +80,9 @@ struct TaskPlayerView: View {
                 Button {
                     Task { model.paused ? await model.resume() : await model.pause() }
                 } label: {
-                    Image(systemName: model.paused ? "play.fill" : "pause.fill")
+                    Label(model.paused ? "Resume" : "Pause", systemImage: model.paused ? "play.fill" : "pause.fill")
+                        .labelStyle(.iconOnly)
                 }
-                .accessibilityLabel(model.paused ? "Resume" : "Pause")
                 .accessibilityIdentifier("player-pause")
                 Menu {
                     Button(
@@ -91,9 +91,9 @@ struct TaskPlayerView: View {
                     ) { model.timerHidden.toggle() }
                     Button("Ask Toefly Tutor", systemImage: "sparkles", action: askTutor)
                 } label: {
-                    Image(systemName: "ellipsis")
+                    // A titled Label: iOS 26 drops `.accessibilityLabel` on a toolbar Menu, the title it keeps.
+                    Label("More", systemImage: "ellipsis").labelStyle(.iconOnly)
                 }
-                .accessibilityLabel("More")
                 .accessibilityIdentifier("player-more")
             }
         }
