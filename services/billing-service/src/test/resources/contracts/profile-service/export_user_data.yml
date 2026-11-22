@@ -1,0 +1,20 @@
+name: export_user_data
+description: profile-service collects subscriptions, payments and rights into the data export of the user
+request:
+  method: GET
+  url: /internal/v1/users/3c0b7a52-9d1e-4f6a-8b2c-5e7d9f1a2b3c/export
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    userId: 3c0b7a52-9d1e-4f6a-8b2c-5e7d9f1a2b3c
+  matchers:
+    body:
+      - path: $.subscriptions
+        type: by_type
+        minOccurrence: 1
+      - path: $.payments
+        type: by_type
+      - path: $.entitlements.planTierCode
+        type: by_type

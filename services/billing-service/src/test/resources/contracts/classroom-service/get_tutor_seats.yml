@@ -1,0 +1,15 @@
+name: get_tutor_seats
+description: classroom-service checks a free seat before an invitation is accepted (docs/05 §9.3.5)
+request:
+  method: GET
+  url: /internal/v1/tutors/8e4f2a1b-6c3d-4e5f-9a0b-1c2d3e4f5a6b/seats
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    tutorId: 8e4f2a1b-6c3d-4e5f-9a0b-1c2d3e4f5a6b
+    planTierCode: TUTOR
+    seatLimit: 10
+    seatsUsed: 0
+    seatsFree: 10

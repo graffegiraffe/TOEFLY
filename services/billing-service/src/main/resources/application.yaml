@@ -1,0 +1,110 @@
+spring:
+  application:
+    name: billing-service
+  datasource:
+    url: jdbc:postgresql://localhost:${TOEFLY_POSTGRES_PORT:5432}/billing_db
+    username: billing_app
+    password: billing_app
+  flyway:
+    locations: classpath:db/migration,classpath:db/common
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: billing-service
+      auto-offset-reset: earliest
+      isolation-level: read_committed
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      properties:
+        apicurio.registry.url: ${toefly.events.registry-url}
+        apicurio.registry.use-specific-avro-reader: true
+        apicurio.registry.fault-tolerant-refresh: true
+    listener:
+      ack-mode: record
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/toefly
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8092
+
+toefly:
+  events:
+    registry-url: http://localhost:8380/apis/registry/v3
+    auto-register: false
+  # docs/02 EP-27, docs/10 §17. Every provider runs in test mode; live mode needs profile prod and live-mode=true.
+  billing:
+    live-mode: false
+    return-urls:
+      - http://app.toefly.localhost:5173/billing
+    web-providers: [STRIPE, BEPAID]
+    identity-pepper: ${BILLING_IDENTITY_PEPPER:local-pepper}
+    app-store-products:
+      app.toefly.pro.monthly: STUDENT_PRO
+    classroom:
+      enabled: false
+      url: http://localhost:8091
+    providers:
+      stripe:
+        enabled: ${STRIPE_ENABLED:false}
+        mode: TEST
+        secret-key: ${STRIPE_SECRET_KEY:}
+        webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+      bepaid:
+        enabled: ${BEPAID_ENABLED:false}
+        mode: TEST
+        shop-id: ${BEPAID_SHOP_ID:}
+        secret-key: ${BEPAID_SECRET_KEY:}
+        public-key: ${BEPAID_PUBLIC_KEY:}
+      app-store:
+        enabled: ${APP_STORE_ENABLED:false}
+        mode: TEST
+        root-certificate: ${APP_STORE_ROOT_CERTIFICATE:}
+
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+toefly:
+  events:
+    auto-register: true
+  billing:
+    providers:
+      # Without STRIPE_SECRET_KEY the local checkout page of billing-service stands in for Stripe Checkout; its
+      # webhooks are signed with this secret and verified like real ones. With keys: STRIPE_EMULATOR=false.
+      stripe:
+        enabled: true
+        webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_local_emulator}
+        emulator: ${STRIPE_EMULATOR:true}
+        emulator-url: http://localhost:8092
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+logging:
+  structured:
+    format:
+      console: ecs

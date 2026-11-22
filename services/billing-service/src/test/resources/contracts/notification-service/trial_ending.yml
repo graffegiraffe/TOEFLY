@@ -1,0 +1,19 @@
+name: trial_ending
+description: notification-service sends TRIAL_ENDING 48 hours before the trial ends (AC-27.02.2)
+input:
+  triggeredBy: trialEnding()
+outputMessage:
+  sentTo: toefly.billing.trial-ending.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/billing-service
+    content-type: application/avro
+    ce_type: toefly.billing.trial-ending.v1
+  body: {}
+  matchers:
+    body:
+      - path: $.subscriptionId
+        type: by_regex
+        predefined: uuid
+      - path: $.trialEndsAt
+        type: by_type

@@ -1,0 +1,23 @@
+name: subscription_activated
+description: notification-service welcomes the learner to Pro (or to the trial) and classroom reads the seat limit
+input:
+  triggeredBy: subscriptionActivated()
+outputMessage:
+  sentTo: toefly.billing.subscription-activated.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/billing-service
+    content-type: application/avro
+    ce_type: toefly.billing.subscription-activated.v1
+  body:
+    planTierCode: STUDENT_PRO
+    trial: true
+    provider: null
+    testMode: true
+  matchers:
+    body:
+      - path: $.subscriptionId
+        type: by_regex
+        predefined: uuid
+      - path: $.periodEnd
+        type: by_type
