@@ -78,6 +78,21 @@ routes:
     reasoningEffort: low
     cacheable: true
     timeout: PT20S
+  # Vocabulary (phase 8): FAST class, cached by prompt and variables; vocabulary-service also keeps its own cache.
+  - useCase: WORD_CARD
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.0
+    maxOutputTokens: 300
+    reasoningEffort: low
+    cacheable: true
+    timeout: PT20S
+  - useCase: KEY_WORDS
+    candidates: ["GROQ:openai/gpt-oss-20b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:llama3.2:3b"]
+    temperature: 0.0
+    maxOutputTokens: 900
+    reasoningEffort: low
+    cacheable: true
+    timeout: PT20S
   - useCase: PLAN_GENERATION
     candidates: ["GROQ:openai/gpt-oss-120b", "GROQ:qwen/qwen3.8-27b", "OLLAMA:gpt-oss:20b"]
     temperature: 0.2
