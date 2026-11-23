@@ -1,0 +1,22 @@
+name: get_vocabulary_summary
+description: tutor-agent reads the dictionary summary for the chat context (docs/05 §9.3.4)
+request:
+  method: GET
+  url: /internal/v1/users/5a1c0e7d-2b3f-4c6d-8e9f-0a1b2c3d4e5f/vocabulary-summary?recentLimit=5
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  matchers:
+    body:
+      - path: $.entriesTotal
+        type: by_type
+      - path: $.dueCount
+        type: by_type
+      - path: $.recentEntries
+        type: by_type
+        minOccurrence: 2
+      - path: $.recentEntries[0].term
+        type: by_type
+      - path: $.lapsedEntries
+        type: by_type

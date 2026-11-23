@@ -1,0 +1,20 @@
+name: export_user_data
+description: profile-service collects the GDPR export (docs/05 §9.3.9)
+request:
+  method: GET
+  url: /internal/v1/users/5a1c0e7d-2b3f-4c6d-8e9f-0a1b2c3d4e5f/export
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    userId: 5a1c0e7d-2b3f-4c6d-8e9f-0a1b2c3d4e5f
+  matchers:
+    body:
+      - path: $.entries
+        type: by_type
+        minOccurrence: 1
+      - path: $.reviewLogs
+        type: by_type
+      - path: $.timezone
+        type: by_type

@@ -1,0 +1,14 @@
+{
+  "output": {
+    "lemma": "mitigate",
+    "partOfSpeech": "verb",
+    "definitionEn": "to make something harmful or unpleasant less severe",
+    "exampleEn": "Planting trees can mitigate the effects of urban heat.",
+    "translationRu": "смягчать, ослаблять",
+    "ipa": "/ˈmɪt.ɪ.ɡeɪt/"
+  },
+  "text": null,
+  "aiStamp": {"aiCallId": "0b8a8e8e-0000-4000-8000-000000000001", "promptKey": "vocabulary.word-card", "promptVersion": 1, "provider": "GROQ", "model": "openai/gpt-oss-20b", "fallbackDepth": 0, "degraded": false, "cacheHit": false, "createdAt": "2026-11-23T10:00:00Z"},
+  "usage": {"inputTokens": 180, "outputTokens": 70},
+  "integrityFlags": []
+}

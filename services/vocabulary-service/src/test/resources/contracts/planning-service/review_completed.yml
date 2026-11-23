@@ -1,0 +1,30 @@
+name: review_completed
+description: planning marks the VOCABULARY_REVIEW of the day done and sizes tomorrow's task (AC-15.03.4, docs/03 §11.5)
+input:
+  triggeredBy: reviewCompleted()
+outputMessage:
+  sentTo: toefly.vocabulary.review-completed.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/vocabulary-service
+    content-type: application/avro
+    ce_type: toefly.vocabulary.review-completed.v1
+  body: {}
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.sessionId
+        type: by_regex
+        predefined: uuid
+      - path: $.localDate
+        type: by_type
+      - path: $.timezone
+        type: by_type
+      - path: $.reviewed
+        type: by_type
+      - path: $.dueRemaining
+        type: by_type
+      - path: $.dueTomorrow
+        type: by_type
