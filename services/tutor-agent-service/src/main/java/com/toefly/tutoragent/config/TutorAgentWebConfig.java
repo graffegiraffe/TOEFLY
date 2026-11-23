@@ -1,7 +1,6 @@
 package com.toefly.tutoragent.config;
 
 import com.toefly.tutoragent.adapter.in.web.api.AdminAgentApi;
-import com.toefly.tutoragent.adapter.in.web.api.ChatStreamsApi;
 import com.toefly.tutoragent.adapter.in.web.api.ChatThreadsApi;
 import com.toefly.tutoragent.adapter.in.web.api.InterviewSessionsApi;
 import com.toefly.tutoragent.adapter.in.web.api.LearnerModelApi;
@@ -24,7 +23,6 @@ class TutorAgentWebConfig implements WebMvcConfigurer {
                 PUBLIC_PREFIX,
                 HandlerTypePredicate.forAssignableType(
                         ChatThreadsApi.class,
-                        ChatStreamsApi.class,
                         PendingActionsApi.class,
                         WeeklyReviewsApi.class,
                         LearnerModelApi.class,

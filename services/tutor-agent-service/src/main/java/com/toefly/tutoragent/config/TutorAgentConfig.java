@@ -3,28 +3,42 @@ package com.toefly.tutoragent.config;
 import com.toefly.common.security.ClientCredentialsInterceptor;
 import com.toefly.tutoragent.adapter.out.client.AiGatewayAdapter;
 import com.toefly.tutoragent.adapter.out.client.AssessmentClientAdapter;
+import com.toefly.tutoragent.adapter.out.client.GatewayChatModelAdapter;
+import com.toefly.tutoragent.adapter.out.client.OwnerToolsAdapter;
 import com.toefly.tutoragent.adapter.out.client.PracticeClientAdapter;
+import com.toefly.tutoragent.adapter.out.client.PromptClientAdapter;
+import com.toefly.tutoragent.adapter.out.client.ServiceToken;
+import com.toefly.tutoragent.application.port.in.ChatUseCase;
 import com.toefly.tutoragent.application.port.in.LearnerModelUseCase;
 import com.toefly.tutoragent.application.port.in.MemoryUseCase;
 import com.toefly.tutoragent.application.port.in.ProjectionUseCase;
 import com.toefly.tutoragent.application.port.in.WeeklyReviewUseCase;
 import com.toefly.tutoragent.application.port.out.AiPort;
 import com.toefly.tutoragent.application.port.out.AssessmentPort;
+import com.toefly.tutoragent.application.port.out.ChatModelPort;
+import com.toefly.tutoragent.application.port.out.ChatRepository;
 import com.toefly.tutoragent.application.port.out.DeferredReviewRepository;
 import com.toefly.tutoragent.application.port.out.EntitlementPort;
 import com.toefly.tutoragent.application.port.out.LearnerEventPublisherPort;
 import com.toefly.tutoragent.application.port.out.LearnerModelRepository;
 import com.toefly.tutoragent.application.port.out.MistakeMemoryRepository;
 import com.toefly.tutoragent.application.port.out.MistakeRepository;
+import com.toefly.tutoragent.application.port.out.OwnerToolsPort;
+import com.toefly.tutoragent.application.port.out.PendingActionRepository;
 import com.toefly.tutoragent.application.port.out.PracticePort;
 import com.toefly.tutoragent.application.port.out.PracticeResultRepository;
 import com.toefly.tutoragent.application.port.out.ProjectionRepository;
+import com.toefly.tutoragent.application.port.out.PromptPort;
 import com.toefly.tutoragent.application.port.out.PublicationSchedule;
 import com.toefly.tutoragent.application.port.out.ReviewEventPublisherPort;
+import com.toefly.tutoragent.application.port.out.ToolLog;
 import com.toefly.tutoragent.application.port.out.WeeklyReviewRepository;
+import com.toefly.tutoragent.application.service.ChatService;
 import com.toefly.tutoragent.application.service.LearnerModelService;
 import com.toefly.tutoragent.application.service.MemoryService;
 import com.toefly.tutoragent.application.service.ProjectionService;
+import com.toefly.tutoragent.application.service.ScreenContextAssembler;
+import com.toefly.tutoragent.application.service.ToolExecutor;
 import com.toefly.tutoragent.application.service.Transactions;
 import com.toefly.tutoragent.application.service.WeeklyReviewService;
 import com.toefly.tutoragent.domain.learner.Taxonomy;
@@ -159,6 +173,81 @@ class TutorAgentConfig {
                 entitlements,
                 ai,
                 events,
+                taxonomy,
+                transactions,
+                clock);
+    }
+
+    @Bean
+    ChatModelPort chatModelPort(OAuth2AuthorizedClientManager clients, TutorAgentProperties p) {
+        return new GatewayChatModelAdapter(
+                p.aiGatewayUrl(), new ServiceToken(clients, REGISTRATION), Duration.ofSeconds(180));
+    }
+
+    @Bean
+    PromptPort promptPort(
+            RestClient.Builder builder, OAuth2AuthorizedClientManager clients, TutorAgentProperties p, Clock clock) {
+        return new PromptClientAdapter(client(builder, clients, p.aiGatewayUrl(), Duration.ofSeconds(5)), clock);
+    }
+
+    @Bean
+    OwnerToolsPort ownerToolsPort(
+            RestClient.Builder builder, OAuth2AuthorizedClientManager clients, TutorAgentProperties p) {
+        return new OwnerToolsAdapter(
+                client(builder, clients, p.planningUrl(), p.toolReadTimeout()),
+                client(builder, clients, p.analyticsUrl(), p.toolReadTimeout()),
+                client(builder, clients, p.contentUrl(), p.toolReadTimeout()));
+    }
+
+    @Bean
+    ToolExecutor toolExecutor(
+            OwnerToolsPort owners,
+            PracticePort practice,
+            AssessmentPort assessment,
+            LearnerModelUseCase learner,
+            MistakeRepository mistakes,
+            MistakeMemoryRepository memory,
+            WeeklyReviewRepository reviews,
+            AiPort ai,
+            Taxonomy taxonomy,
+            Clock clock) {
+        return new ToolExecutor(owners, practice, assessment, learner, mistakes, memory, reviews, ai, taxonomy, clock);
+    }
+
+    @Bean
+    ChatUseCase chatService(
+            ChatRepository chats,
+            PendingActionRepository actions,
+            ToolLog toolLog,
+            EntitlementPort entitlements,
+            ProjectionRepository projections,
+            LearnerModelUseCase learner,
+            AiPort ai,
+            ChatModelPort model,
+            PromptPort prompts,
+            OwnerToolsPort owners,
+            ToolExecutor tools,
+            PracticePort practice,
+            AssessmentPort assessment,
+            WeeklyReviewRepository reviews,
+            Taxonomy taxonomy,
+            Transactions transactions,
+            Clock clock,
+            JsonMapper json) {
+        return new ChatService(
+                chats,
+                actions,
+                toolLog,
+                entitlements,
+                projections,
+                learner,
+                ai,
+                model,
+                prompts,
+                owners,
+                tools,
+                new ScreenContextAssembler(practice, assessment, owners, reviews),
+                ToolSpecsLoader.load(json),
                 taxonomy,
                 transactions,
                 clock);

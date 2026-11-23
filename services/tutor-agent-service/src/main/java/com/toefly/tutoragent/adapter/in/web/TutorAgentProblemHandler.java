@@ -3,6 +3,8 @@ package com.toefly.tutoragent.adapter.in.web;
 import com.toefly.common.web.Problems;
 import com.toefly.tutoragent.application.port.AiUnavailableException;
 import com.toefly.tutoragent.application.port.DependencyUnavailableException;
+import com.toefly.tutoragent.application.port.OwnerRefusedException;
+import com.toefly.tutoragent.application.port.in.ChatRejectedException;
 import com.toefly.tutoragent.application.port.in.EntitlementRequiredException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -25,6 +27,35 @@ class TutorAgentProblemHandler {
             response.header(HttpHeaders.RETRY_AFTER, "60");
         }
         return response.body(problem(exception.status(), exception.slug(), exception.getMessage()));
+    }
+
+    @ExceptionHandler
+    ResponseEntity<ProblemDetail> chat(ChatRejectedException exception) {
+        HttpStatus status = switch (exception.reason()) {
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case RATE_LIMITED -> HttpStatus.TOO_MANY_REQUESTS;
+            case GUARDRAIL_REJECTED -> HttpStatus.UNPROCESSABLE_CONTENT;
+            default -> HttpStatus.CONFLICT;
+        };
+        String slug = switch (exception.reason()) {
+            case NOT_FOUND -> "not-found";
+            case EXAM_IN_PROGRESS -> "exam-in-progress";
+            case MESSAGE_IN_PROGRESS -> "message-in-progress";
+            case RATE_LIMITED -> "rate-limited";
+            case GUARDRAIL_REJECTED -> "guardrail-rejected";
+            case ACTION_EXPIRED -> "action-expired";
+        };
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(status);
+        if (status == HttpStatus.TOO_MANY_REQUESTS) {
+            response.header(HttpHeaders.RETRY_AFTER, "60");
+        }
+        return response.body(problem(status, slug, exception.getMessage()));
+    }
+
+    @ExceptionHandler
+    ResponseEntity<ProblemDetail> ownerRefused(OwnerRefusedException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(problem(HttpStatus.CONFLICT, "conflict", exception.getMessage()));
     }
 
     @ExceptionHandler

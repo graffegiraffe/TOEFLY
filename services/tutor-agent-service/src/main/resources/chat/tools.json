@@ -1,0 +1,276 @@
+[
+  {
+    "name": "getProgress",
+    "description": "Get the student's progress: completed tasks this week, streak, accuracy by section and task type for the last 4 weeks.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "enum": [
+            "READING",
+            "LISTENING",
+            "WRITING",
+            "SPEAKING"
+          ],
+          "description": "Optional: only this section."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "getCurrentWeek",
+    "description": "Get the current study week: week number, days, today's tasks with status, completion percent, focus areas.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "includeDone": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "getMistakeHistory",
+    "description": "Get the student's recurring mistakes from the learner model. Use a query to find mistakes similar to a given text.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "GRAMMAR",
+            "VOCABULARY",
+            "SPELLING",
+            "COHERENCE",
+            "TASK_RESPONSE",
+            "PRONUNCIATION",
+            "FLUENCY",
+            "COMPREHENSION",
+            "TIME_MANAGEMENT"
+          ]
+        },
+        "subcategory": {
+          "type": "string",
+          "description": "Subcategory code, e.g. GRAMMAR.ARTICLES"
+        },
+        "query": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Semantic search text, e.g. a sentence with an error."
+        },
+        "sinceWeeks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 4
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "searchItems",
+    "description": "Search approved practice item sets for extra practice. Returns ids, task type, topic, difficulty and estimated minutes.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "taskType": {
+          "type": "string",
+          "enum": [
+            "COMPLETE_THE_WORDS",
+            "READ_DAILY_LIFE",
+            "READ_ACADEMIC_PASSAGE",
+            "LISTEN_CHOOSE_RESPONSE",
+            "LISTEN_CONVERSATION",
+            "LISTEN_ANNOUNCEMENT",
+            "LISTEN_ACADEMIC_TALK",
+            "BUILD_A_SENTENCE",
+            "WRITE_EMAIL",
+            "WRITE_ACADEMIC_DISCUSSION",
+            "LISTEN_AND_REPEAT",
+            "TAKE_AN_INTERVIEW",
+            "GRAMMAR_EXERCISE",
+            "VOCAB_EXERCISE"
+          ]
+        },
+        "skillFocus": {
+          "type": "string",
+          "description": "Mistake subcategory or skill, e.g. GRAMMAR.SUBJECT_VERB_AGREEMENT or READING.INFERENCE"
+        },
+        "topic": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": [
+            "EASIER",
+            "SAME",
+            "HARDER"
+          ],
+          "default": "SAME"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 3
+        }
+      },
+      "required": [
+        "taskType"
+      ]
+    }
+  },
+  {
+    "name": "assignExtraTask",
+    "description": "Propose adding an item set to the student's current week. Returns PENDING_CONFIRMATION; the student must confirm with a button.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "itemSetId": {
+          "type": "string"
+        },
+        "day": {
+          "type": "string",
+          "enum": [
+            "TODAY",
+            "TOMORROW",
+            "NEXT_FREE_DAY"
+          ],
+          "default": "NEXT_FREE_DAY"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Short reason shown to the student and tutor."
+        }
+      },
+      "required": [
+        "itemSetId",
+        "reason"
+      ]
+    }
+  },
+  {
+    "name": "explainGrammarRule",
+    "description": "Get the grammar rule card and linked textbook units (New Round-Up 5, Collins Grammar) for a grammar topic or an erroneous sentence.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "e.g. 'present perfect vs past simple' or a subcategory code"
+        },
+        "exampleSentence": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "BRIEF",
+            "FULL"
+          ],
+          "default": "BRIEF"
+        }
+      },
+      "required": [
+        "topic"
+      ]
+    }
+  },
+  {
+    "name": "getSubmission",
+    "description": "Get a Writing or Speaking submission with its versions, AI evaluation (score, criteria, inline comments) and, if evaluated, the model answer.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional version number; latest by default."
+        }
+      },
+      "required": [
+        "submissionId"
+      ]
+    }
+  },
+  {
+    "name": "getAttemptReview",
+    "description": "Get the review of a submitted attempt on closed questions: student answers, correct answers, explanations of the correct option and each distractor.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "attemptId": {
+          "type": "string"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Optional: only this question."
+        }
+      },
+      "required": [
+        "attemptId"
+      ]
+    }
+  },
+  {
+    "name": "getBandEstimate",
+    "description": "Get the current AI band estimate (1-6) per section and overall with confidence and data sufficiency.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "getTimeStats",
+    "description": "Get active study time by section and task type compared with ETS timing norms.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "string",
+          "enum": [
+            "TODAY",
+            "THIS_WEEK",
+            "LAST_4_WEEKS"
+          ],
+          "default": "THIS_WEEK"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "getWeeklyReview",
+    "description": "Get the weekly review for a given week (or the latest): scores, top mistakes, strengths, next week focus, tutor comment.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "weekNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        }
+      },
+      "required": []
+    }
+  }
+]
