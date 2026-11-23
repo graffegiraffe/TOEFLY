@@ -123,6 +123,7 @@ final class WeekDtoMapper {
                 .progressPercent(BigDecimal.valueOf(week.progressPercent()))
                 .mockExam(week.mockExam())
                 .rationale(week.rationale())
+                .aiFallback(week.draft().aiFallback())
                 .autoPublished(false)
                 .pendingSlots(0)
                 .rebalance(rebalance)

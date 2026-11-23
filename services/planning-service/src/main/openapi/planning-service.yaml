@@ -1062,6 +1062,7 @@ components:
         progressPercent: { type: number, minimum: 0, maximum: 100, description: Доля выполненного оценочного времени. }
         mockExam: { type: boolean }
         rationale: { type: [string, 'null'], description: 'Текст «почему эта неделя такая» (может отсутствовать, если ai-gateway был недоступен).' }
+        aiFallback: { type: boolean, description: 'WeekGenerator не дал корректного черновика, неделя собрана правилами (`GreedyWeekPacker`), тексты «why for you» шаблонные (docs/06 §5.2).' }
         approvalDeadline: { type: [string, 'null'], format: date-time }
         autoPublished: { type: boolean }
         pendingSlots: { type: integer, minimum: 0, description: 'Число заданий, ожидающих генерации.' }

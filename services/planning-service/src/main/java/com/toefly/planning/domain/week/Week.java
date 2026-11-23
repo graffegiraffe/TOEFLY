@@ -36,8 +36,9 @@ public final class Week {
     private final int minutesPerDay;
     private final boolean mockExam;
     private final List<TaskType> weakTypes;
-    private final @Nullable String rationale;
-    private final Instant generatedAt;
+    private @Nullable String rationale;
+    private Instant generatedAt;
+    private DraftInfo draft;
     private final List<WeekTask> tasks;
     private WeekStatus status;
     private LocalDate day1;
@@ -73,6 +74,54 @@ public final class Week {
             @Nullable LocalDate lastRolloverDate,
             int version,
             List<WeekTask> tasks) {
+        this(
+                id,
+                planId,
+                userId,
+                weekNo,
+                status,
+                day1,
+                minutesPerDay,
+                mockExam,
+                weakTypes,
+                rationale,
+                generatedAt,
+                publishedAt,
+                completedAt,
+                closedOn,
+                closedBy,
+                rebalancedAt,
+                rebalanceCount,
+                rebalanceSkipped,
+                lastRolloverDate,
+                version,
+                tasks,
+                DraftInfo.rules(List.of()));
+    }
+
+    public Week(
+            UUID id,
+            UUID planId,
+            UUID userId,
+            int weekNo,
+            WeekStatus status,
+            LocalDate day1,
+            int minutesPerDay,
+            boolean mockExam,
+            List<TaskType> weakTypes,
+            @Nullable String rationale,
+            Instant generatedAt,
+            @Nullable Instant publishedAt,
+            @Nullable Instant completedAt,
+            @Nullable LocalDate closedOn,
+            @Nullable WeekCloseReason closedBy,
+            @Nullable Instant rebalancedAt,
+            int rebalanceCount,
+            List<UUID> rebalanceSkipped,
+            @Nullable LocalDate lastRolloverDate,
+            int version,
+            List<WeekTask> tasks,
+            DraftInfo draft) {
         if (weekNo < 1) {
             throw new IllegalArgumentException("weekNo must be positive");
         }
@@ -100,6 +149,7 @@ public final class Week {
         this.lastRolloverDate = lastRolloverDate;
         this.version = version;
         this.tasks = new ArrayList<>(tasks);
+        this.draft = Objects.requireNonNull(draft);
     }
 
     /**
@@ -117,6 +167,33 @@ public final class Week {
             @Nullable String rationale,
             List<WeekTask> tasks,
             Instant now) {
+        return publish(
+                planId,
+                userId,
+                weekNo,
+                day1,
+                minutesPerDay,
+                mockExam,
+                weakTypes,
+                rationale,
+                tasks,
+                now,
+                DraftInfo.rules(List.of()));
+    }
+
+    /** {@link #publish} with the origin of the tasks. */
+    public static Week publish(
+            UUID planId,
+            UUID userId,
+            int weekNo,
+            LocalDate day1,
+            int minutesPerDay,
+            boolean mockExam,
+            List<TaskType> weakTypes,
+            @Nullable String rationale,
+            List<WeekTask> tasks,
+            Instant now,
+            DraftInfo draft) {
         if (tasks.isEmpty()) {
             throw new IllegalArgumentException("A published week has at least one task (INV-WK-03)");
         }
@@ -141,10 +218,48 @@ public final class Week {
                 List.of(),
                 null,
                 0,
-                tasks);
+                tasks,
+                draft);
         DayDistributor.distribute(day1, minutesPerDay, 1, DAYS, List.of(), week.tasks);
         DayDistributor.order(week.tasks);
         return week;
+    }
+
+    // ---- the draft of WeekGenerator (docs/06-ai-agent.md §5.2) ----
+
+    /**
+     * The week of the rules may still follow a weekly review: it is published, nobody started a task in it, and no
+     * review has drafted it yet. A week is drafted by the AI at most once.
+     */
+    public boolean redraftable() {
+        return status == WeekStatus.PUBLISHED
+                && draft.source() == DraftSource.RULES
+                && tasks.stream().allMatch(task -> task.status() == WeekTaskStatus.PENDING && task.attemptId() == null);
+    }
+
+    /**
+     * Replaces the tasks of a week that has not started with the draft of WeekGenerator or of its fallback; the id,
+     * the number and the dates stay, so links to the week keep working.
+     *
+     * @param laidOut the tasks already carry their days (a valid AI draft); otherwise they are distributed here
+     */
+    public void redraft(List<WeekTask> drafted, boolean laidOut, @Nullable String why, DraftInfo info, Instant now) {
+        if (!redraftable()) {
+            throw new WeekRuleException("week-not-editable", "Week " + weekNo + " has started or was drafted already");
+        }
+        if (drafted.isEmpty()) {
+            throw new IllegalArgumentException("A published week has at least one task (INV-WK-03)");
+        }
+        tasks.clear();
+        tasks.addAll(drafted);
+        if (!laidOut) {
+            DayDistributor.distribute(day1, minutesPerDay, 1, DAYS, List.of(), tasks);
+        }
+        DayDistributor.order(tasks);
+        rationale = why;
+        draft = info;
+        generatedAt = now;
+        publishedAt = now;
     }
 
     // ---- days and progress ----
@@ -520,6 +635,10 @@ public final class Week {
 
     public @Nullable String rationale() {
         return rationale;
+    }
+
+    public DraftInfo draft() {
+        return draft;
     }
 
     public Instant generatedAt() {

@@ -32,6 +32,9 @@ public interface WeekRepository {
     /** {@code refId} of every item set, unit and resource ever given to the learner (INV-WK-04). */
     Set<String> assignedRefs(UUID userId);
 
+    /** {@link #assignedRefs(UUID)} without the tasks of one week, for a week that is drafted again. */
+    Set<String> assignedRefs(UUID userId, UUID exceptWeekId);
+
     /** Item sets the learner did, by type: the sets a repeat may come from. */
     Map<TaskType, List<UUID>> doneItemSets(UUID userId);
 

@@ -1,5 +1,6 @@
 package com.toefly.planning.application.service;
 
+import com.toefly.planning.application.port.out.AiUnavailableException;
 import com.toefly.planning.application.port.out.Cause;
 import com.toefly.planning.application.port.out.ConcurrencyConflictException;
 import com.toefly.planning.application.port.out.ItemSetCatalogPort;
@@ -8,6 +9,7 @@ import com.toefly.planning.application.port.out.LearnerSignalPort;
 import com.toefly.planning.application.port.out.PlanningEventPublisherPort;
 import com.toefly.planning.application.port.out.StudyPlanRepository;
 import com.toefly.planning.application.port.out.UnitCatalogPort;
+import com.toefly.planning.application.port.out.WeekDraftAiPort;
 import com.toefly.planning.application.port.out.WeekRepository;
 import com.toefly.planning.domain.composition.CompositionRules;
 import com.toefly.planning.domain.composition.ResourceLink;
@@ -28,8 +30,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -59,6 +63,8 @@ final class Fakes {
     final PlanQueryService queries;
     final RolloverService rollover;
     final LearnerSyncService sync;
+    final DraftAi ai = new DraftAi();
+    final NextWeekDraftService drafts;
 
     static final Set<TaskType> CLOSED = EnumSet.of(
             TaskType.COMPLETE_THE_WORDS,
@@ -87,7 +93,8 @@ final class Fakes {
                                 "https://www.toeflresources.com/listening-section/",
                                 "Listening",
                                 Set.of(WeekSection.LISTENING))));
-        WeekPlanner planner = new WeekPlanner(weeks, catalog, units, signals, CompositionRules.standard(), settings);
+        WeekPlanner planner =
+                new WeekPlanner(weeks, catalog, units, signals, models, CompositionRules.standard(), settings);
         WeekLifecycle lifecycle = new WeekLifecycle(plans, weeks, planner, events);
         Transactions transactions = new Transactions(new NoTransactions());
         planService = new StudyPlanService(plans, weeks, planner, events, clock);
@@ -96,6 +103,7 @@ final class Fakes {
         queries = new PlanQueryService(plans, weeks, clock);
         rollover = new RolloverService(plans, weeks, lifecycle, events, transactions, clock);
         sync = new LearnerSyncService(signals, catalog, plans, weeks, models);
+        drafts = new NextWeekDraftService(plans, weeks, planner, new WeekGenerator(ai), events, clock);
     }
 
     // ---- clock ----
@@ -234,6 +242,20 @@ final class Fakes {
             Set<String> refs = new HashSet<>();
             byId.values().stream()
                     .filter(week -> week.userId().equals(userId))
+                    .flatMap(week -> week.tasks().stream())
+                    .forEach(task -> {
+                        if (task.refId() != null) {
+                            refs.add(task.refId());
+                        }
+                    });
+            return refs;
+        }
+
+        @Override
+        public Set<String> assignedRefs(UUID userId, UUID exceptWeekId) {
+            Set<String> refs = new HashSet<>();
+            byId.values().stream()
+                    .filter(week -> week.userId().equals(userId) && !week.id().equals(exceptWeekId))
                     .flatMap(week -> week.tasks().stream())
                     .forEach(task -> {
                         if (task.refId() != null) {
@@ -404,6 +426,22 @@ final class Fakes {
         @Override
         public void deleteByUser(UUID userId) {
             byUser.remove(userId);
+        }
+    }
+
+    /** ai-gateway answering from a queue of recorded replies; an empty queue is an unavailable gateway. */
+    static final class DraftAi implements WeekDraftAiPort {
+        final Deque<Object> replies = new ArrayDeque<>();
+        final List<DraftCall> calls = new ArrayList<>();
+
+        @Override
+        public DraftReply draft(DraftCall call) {
+            calls.add(call);
+            Object reply = replies.pollFirst();
+            if (reply instanceof DraftReply draft) {
+                return draft;
+            }
+            throw new AiUnavailableException("503 ai-unavailable");
         }
     }
 

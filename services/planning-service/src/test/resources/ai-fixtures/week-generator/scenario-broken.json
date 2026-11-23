@@ -1,0 +1,38 @@
+{
+  "_fixture": "Hand-written fixture of a broken planning.week.generate answer: an invented ref, a repeated ref, missing mandatory units and an overloaded day.",
+  "output": {
+    "days": [
+      {
+        "day": "WED",
+        "tasks": [
+          { "candidateRef": "c01", "whyForYou": "Articles came up in your emails, so build sentences first." },
+          { "candidateRef": "c01", "whyForYou": "One more sentence to practise articles." },
+          { "candidateRef": "c99", "whyForYou": "A new articles drill." },
+          { "candidateRef": "c60", "whyForYou": "Next Round-Up unit." },
+          { "candidateRef": "c61", "whyForYou": "Next Collins Grammar unit." }
+        ]
+      },
+      {
+        "day": "THU",
+        "tasks": [
+          { "candidateRef": "c15", "whyForYou": "Academic passages are worth the most points in Reading." }
+        ]
+      }
+    ],
+    "weekGoal": "Fix articles.",
+    "focusExplanation": "Articles were your most frequent mistake."
+  },
+  "aiStamp": {
+    "aiCallId": "fixture-week-0",
+    "promptKey": "planning.week.generate",
+    "promptVersion": 1,
+    "provider": "GROQ",
+    "model": "openai/gpt-oss-120b",
+    "fallbackDepth": 0,
+    "degraded": false,
+    "cacheHit": false,
+    "createdAt": "2026-11-22T10:00:00Z"
+  },
+  "usage": { "inputTokens": 3100, "outputTokens": 300, "latencyMs": 2100 },
+  "integrityFlags": []
+}

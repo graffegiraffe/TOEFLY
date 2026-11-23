@@ -2,6 +2,9 @@ package com.toefly.planning.adapter.out.persistence;
 
 import com.toefly.planning.application.port.out.ConcurrencyConflictException;
 import com.toefly.planning.application.port.out.WeekRepository;
+import com.toefly.planning.domain.week.AiStamp;
+import com.toefly.planning.domain.week.DraftInfo;
+import com.toefly.planning.domain.week.DraftSource;
 import com.toefly.planning.domain.week.TaskOrigin;
 import com.toefly.planning.domain.week.TaskType;
 import com.toefly.planning.domain.week.Week;
@@ -79,10 +82,11 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
                         INSERT INTO week (id, plan_id, user_id, week_no, status, day1, minutes_per_day, mock_exam,
                             weak_types, rationale, generated_at, published_at, completed_at, closed_on, closed_by,
                             rebalanced_at, rebalance_count, rebalance_skipped, last_rollover_date, progress_percent,
-                            version)
+                            version, draft_source, review_id, focus, ai_stamp)
                         VALUES (:id, :plan, :user, :no, :status, :day1, :minutes, :mock, CAST(:weak AS jsonb),
                             :rationale, :generated, :published, :completed, :closedOn, :closedBy, :rebalancedAt,
-                            :rebalanceCount, CAST(:rebalanceSkipped AS jsonb), :rollover, :progress, :version)
+                            :rebalanceCount, CAST(:rebalanceSkipped AS jsonb), :rollover, :progress, :version,
+                            :draftSource, :reviewId, CAST(:focus AS jsonb), CAST(:aiStamp AS jsonb))
                         """).params(weekParams(week)).update();
         writeTasks(week);
     }
@@ -94,7 +98,9 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
                             completed_at = :completed, closed_on = :closedOn, closed_by = :closedBy,
                             rebalanced_at = :rebalancedAt, rebalance_count = :rebalanceCount,
                             rebalance_skipped = CAST(:rebalanceSkipped AS jsonb), last_rollover_date = :rollover,
-                            progress_percent = :progress, version = version + 1
+                            progress_percent = :progress, rationale = :rationale, generated_at = :generated,
+                            draft_source = :draftSource, review_id = :reviewId, focus = CAST(:focus AS jsonb),
+                            ai_stamp = CAST(:aiStamp AS jsonb), version = version + 1
                         WHERE id = :id AND version = :version
                         """).params(weekParams(week)).update();
         if (changed != 1) {
@@ -112,6 +118,18 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
                         .param("user", userId)
                         .query(String.class)
                         .list());
+    }
+
+    @Override
+    public Set<String> assignedRefs(UUID userId, UUID exceptWeekId) {
+        return new HashSet<>(jdbc.sql("""
+                        SELECT DISTINCT ref_id FROM week_task
+                        WHERE user_id = :user AND ref_id IS NOT NULL AND week_id <> :week
+                        """)
+                .param("user", userId)
+                .param("week", exceptWeekId)
+                .query(String.class)
+                .list());
     }
 
     @Override
@@ -196,7 +214,8 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
             int rebalanceCount,
             List<UUID> rebalanceSkipped,
             @Nullable LocalDate lastRollover,
-            int version) {
+            int version,
+            DraftInfo draft) {
 
         Week toWeek(List<WeekTask> tasks) {
             return new Week(
@@ -220,12 +239,14 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
                     rebalanceSkipped,
                     lastRollover,
                     version,
-                    tasks);
+                    tasks,
+                    draft);
         }
     }
 
     private WeekRow weekRow(ResultSet rs, int row) throws SQLException {
         String closedBy = rs.getString("closed_by");
+        String stamp = rs.getString("ai_stamp");
         return new WeekRow(
                 rs.getObject("id", UUID.class),
                 rs.getObject("plan_id", UUID.class),
@@ -250,7 +271,12 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
                         .map(UUID::fromString)
                         .toList(),
                 date(rs, "last_rollover_date"),
-                rs.getInt("version"));
+                rs.getInt("version"),
+                new DraftInfo(
+                        DraftSource.valueOf(rs.getString("draft_source")),
+                        rs.getObject("review_id", UUID.class),
+                        json.readValue(rs.getString("focus"), STRINGS),
+                        stamp == null ? null : json.readValue(stamp, AiStamp.class)));
     }
 
     private static WeekTask task(ResultSet rs) throws SQLException {
@@ -308,6 +334,14 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
         params.put("rollover", week.lastRolloverDate() == null ? null : Date.valueOf(week.lastRolloverDate()));
         params.put("progress", week.progressPercent());
         params.put("version", week.version());
+        params.put("draftSource", week.draft().source().name());
+        params.put("reviewId", week.draft().reviewId());
+        params.put("focus", json.writeValueAsString(week.draft().focus()));
+        params.put(
+                "aiStamp",
+                week.draft().stamp() == null
+                        ? null
+                        : json.writeValueAsString(week.draft().stamp()));
         return params;
     }
 
@@ -343,10 +377,18 @@ public class JdbcWeekRepositoryAdapter implements WeekRepository {
                             VALUES (:id, :week, :user, :day, :kind, :section, :type, :ref, :title, :minutes, :status,
                                 :origin, :rationale, :repeat, :reason, :order, :attempt, :started, :done, :doneOn)
                             ON CONFLICT (id) DO UPDATE SET day_no = EXCLUDED.day_no, status = EXCLUDED.status,
+                                rationale = EXCLUDED.rationale,
                                 skipped_reason = EXCLUDED.skipped_reason, sort_order = EXCLUDED.sort_order,
                                 attempt_id = EXCLUDED.attempt_id, started_at = EXCLUDED.started_at,
                                 completed_at = EXCLUDED.completed_at, completed_on = EXCLUDED.completed_on
                             """).params(params).update();
+        }
+        // A redrafted week drops the tasks of the rules; no other change removes a task.
+        if (!week.tasks().isEmpty()) {
+            jdbc.sql("DELETE FROM week_task WHERE week_id = :week AND id NOT IN (:ids)")
+                    .param("week", week.id())
+                    .param("ids", week.tasks().stream().map(WeekTask::id).toList())
+                    .update();
         }
         jdbc.sql("DELETE FROM day_plan WHERE week_id = :week")
                 .param("week", week.id())
