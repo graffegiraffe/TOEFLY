@@ -36,7 +36,8 @@ class TutorPromptsTest {
                         "tutor.router",
                         "tutor.chat.summarize",
                         "tutor.weekly-review",
-                        "tutor.reengagement");
+                        "tutor.reengagement",
+                        "tutor.eval.judge");
         assertThat(prompts.get("tutor.chat.system").useCase()).isEqualTo(AiUseCase.TUTOR_CHAT);
         assertThat(prompts.get("tutor.chat.system").guardPolicy()).isEqualTo(GuardPolicy.CHAT);
         assertThat(prompts.get("tutor.chat.system").system())
@@ -44,6 +45,7 @@ class TutorPromptsTest {
         assertThat(prompts.get("tutor.router").useCase()).isEqualTo(AiUseCase.TUTOR_ROUTER);
         assertThat(prompts.get("tutor.weekly-review").useCase()).isEqualTo(AiUseCase.WEEKLY_REVIEW);
         assertThat(prompts.get("tutor.reengagement").useCase()).isEqualTo(AiUseCase.REENGAGEMENT);
+        assertThat(prompts.get("tutor.eval.judge").useCase()).isEqualTo(AiUseCase.EVAL_JUDGE);
     }
 
     @Test

@@ -157,7 +157,7 @@ routes:
     cacheable: false
     timeout: PT90S
   - useCase: EVAL_JUDGE
-    candidates: ["GROQ:qwen/qwen3.8-27b", "GROQ:openai/gpt-oss-120b"]
+    candidates: ["ZAI:glm-4.7-flash", "ZAI:glm-4.5-flash", "GROQ:qwen/qwen3.8-27b"]
     temperature: 0.0
     maxOutputTokens: 500
     cacheable: true
