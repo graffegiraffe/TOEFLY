@@ -209,10 +209,12 @@ class VocabularyComponentIT {
                 .willReturn(okJson("{\"access_token\":\"svc\",\"token_type\":\"Bearer\",\"expires_in\":300}")));
         DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo(COMPLETIONS))
                 .withRequestBody(matchingJsonPath("$.promptKey", WireMock.equalTo("vocabulary.word-card")))
+                .withRequestBody(matchingJsonPath("$.useCase", WireMock.equalTo("WORD_CARD")))
                 .withRequestBody(matchingJsonPath("$.variables.term", WireMock.matching("mitigat.*")))
                 .willReturn(okJson(Files.readString(AI.resolve("word-card-mitigating.json")))));
         DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo(COMPLETIONS))
                 .withRequestBody(matchingJsonPath("$.promptKey", WireMock.equalTo("vocabulary.key-words")))
+                .withRequestBody(matchingJsonPath("$.useCase", WireMock.equalTo("KEY_WORDS")))
                 .willReturn(okJson(Files.readString(AI.resolve("key-words-urban-forests.json")))));
         DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo(COMPLETIONS))
                 .atPriority(10)

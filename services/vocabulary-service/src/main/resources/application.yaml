@@ -52,9 +52,10 @@ toefly:
   vocabulary:
     content-url: http://localhost:8082
     ai-gateway-url: http://localhost:8095
-    # Word cards and key words go through ai-gateway; off until its vocabulary prompts are registered.
+    # Word cards and key words go through ai-gateway (WORD_CARD, KEY_WORDS); when it is off or failing, words are
+    # saved without dictionary data and the enrichment job fills them in later.
     ai:
-      enabled: ${TOEFLY_VOCABULARY_AI_ENABLED:false}
+      enabled: ${TOEFLY_VOCABULARY_AI_ENABLED:true}
     # The pronunciation button needs speech-service (phase 6).
     pronunciation-enabled: false
 
