@@ -468,7 +468,10 @@ class VocabularyComponentIT {
     @Test
     @DisplayName("AC-15.04.2, AC-15.04.3: an approved Collins unit is added to the dictionary once, in unit order")
     void wordSet() throws Exception {
-        assertThat(wordSets.sync()).isEqualTo(1);
+        // the job runs outside any HTTP request, as the scheduler does
+        assertThat(java.util.concurrent.CompletableFuture.supplyAsync(wordSets::sync)
+                        .get())
+                .isEqualTo(1);
         UUID user = UUID.randomUUID();
         addWord(user, "mitigate", null).andExpect(status().isCreated());
 
