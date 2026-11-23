@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -561,6 +562,93 @@ class PlanningComponentIT {
     // ---- REST ----
 
     @Test
+    @DisplayName("docs/06 §4.5 assignExtraTask: addWeekTaskInternal is idempotent, limited to 3 and 501 for the tutor")
+    void extraTasksOfTheAgent() throws Exception {
+        UUID user = plan();
+        Week week = weekOf(user);
+        UUID key = UUID.randomUUID();
+        UUID first = UUID.randomUUID();
+        for (int i = 0; i < 4; i++) {
+            sync.itemSetPublished(
+                    i == 0 ? first : UUID.randomUUID(),
+                    1,
+                    TaskType.READ_DAILY_LIFE,
+                    "TOEFL_2026",
+                    0,
+                    2.5,
+                    "extra " + i,
+                    null,
+                    Instant.now());
+        }
+        String body = "{\"source\":\"TUTOR_AGENT\",\"itemSetId\":\"" + first
+                + "\",\"day\":\"TODAY\",\"reason\":\"Articles again\"}";
+        String taskId = null;
+        for (int i = 0; i < 2; i++) {
+            MvcResult result = mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                            .with(service())
+                            .header("Idempotency-Key", key.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isCreated())
+                    .andExpect(header().exists("Location"))
+                    .andExpect(jsonPath("$.addedBy").value("TUTOR_AGENT"))
+                    .andExpect(jsonPath("$.rationale").value("Articles again"))
+                    .andExpect(jsonPath("$.dayIndex").value(1))
+                    .andReturn();
+            String id = body(result).path("taskId").asString();
+            assertThat(taskId == null || taskId.equals(id)).isTrue();
+            taskId = id;
+            if (i == 1) {
+                assertThat(result.getResponse().getHeader("Idempotent-Replayed"))
+                        .isEqualTo("true");
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            UUID set = jdbc.sql("SELECT item_set_id FROM item_set_catalog WHERE topic = :topic")
+                    .param("topic", "extra " + (i + 1))
+                    .query(UUID.class)
+                    .list()
+                    .getLast();
+            var result = mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                    .with(service())
+                    .header("Idempotency-Key", UUID.randomUUID().toString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"source\":\"TUTOR_AGENT\",\"itemSetId\":\"" + set + "\",\"reason\":\"More\"}"));
+            if (i < 2) {
+                result.andExpect(status().isCreated());
+            } else {
+                result.andExpect(status().isConflict())
+                        .andExpect(jsonPath("$.type").value("https://toefly.app/problems/extra-task-limit-reached"))
+                        .andExpect(jsonPath("$.code").value("EXTRA_TASK_LIMIT_REACHED"));
+            }
+        }
+        mvc.perform(get("/api/v1/weeks/" + week.id()).with(student(user)))
+                .andExpect(jsonPath("$.sections[*].tasks[?(@.addedBy == 'TUTOR_AGENT')].taskId", hasSize(3)));
+        mvc.perform(post("/internal/v1/weeks/" + UUID.randomUUID() + "/tasks")
+                        .with(service())
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+        mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                        .with(service())
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"source":"TUTOR","studentId":"%s","tutorId":"%s","title":"Pages 10-12",
+                                 "estimatedMinutes":20,"task":{"kind":"ITEM_SET","weekSection":"READING","dayIndex":2,
+                                 "itemSetId":"%s"}}
+                                """.formatted(user, UUID.randomUUID(), first)))
+                .andExpect(status().isNotImplemented());
+        mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                        .with(student(user))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("AC-04.02.1, AC-05.01.1: the week, the gallery and Today of the learner")
     void reads() throws Exception {
         UUID user = plan();
@@ -793,8 +881,18 @@ class PlanningComponentIT {
         tasks.finishEarly(user, weekOf(user).id());
     }
 
-    /** The fixed learner and week of the REST contracts. */
+    /** The fixed learner, week and item set of the REST contracts. */
     private void prepareContractData() {
+        sync.itemSetPublished(
+                UUID.fromString(ContractData.ITEM_SET),
+                1,
+                TaskType.READ_DAILY_LIFE,
+                "TOEFL_2026",
+                0,
+                2.5,
+                "a notice about the library",
+                null,
+                Instant.now());
         UUID owner = UUID.fromString(ContractData.STUDENT);
         if (planCount(owner) == 0) {
             plans.onboardingCompleted(goal(owner), Cause.none());
@@ -933,7 +1031,6 @@ class PlanningComponentIT {
         return JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE");
     }
 
-    @SuppressWarnings("unused")
     private static JsonNode body(MvcResult result) throws Exception {
         return JSON.readTree(result.getResponse().getContentAsString());
     }
@@ -942,6 +1039,7 @@ class PlanningComponentIT {
     static final class ContractData {
         static final String STUDENT = "7d0d2c6a-6b1f-4a47-9f0e-2f4a3e9b5c21";
         static final String WEEK = "5b1e9c3a-2f0d-4c8e-9a7b-1d2c3e4f5a6b";
+        static final String ITEM_SET = "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f";
 
         private ContractData() {}
     }

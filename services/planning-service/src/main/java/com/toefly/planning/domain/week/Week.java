@@ -28,6 +28,10 @@ public final class Week {
     public static final double REBALANCE_LAG_DAYS = 3;
     public static final Duration REBALANCE_INTERVAL = Duration.ofHours(48);
     public static final Duration ABANDONED_AFTER = Duration.ofDays(7);
+    /** Extra tasks of Toefly Tutor in one week (docs/06-ai-agent.md §4.5). */
+    public static final int MAX_AGENT_TASKS = 3;
+    /** The load a day may reach with an extra task: the tolerance of a day (AC-04.03.1). */
+    public static final double EXTRA_DAY_LOAD = 1.25;
 
     private final UUID id;
     private final UUID planId;
@@ -391,6 +395,64 @@ public final class Week {
         task.moveTo(dayNo);
         DayDistributor.order(tasks);
         return task;
+    }
+
+    /**
+     * An extra task of Toefly Tutor ({@code assignExtraTask}, docs/06-ai-agent.md §4.5): only in an open week, at most
+     * {@value #MAX_AGENT_TASKS} a week, not the same set twice, on a day that keeps its load within 1.25 × the daily
+     * minutes and at most 2 tasks of one type (AC-04.03.1).
+     */
+    public WeekTask addAgentTask(WeekTask task, ExtraTaskDay day, LocalDate today) {
+        requireOpen();
+        if (task.origin() != TaskOrigin.TUTOR_AGENT) {
+            throw new IllegalArgumentException("An extra task of the agent has the origin TUTOR_AGENT");
+        }
+        if (tasks.stream()
+                        .filter(other -> other.origin() == TaskOrigin.TUTOR_AGENT)
+                        .count()
+                >= MAX_AGENT_TASKS) {
+            throw new WeekRuleException(
+                    "extra-task-limit-reached",
+                    "Toefly Tutor already added " + MAX_AGENT_TASKS + " tasks to week " + weekNo);
+        }
+        if (task.refId() != null
+                && tasks.stream().anyMatch(other -> task.refId().equals(other.refId()))) {
+            throw new WeekRuleException("item-set-already-in-week", "The set is already in week " + weekNo);
+        }
+        int todayNo = Math.max(1, dayNo(today));
+        int lastDay = todayNo > DAYS ? MAX_DAYS : DAYS;
+        int first = day == ExtraTaskDay.TOMORROW ? todayNo + 1 : todayNo;
+        int last = day == ExtraTaskDay.NEXT_FREE_DAY ? lastDay : first;
+        if (first > lastDay) {
+            throw new WeekRuleException("validation-failed", "Day " + first + " is outside week " + weekNo);
+        }
+        for (int candidate = first; candidate <= last; candidate++) {
+            if (fits(candidate, task)) {
+                task.moveTo(candidate);
+                tasks.add(task);
+                DayDistributor.order(tasks);
+                return task;
+            }
+        }
+        throw new WeekRuleException(
+                "day-budget-exceeded",
+                "No day from " + date(first) + " has room for " + Math.round(task.estimatedMinutes())
+                        + " more minutes");
+    }
+
+    private boolean fits(int day, WeekTask task) {
+        double load = 0;
+        int sameType = 0;
+        for (WeekTask other : tasks) {
+            if (other.dayNo() != day || other.status() == WeekTaskStatus.SKIPPED) {
+                continue;
+            }
+            load += other.estimatedMinutes();
+            if (task.taskType() != null && task.taskType() == other.taskType()) {
+                sameType++;
+            }
+        }
+        return load + task.estimatedMinutes() <= EXTRA_DAY_LOAD * minutesPerDay + 1e-9 && sameType < 2;
     }
 
     /** Tasks whose attempt ran 7 days without a score go back to PENDING (attempt ABANDONED). */

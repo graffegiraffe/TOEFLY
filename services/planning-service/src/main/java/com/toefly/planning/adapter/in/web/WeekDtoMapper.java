@@ -8,6 +8,7 @@ import com.toefly.planning.adapter.in.web.dto.TodayVocabularyReview;
 import com.toefly.planning.adapter.in.web.dto.WeekSectionBlock;
 import com.toefly.planning.adapter.in.web.dto.WeekSummary;
 import com.toefly.planning.adapter.in.web.dto.WeekSummaryFinalScore;
+import com.toefly.planning.adapter.in.web.dto.WeekTaskAddedBy;
 import com.toefly.planning.application.port.in.PlanQueryUseCase.Today;
 import com.toefly.planning.application.port.in.PlanQueryUseCase.WeekSlot;
 import com.toefly.planning.application.port.in.PlanQueryUseCase.WeekView;
@@ -158,6 +159,12 @@ final class WeekDtoMapper {
                 .estimatedMinutes((int) Math.round(task.estimatedMinutes()))
                 .title(task.title())
                 .provenance(provenance(task))
+                .addedBy(
+                        switch (task.origin()) {
+                            case TUTOR -> WeekTaskAddedBy.TUTOR;
+                            case TUTOR_AGENT -> WeekTaskAddedBy.TUTOR_AGENT;
+                            case SYSTEM, AI -> null;
+                        })
                 .legacy(task.legacy())
                 .itemSetId(task.kind() == WeekTaskKind.ITEM_SET ? uuid(task.refId()) : null)
                 .unitId(unit ? uuid(task.refId()) : null)

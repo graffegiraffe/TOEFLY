@@ -5,6 +5,7 @@ import com.toefly.planning.domain.week.TaskType;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -53,20 +54,32 @@ public class JdbcItemSetCatalogAdapter implements ItemSetCatalogPort {
     }
 
     @Override
+    public Optional<CatalogEntry> find(UUID itemSetId) {
+        return jdbc.sql("SELECT * FROM item_set_catalog WHERE item_set_id = :id AND NOT hidden")
+                .param("id", itemSetId)
+                .query(JdbcItemSetCatalogAdapter::entry)
+                .optional();
+    }
+
+    @Override
     public List<CatalogEntry> visible(TaskType type) {
         return jdbc.sql("""
                         SELECT * FROM item_set_catalog WHERE task_type = :type AND NOT hidden ORDER BY item_set_id
                         """)
                 .param("type", type.name())
-                .query((rs, row) -> new CatalogEntry(
-                        rs.getObject("item_set_id", UUID.class),
-                        rs.getInt("version"),
-                        TaskType.valueOf(rs.getString("task_type")),
-                        rs.getString("exam_format"),
-                        rs.getDouble("difficulty_b"),
-                        rs.getBigDecimal("estimated_minutes").doubleValue(),
-                        rs.getString("topic"),
-                        rs.getObject("owner_tutor_id", UUID.class)))
+                .query(JdbcItemSetCatalogAdapter::entry)
                 .list();
+    }
+
+    private static CatalogEntry entry(java.sql.ResultSet rs, int row) throws java.sql.SQLException {
+        return new CatalogEntry(
+                rs.getObject("item_set_id", UUID.class),
+                rs.getInt("version"),
+                TaskType.valueOf(rs.getString("task_type")),
+                rs.getString("exam_format"),
+                rs.getDouble("difficulty_b"),
+                rs.getBigDecimal("estimated_minutes").doubleValue(),
+                rs.getString("topic"),
+                rs.getObject("owner_tutor_id", UUID.class));
     }
 }

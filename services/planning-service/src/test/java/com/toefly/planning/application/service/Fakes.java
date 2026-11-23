@@ -65,6 +65,7 @@ final class Fakes {
     final LearnerSyncService sync;
     final DraftAi ai = new DraftAi();
     final NextWeekDraftService drafts;
+    final AgentTaskService agentTasks;
 
     static final Set<TaskType> CLOSED = EnumSet.of(
             TaskType.COMPLETE_THE_WORDS,
@@ -103,6 +104,7 @@ final class Fakes {
         queries = new PlanQueryService(plans, weeks, clock);
         rollover = new RolloverService(plans, weeks, lifecycle, events, transactions, clock);
         sync = new LearnerSyncService(signals, catalog, plans, weeks, models);
+        agentTasks = new AgentTaskService(weeks, plans, catalog, clock);
         drafts = new NextWeekDraftService(plans, weeks, planner, new WeekGenerator(ai), events, clock);
     }
 
@@ -327,6 +329,11 @@ final class Fakes {
         @Override
         public void hidden(UUID itemSetId, Instant occurredAt) {
             hidden.add(itemSetId);
+        }
+
+        @Override
+        public Optional<CatalogEntry> find(UUID itemSetId) {
+            return hidden.contains(itemSetId) ? Optional.empty() : Optional.ofNullable(entries.get(itemSetId));
         }
 
         @Override

@@ -21,3 +21,11 @@ response:
       - path: $.days
         type: by_type
         minOccurrence: 7
+      - path: $.progressPercent
+        type: by_type
+      - path: $.rationale
+        type: by_type
+      - path: $.aiFallback
+        type: by_type
+      - path: $.version
+        type: by_type
