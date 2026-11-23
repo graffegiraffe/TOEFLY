@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "id": "7d3e1f20-1a2b-4c3d-8e4f-5a6b7c8d9e01",
+      "unitNo": 1,
+      "theme": "LIFE_SCIENCE",
+      "title": "Life science: ecosystems",
+      "status": "APPROVED",
+      "sourceCode": "collins-vocab-grammar-2013",
+      "words": [
+        {"word": "habitat", "pos": "noun", "definition": "the natural home of an animal or plant", "example": "The wetland is a habitat for many birds."},
+        {"word": "mitigate", "pos": "verb", "definition": "to make less harmful", "example": "Wetlands mitigate floods."},
+        {"word": "symbiosis", "pos": "noun", "definition": "a close relationship between two species that benefits both"}
+      ],
+      "exercises": []
+    },
+    {
+      "id": "7d3e1f20-1a2b-4c3d-8e4f-5a6b7c8d9e02",
+      "unitNo": 2,
+      "theme": "ARTS",
+      "title": "Arts: performance",
+      "status": "PENDING_REVIEW",
+      "sourceCode": "collins-vocab-grammar-2013",
+      "words": [{"word": "rehearsal", "pos": "noun", "definition": "practice before a performance"}],
+      "exercises": []
+    }
+  ]
+}

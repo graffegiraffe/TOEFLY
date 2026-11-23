@@ -1,0 +1,16 @@
+name: word_added
+description: analytics counts words added per learner (docs/04 §6.7)
+input:
+  triggeredBy: wordAdded()
+outputMessage:
+  sentTo: toefly.vocabulary.word-added.v1
+  headers:
+    ce_type: toefly.vocabulary.word-added.v1
+  body: {}
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.origin
+        type: by_type

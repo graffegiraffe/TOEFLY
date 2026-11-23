@@ -1,0 +1,13 @@
+{
+  "id": "4e2f6a1b-3c5d-4e7f-9a0b-1c2d3e4f5a6b",
+  "taskType": "READ_ACADEMIC_PASSAGE",
+  "title": "Urban forests",
+  "status": "PUBLISHED",
+  "payload": {
+    "stimulus": {
+      "title": "Urban forests",
+      "passage": "Urban forests mitigate the heat island effect. A dense canopy shades the streets, and leaves cool the air through evaporation. Many cities now treat trees as infrastructure and allocate substantial funds to planting."
+    },
+    "items": [{"stem": "What is the main idea?", "options": ["A", "B", "C", "D"]}]
+  }
+}

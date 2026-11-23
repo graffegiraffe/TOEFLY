@@ -1,0 +1,22 @@
+name: word_added
+description: tutor-agent removes the word from vocabularyGaps of the LearnerModel (docs/06 §12)
+input:
+  triggeredBy: wordAdded()
+outputMessage:
+  sentTo: toefly.vocabulary.word-added.v1
+  headers:
+    ce_specversion: "1.0"
+    ce_source: /toefly/vocabulary-service
+    content-type: application/avro
+    ce_type: toefly.vocabulary.word-added.v1
+  body:
+    lemma: mitigate
+    origin: TAP
+  matchers:
+    body:
+      - path: $.entryId
+        type: by_regex
+        predefined: uuid
+      - path: $.userId
+        type: by_regex
+        predefined: uuid

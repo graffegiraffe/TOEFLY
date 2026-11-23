@@ -1,0 +1,22 @@
+name: review_completed
+description: analytics counts the review in ActivityDay and the streak (docs/04 §6.7)
+input:
+  triggeredBy: reviewCompleted()
+outputMessage:
+  sentTo: toefly.vocabulary.review-completed.v1
+  headers:
+    ce_type: toefly.vocabulary.review-completed.v1
+  body: {}
+  matchers:
+    body:
+      - path: $.userId
+        type: by_regex
+        predefined: uuid
+      - path: $.localDate
+        type: by_type
+      - path: $.activeSeconds
+        type: by_type
+      - path: $.againCount
+        type: by_type
+      - path: $.newIntroduced
+        type: by_type
