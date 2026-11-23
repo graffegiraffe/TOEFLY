@@ -26,6 +26,18 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+      client:
+        registration:
+          svc-tutor-agent-service:
+            provider: keycloak
+            client-id: svc-tutor-agent-service
+            client-secret: ${SVC_TUTOR_AGENT_SERVICE_SECRET:svc-tutor-agent-service-local}
+            authorization-grant-type: client_credentials
+            scope: internal
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/toefly/protocol/openid-connect/token
   mvc:
     problemdetails:
       enabled: true
@@ -37,6 +49,13 @@ toefly:
   events:
     registry-url: http://localhost:8380/apis/registry/v3
     auto-register: false
+  tutor-agent:
+    ai-gateway-url: http://localhost:8095
+    practice-url: http://localhost:8084
+    planning-url: http://localhost:8087
+    assessment-url: http://localhost:8085
+    content-url: http://localhost:8082
+    analytics-url: http://localhost:8094
 
 management:
   opentelemetry:

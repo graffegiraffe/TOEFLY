@@ -600,26 +600,26 @@ components:
       properties:
         taskType: { type: string }
         attempts: { type: integer, minimum: 0 }
-        accuracyPercent: { type: [number, 'null'], description: Доля верных ответов закрытых заданий. }
-        averageScore: { type: [number, 'null'], description: Средний балл 0–5 Writing/Speaking. }
+        accuracyPercent: { type: [number, 'null'], format: double, description: Доля верных ответов закрытых заданий. }
+        averageScore: { type: [number, 'null'], format: double, description: Средний балл 0–5 Writing/Speaking. }
     WeekStats:
       type: object
       required: [tasksTotal, tasksDone, progressPercent, sections]
       properties:
         tasksTotal: { type: integer }
         tasksDone: { type: integer }
-        progressPercent: { type: number }
+        progressPercent: { type: number, format: double }
         activeMinutes: { type: [integer, 'null'] }
         sections: { type: array, items: { $ref: '#/components/schemas/SectionStats' } }
     BandSnapshot:
       type: object
       properties:
-        overall: { type: [number, 'null'] }
-        reading: { type: [number, 'null'] }
-        listening: { type: [number, 'null'] }
-        writing: { type: [number, 'null'] }
-        speaking: { type: [number, 'null'] }
-        overallDelta: { type: [number, 'null'], description: Изменение за неделю. }
+        overall: { type: [number, 'null'], format: double }
+        reading: { type: [number, 'null'], format: double }
+        listening: { type: [number, 'null'], format: double }
+        writing: { type: [number, 'null'], format: double }
+        speaking: { type: [number, 'null'], format: double }
+        overallDelta: { type: [number, 'null'], format: double, description: Изменение за неделю. }
     WeeklyReview:
       type: object
       required: [reviewId, weekId, weekNo, generatedAt, language, aiFallback, lowActivity, headline, summary, stats, scores, topMistakes, strengths, nextWeekFocus, motivation]
@@ -659,8 +659,8 @@ components:
         subcategory: { type: string }
         category: { type: string }
         title: { type: string }
-        weight: { type: number }
-        errorRate: { type: number }
+        weight: { type: number, format: double }
+        errorRate: { type: number, format: double }
         trend: { type: string, enum: [IMPROVING, STABLE, WORSENING] }
         status: { type: string, enum: [ACTIVE, WATCH, RESOLVED] }
         occurrences: { type: integer, minimum: 0, description: Ошибок за 28 дней. }
