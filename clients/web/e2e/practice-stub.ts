@@ -122,6 +122,8 @@ export interface StubState {
 interface StubOptions {
   /** Leave the audio of the fixture as it is (no URL for TTS audio before speech-service). */
   keepAudio?: boolean;
+  /** An exam attempt (diagnostic, mock exam): the AI Tutor button must be hidden (AC-17.05.1). */
+  mode?: 'PRACTICE' | 'EXAM';
 }
 
 export async function stubPractice(
@@ -154,7 +156,7 @@ export async function stubPractice(
     itemSetId: set.id,
     taskType,
     section: set.section,
-    mode: 'PRACTICE',
+    mode: options.mode ?? 'PRACTICE',
     status,
     startedAt: '2026-11-10T10:00:00Z',
     estimatedSeconds: set.etsNormSeconds,
@@ -199,7 +201,7 @@ export async function stubPractice(
       itemSetId: set.id,
       taskType,
       section: set.section,
-      mode: 'PRACTICE',
+      mode: options.mode ?? 'PRACTICE',
       status: 'SCORED',
       score: { correct, total: items.length, unanswered: items.filter((i) => !i.userAnswer).length },
       activeSeconds: state.heartbeats.reduce((sum, beat) => sum + beat.activeSecondsDelta, 0),

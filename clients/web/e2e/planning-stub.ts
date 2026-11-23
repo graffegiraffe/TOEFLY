@@ -48,6 +48,8 @@ export interface PlanningStubState {
 export interface PlanningStubOptions {
   /** Rebalanced week: two tasks left the week (AC-04.05.2). */
   rebalanced?: boolean;
+  /** Week 1 is closed (AC-18.03.1). */
+  completed?: boolean;
   /** Overdue task from the day before (AC-04.04.1). */
   overdue?: boolean;
 }
@@ -130,7 +132,7 @@ export async function stubPlanning(page: Page, options: PlanningStubOptions = {}
   ];
   const state: PlanningStubState = { tasks, completions: [], finished: 0, practice };
   let version = 3;
-  let weekStatus = 'IN_PROGRESS';
+  let weekStatus = options.completed ? 'COMPLETED' : 'IN_PROGRESS';
   const dayOffset = options.overdue ? -1 : 0; // Day 1 is yesterday when a task is overdue
 
   const counted = () => tasks.filter((task) => !(task.status === 'SKIPPED' && task.skippedReason === 'REBALANCE'));
