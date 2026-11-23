@@ -1,3 +1,939 @@
 openapi: 3.1.0
-info: { title: vocabulary-service, version: 0.0.0 }
-paths: {}
+info:
+  title: TOEFLY vocabulary-service API
+  version: 1.0.0
+  summary: Личный словарь, карточки FSRS, сессии повторения, юниты Collins Vocabulary как наборы слов, ключевые слова текста.
+  description: |
+    Внешние операции публикуются через `api-gateway` под `/api/v1`; операции с тегом `Internal` — только внутри
+    кластера (`/internal/v1`, роль `SERVICE`). Словарные данные (определение, пример, перевод, IPA) формируются
+    через `ai-gateway` и кэшируются по лемме для всех учеников (INV-VOC-06); при недоступности AI слово сохраняется
+    без них и обогащается фоновой задачей. Планировщик — FSRS-5, параметры `fsrs-params-v1` (docs/03 §11).
+    Контракт — docs/05 §6.10 и §9.3.4.
+  contact: { name: TOEFLY platform team, url: https://toefly.app }
+  license: { name: Proprietary, identifier: LicenseRef-TOEFLY }
+servers:
+  - url: https://api.toefly.app/api/v1
+    description: Production (через api-gateway)
+  - url: http://localhost:8080/api/v1
+    description: Локальная среда (через api-gateway)
+security:
+  - bearerAuth: []
+tags:
+  - { name: Dictionary, description: 'Карточка слова, сохранение, список «My words», правка и удаление' }
+  - { name: Reviews, description: 'Очередь дня, сессии повторения и оценки FSRS' }
+  - { name: WordSets, description: 'Юниты Collins Vocabulary как наборы слов' }
+  - { name: Suggestions, description: 'Ключевые академические слова текста' }
+  - { name: Settings, description: 'Настройки словаря ученика' }
+  - { name: Internal, description: 'Внутренний API (x-toefly-internal)' }
+paths:
+  /word-lookups:
+    get:
+      tags: [Dictionary]
+      operationId: lookupWord
+      summary: Карточка выделенного слова до сохранения
+      description: |
+        AC-15.01.1, AC-15.01.5: лемма, часть речи, определение, пример, перевод на русский и IPA. Сначала общий кэш,
+        затем `ai-gateway`; `available=false`, если данных нет (слово всё равно можно сохранить). `entryId` — запись
+        словаря ученика с той же леммой («Already in your dictionary»). Клиент не вызывает операцию в режиме Exam
+        (AC-15.01.4).
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { name: term, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 80 } }
+        - { name: context, in: query, schema: { type: string, maxLength: 300 }, description: "Предложение, в котором выделено слово." }
+      responses:
+        '200':
+          description: Карточка слова.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WordCard' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /vocabulary-entries:
+    post:
+      tags: [Dictionary]
+      operationId: addVocabularyEntry
+      summary: Сохранить слово в словарь
+      description: |
+        AC-15.01.2: создаёт `VocabularyEntry` с контекстом и источником, `ReviewCard` в состоянии `NEW` и публикует
+        `toefly.vocabulary.word-added.v1`. AC-15.01.3: если лемма уже есть — дубликат не создаётся, добавляется
+        контекст (до 5) и возвращается `200` с `alreadyInDictionary=true` (вместо `409` таблицы docs/05 §6.10, чтобы
+        клиент получил запись и показал «Already in your dictionary»).
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddVocabularyEntryRequest' }
+      responses:
+        '201':
+          description: Слово добавлено.
+          headers:
+            Location: { schema: { type: string } }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntry' }
+        '200':
+          description: Слово уже было в словаре; добавлен контекст.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '428': { $ref: '#/components/responses/IdempotencyKeyRequired' }
+    get:
+      tags: [Dictionary]
+      operationId: listVocabularyEntries
+      summary: «My words»
+      description: |
+        AC-15.06.1: поиск по лемме (`q`, префикс и похожие слова), фильтры по статусу, источнику, набору слов и
+        «к повторению сегодня» (`due=true`), сортировка по дате и сложности.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 80 } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/VocabularyStatus' } }
+        - { name: origin, in: query, schema: { $ref: '#/components/schemas/EntryOrigin' } }
+        - { name: wordSetId, in: query, schema: { type: string, format: uuid } }
+        - { name: due, in: query, schema: { type: boolean }, description: "Только карточки к повторению до конца местного дня." }
+        - { name: sort, in: query, schema: { type: string, enum: [CREATED_DESC, CREATED_ASC, DIFFICULTY_DESC, LEMMA], default: CREATED_DESC } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Страница словаря.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /vocabulary-entry-batches:
+    post:
+      tags: [Dictionary]
+      operationId: addVocabularyEntries
+      summary: Добавить несколько слов одним действием
+      description: AC-15.02.2 («Add all» в блоке «Key words»). Слова, уже бывшие в словаре, получают только контекст.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddVocabularyEntriesRequest' }
+      responses:
+        '200':
+          description: Результат по каждому слову в порядке запроса.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntryBatch' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '428': { $ref: '#/components/responses/IdempotencyKeyRequired' }
+  /vocabulary-entries/{entryId}:
+    parameters:
+      - { $ref: '#/components/parameters/EntryId' }
+    get:
+      tags: [Dictionary]
+      operationId: getVocabularyEntry
+      summary: Слово
+      description: Word detail (07 §5.14). `ETag` — версия записи для `PATCH`.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Запись словаря.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntry' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Dictionary]
+      operationId: updateVocabularyEntry
+      summary: Правка перевода и заметки, приостановка карточки
+      description: |
+        «Edit»: свой перевод и заметка. AC-15.06.2: `suspended=true` («Suspend») исключает карточку из повторений без
+        удаления, состояние FSRS сохраняется. Требует `If-Match` с `ETag`.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VocabularyEntryPatch' }
+      responses:
+        '200':
+          description: Изменённая запись.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+    delete:
+      tags: [Dictionary]
+      operationId: deleteVocabularyEntry
+      summary: Удалить слово
+      description: AC-15.06.2, INV-VOC-02 — удаляются запись, её карточка и журнал повторений.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '204': { description: "Удалено." }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /review-cards/due:
+    get:
+      tags: [Reviews]
+      operationId: listDueReviewCards
+      summary: Карточки дня
+      description: |
+        AC-15.03.1, docs/03 §11.5: карточки обучения с `due ≤ сейчас`, карточки `REVIEW` с `due ≤ конец местного дня`
+        (часовой пояс из профиля) и до `newCardsPerDay` новых, всего не более 100 за день. Формат показа чередуется
+        (AC-15.03.2); `intervals` — интервал под каждой кнопкой оценки.
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Очередь дня.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewCardList' }
+  /review-sessions:
+    post:
+      tags: [Reviews]
+      operationId: startReviewSession
+      summary: Начать сессию повторения
+      description: Фиксирует очередь дня в сессии; `weekTaskId` — задание `VOCABULARY_REVIEW` недели, из которого начата сессия.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartReviewSessionRequest' }
+      responses:
+        '201':
+          description: Сессия и её карточки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewSession' }
+        '428': { $ref: '#/components/responses/IdempotencyKeyRequired' }
+  /review-sessions/{sessionId}:
+    parameters:
+      - { $ref: '#/components/parameters/SessionId' }
+    get:
+      tags: [Reviews]
+      operationId: getReviewSession
+      summary: Сессия повторения
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Сессия и запланированные карточки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewSession' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /review-cards/{cardId}/reviews:
+    post:
+      tags: [Reviews]
+      operationId: reviewCard
+      summary: Оценка FSRS
+      description: |
+        AC-15.03.3: FSRS пересчитывает стабильность, сложность и `due`, создаётся `ReviewLog`. INV-VOC-04: оценка
+        засчитывается один раз на `(cardId, reviewSessionId, sequenceNo)` — повтор возвращает карточку без второй
+        оценки. AC-15.03.5: после `AGAIN` карточка возвращается в ту же сессию через 1–10 мин.
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { name: cardId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewCardRequest' }
+      responses:
+        '200':
+          description: Карточка после оценки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewCard' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/IdempotencyKeyRequired' }
+  /review-sessions/{sessionId}/completion:
+    parameters:
+      - { $ref: '#/components/parameters/SessionId' }
+    post:
+      tags: [Reviews]
+      operationId: completeReviewSession
+      summary: Завершить сессию
+      description: |
+        Публикует `toefly.vocabulary.review-completed.v1` (`dueRemaining`, `dueTomorrow` для времени задания
+        следующего дня). Итог для экрана — «12 reviewed · next in 6 h» (`nextDueInSeconds`).
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200':
+          description: Завершённая сессия.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewSession' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/IdempotencyKeyRequired' }
+  /word-sets:
+    get:
+      tags: [WordSets]
+      operationId: listWordSets
+      summary: Юниты Collins Vocabulary
+      description: Наборы по порядку 1…20 с прогрессом ученика («20 words · 8 learned», AC-15.04.3).
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Наборы слов.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WordSetList' }
+  /word-sets/{wordSetId}:
+    parameters:
+      - { $ref: '#/components/parameters/WordSetId' }
+    get:
+      tags: [WordSets]
+      operationId: getWordSet
+      summary: Набор со словами
+      description: AC-15.04.1 — таблица слов юнита (слово, часть речи, определение, пример, IPA).
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Набор слов.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WordSet' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /word-sets/{wordSetId}/enrollment:
+    parameters:
+      - { $ref: '#/components/parameters/WordSetId' }
+    post:
+      tags: [WordSets]
+      operationId: enrollWordSet
+      summary: Добавить набор в словарь
+      description: |
+        AC-15.04.2: все слова юнита, которых ещё нет в словаре, добавляются с источником «Collins Vocabulary Unit N».
+        Повторный вызов ничего не дублирует (`added = 0`).
+      x-toefly-roles: [STUDENT]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200':
+          description: Итог добавления.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WordSetEnrollment' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '428': { $ref: '#/components/responses/IdempotencyKeyRequired' }
+  /word-suggestions:
+    post:
+      tags: [Suggestions]
+      operationId: suggestWords
+      summary: 5–10 ключевых академических слов текста
+      description: |
+        AC-15.02.1: слова выбирает `ai-gateway`, список кэшируется на ItemSet; слова, уже бывшие в словаре ученика,
+        не возвращаются. Без AI — `503 ai-unavailable`.
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WordSuggestionRequest' }
+      responses:
+        '200':
+          description: Ключевые слова.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WordSuggestionList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/AiUnavailable' }
+  /vocabulary-settings:
+    get:
+      tags: [Settings]
+      operationId: getVocabularySettings
+      summary: Настройки словаря
+      x-toefly-roles: [STUDENT]
+      responses:
+        '200':
+          description: Настройки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularySettings' }
+    put:
+      tags: [Settings]
+      operationId: updateVocabularySettings
+      summary: Изменить число новых карточек в день
+      description: «New cards per day», 5–30, по умолчанию 10 (AC-15.03.1, INV-VOC-05).
+      x-toefly-roles: [STUDENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VocabularySettingsRequest' }
+      responses:
+        '200':
+          description: Настройки.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularySettings' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /internal/v1/users/{userId}/vocabulary-summary:
+    get:
+      tags: [Internal]
+      operationId: getVocabularySummary
+      summary: Сводка словаря для tutor-agent
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      security: [{ serviceAuth: [internal] }]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+        - { name: recentLimit, in: query, schema: { type: integer, minimum: 0, maximum: 50, default: 10 } }
+      responses:
+        '200':
+          description: Сводка.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularySummary' }
+  /internal/v1/users/{userId}/export:
+    get:
+      tags: [Internal]
+      operationId: exportVocabularyUserData
+      summary: Экспорт данных пользователя (GDPR)
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      security: [{ serviceAuth: [internal] }]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      responses:
+        '200':
+          description: Данные пользователя.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyUserDataExport' }
+  /internal/v1/students/{userId}/entries:
+    post:
+      tags: [Internal]
+      operationId: addStudentVocabularyEntry
+      summary: Добавить слово по просьбе ученика (инструмент addWordToVocabulary)
+      description: docs/06 — инструмент агента; данные слова, событие и ответ — как у `POST /vocabulary-entries` (`origin = MANUAL`).
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      security: [{ serviceAuth: [internal] }]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InternalAddEntryRequest' }
+      responses:
+        '201':
+          description: Слово добавлено.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntry' }
+        '200':
+          description: Слово уже было в словаре.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocabularyEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /internal/v1/students/{userId}/cards/due:
+    get:
+      tags: [Internal]
+      operationId: getStudentDueCards
+      summary: Число карточек дня и до 10 из них (инструмент getVocabularyDue)
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      security: [{ serviceAuth: [internal] }]
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      responses:
+        '200':
+          description: Карточки дня.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InternalDueCards' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    serviceAuth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes: { internal: Внутренние вызовы сервисов }
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 100 }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: { type: string, maxLength: 40 }
+    EntryId:
+      name: entryId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    WordSetId:
+      name: wordSetId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string, maxLength: 200 }
+  headers:
+    ETag:
+      description: Версия записи (`"<version>"`).
+      schema: { type: string }
+  responses:
+    BadRequest:
+      description: "`400 validation-failed`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: "`404 not-found`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: "`409`: `card-not-due`, `card-suspended`, `session-completed`, `request-in-progress`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionFailed:
+      description: "`412 precondition-failed` — запись изменена другим запросом."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: "`428 precondition-required` — нет `If-Match`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    IdempotencyKeyRequired:
+      description: "`428 idempotency-key-required`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    AiUnavailable:
+      description: "`503 ai-unavailable`."
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      description: Problem Details (RFC 9457) с расширениями TOEFLY.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }
+        code: { type: string }
+    PageInfo:
+      type: object
+      required: [hasMore, limit]
+      properties:
+        nextCursor: { type: [string, 'null'] }
+        hasMore: { type: boolean }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    EntryOrigin:
+      type: string
+      enum: [TAP, KEY_WORDS, COLLINS_UNIT, MANUAL]
+    VocabularyStatus:
+      type: string
+      description: "`LEARNING` — состояния LEARNING и RELEARNING; `MASTERED` — стабильность ≥ 90 дней (AC-15.06.3)."
+      enum: [NEW, LEARNING, REVIEW, MASTERED]
+    CardState:
+      type: string
+      enum: [NEW, LEARNING, REVIEW, RELEARNING]
+    Rating:
+      type: string
+      enum: [AGAIN, HARD, GOOD, EASY]
+    CardFormat:
+      type: string
+      description: "AC-15.03.2: слово → определение, определение → слово, пропуск в предложении."
+      enum: [WORD_TO_DEFINITION, DEFINITION_TO_WORD, CLOZE]
+    WordData:
+      type: object
+      description: Словарные данные леммы (общие для всех учеников).
+      properties:
+        partOfSpeech: { type: [string, 'null'], maxLength: 16 }
+        definitionEn: { type: [string, 'null'] }
+        exampleEn: { type: [string, 'null'] }
+        translationRu: { type: [string, 'null'], maxLength: 200 }
+        ipa: { type: [string, 'null'], maxLength: 80 }
+    WordCard:
+      type: object
+      required: [lemma, data, available, pronunciationAvailable]
+      properties:
+        lemma: { type: string, maxLength: 80 }
+        data: { $ref: '#/components/schemas/WordData' }
+        available: { type: boolean, description: "`false` — словарных данных пока нет." }
+        entryId: { type: [string, 'null'], format: uuid, description: "Запись словаря с этой леммой." }
+        pronunciationAvailable: { type: boolean, description: "Кнопка произношения (TTS) скрыта, пока нет speech-service." }
+    SourceRef:
+      type: object
+      properties:
+        itemSetId: { type: [string, 'null'], format: uuid }
+        label: { type: [string, 'null'], maxLength: 120, description: "Подпись источника: «from: Longevity essay»." }
+      additionalProperties: false
+    AddVocabularyEntryRequest:
+      type: object
+      required: [term]
+      properties:
+        term: { type: string, minLength: 1, maxLength: 80 }
+        context: { type: [string, 'null'], maxLength: 300, description: "Контекстное предложение." }
+        sourceRef: { $ref: '#/components/schemas/SourceRef' }
+        origin:
+          type: string
+          enum: [TAP, KEY_WORDS, MANUAL]
+          default: TAP
+      additionalProperties: false
+    AddVocabularyEntriesRequest:
+      type: object
+      required: [words]
+      properties:
+        words:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            type: object
+            required: [term]
+            properties:
+              term: { type: string, minLength: 1, maxLength: 80 }
+              context: { type: [string, 'null'], maxLength: 300 }
+            additionalProperties: false
+        sourceRef: { $ref: '#/components/schemas/SourceRef' }
+        origin:
+          type: string
+          enum: [TAP, KEY_WORDS, MANUAL]
+          default: KEY_WORDS
+      additionalProperties: false
+    VocabularyEntryBatch:
+      type: object
+      required: [added, alreadyInDictionary, items]
+      properties:
+        added: { type: integer, minimum: 0 }
+        alreadyInDictionary: { type: integer, minimum: 0 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/VocabularyEntry' }
+    EntryContext:
+      type: object
+      required: [sentence, sourceLabel]
+      properties:
+        sentence: { type: string, maxLength: 300 }
+        itemSetId: { type: [string, 'null'], format: uuid }
+        sourceLabel: { type: string, maxLength: 120 }
+    CardSummary:
+      type: object
+      required: [id, state, due, stability, difficulty, reps, lapses, suspended]
+      properties:
+        id: { type: string, format: uuid }
+        state: { $ref: '#/components/schemas/CardState' }
+        due: { type: string, format: date-time }
+        stability: { type: number, description: "Дни, за которые вероятность вспомнить падает до 90%." }
+        difficulty: { type: number, minimum: 0, maximum: 10 }
+        reps: { type: integer, minimum: 0 }
+        lapses: { type: integer, minimum: 0 }
+        lastReviewAt: { type: [string, 'null'], format: date-time }
+        suspended: { type: boolean }
+    VocabularyEntry:
+      type: object
+      required: [id, lemma, data, contexts, origin, enriched, status, card, createdAt, updatedAt, version]
+      properties:
+        id: { type: string, format: uuid }
+        lemma: { type: string, maxLength: 80 }
+        data: { $ref: '#/components/schemas/WordData' }
+        note: { type: [string, 'null'], maxLength: 500 }
+        contexts:
+          type: array
+          maxItems: 5
+          items: { $ref: '#/components/schemas/EntryContext' }
+        origin: { $ref: '#/components/schemas/EntryOrigin' }
+        wordSetId: { type: [string, 'null'], format: uuid }
+        enriched: { type: boolean, description: "`false` — словарные данные ещё формируются." }
+        status: { $ref: '#/components/schemas/VocabularyStatus' }
+        card: { $ref: '#/components/schemas/CardSummary' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 0 }
+        alreadyInDictionary: { type: boolean, description: "Только в ответе на сохранение." }
+    VocabularyEntryPage:
+      type: object
+      required: [items, page, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/VocabularyEntry' }
+        page: { $ref: '#/components/schemas/PageInfo' }
+        total: { type: integer, minimum: 0, description: "Число записей по фильтру." }
+    VocabularyEntryPatch:
+      type: object
+      properties:
+        translationRu: { type: [string, 'null'], maxLength: 200, description: "Пустая строка удаляет перевод." }
+        note: { type: [string, 'null'], maxLength: 500 }
+        suspended: { type: [boolean, 'null'] }
+      additionalProperties: false
+    ReviewIntervals:
+      type: object
+      description: Интервал до следующего показа после каждой оценки, секунды («10m», «1d», «3d», «8d»).
+      required: [again, hard, good, easy]
+      properties:
+        again: { type: integer, format: int64, minimum: 0 }
+        hard: { type: integer, format: int64, minimum: 0 }
+        good: { type: integer, format: int64, minimum: 0 }
+        easy: { type: integer, format: int64, minimum: 0 }
+    ReviewCard:
+      type: object
+      required: [id, entryId, lemma, data, format, status, card, intervals]
+      properties:
+        id: { type: string, format: uuid }
+        entryId: { type: string, format: uuid }
+        lemma: { type: string }
+        data: { $ref: '#/components/schemas/WordData' }
+        contextSentence: { type: [string, 'null'], description: "Предложение для формата CLOZE (последний контекст или пример)." }
+        format: { $ref: '#/components/schemas/CardFormat' }
+        status: { $ref: '#/components/schemas/VocabularyStatus' }
+        card: { $ref: '#/components/schemas/CardSummary' }
+        intervals: { $ref: '#/components/schemas/ReviewIntervals' }
+    ReviewCardList:
+      type: object
+      required: [localDate, timezone, dueCount, newCount, dueTomorrow, items]
+      properties:
+        localDate: { type: string, format: date }
+        timezone: { type: string }
+        dueCount: { type: integer, minimum: 0, description: "Карточки к повторению сегодня (до ограничения 100)." }
+        newCount: { type: integer, minimum: 0 }
+        dueTomorrow: { type: integer, minimum: 0 }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/ReviewCard' }
+    StartReviewSessionRequest:
+      type: object
+      properties:
+        weekTaskId: { type: [string, 'null'], format: uuid }
+      additionalProperties: false
+    ReviewCardRequest:
+      type: object
+      required: [rating, reviewSessionId, sequenceNo]
+      properties:
+        rating: { $ref: '#/components/schemas/Rating' }
+        reviewSessionId: { type: string, format: uuid }
+        sequenceNo: { type: integer, minimum: 0, maximum: 10000, description: "Порядковый номер показа в сессии (идемпотентность оценки)." }
+        elapsedMs: { type: integer, minimum: 0, maximum: 3600000, default: 0 }
+      additionalProperties: false
+    ReviewSession:
+      type: object
+      required: [id, status, localDate, timezone, planned, reviewed, againCount, newIntroduced, startedAt, cards]
+      properties:
+        id: { type: string, format: uuid }
+        weekTaskId: { type: [string, 'null'], format: uuid }
+        status: { type: string, enum: [IN_PROGRESS, COMPLETED] }
+        localDate: { type: string, format: date }
+        timezone: { type: string }
+        planned: { type: integer, minimum: 0 }
+        reviewed: { type: integer, minimum: 0, description: "Разных карточек с оценкой." }
+        againCount: { type: integer, minimum: 0 }
+        newIntroduced: { type: integer, minimum: 0 }
+        activeSeconds: { type: integer, minimum: 0 }
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: [string, 'null'], format: date-time }
+        dueRemaining: { type: [integer, 'null'], minimum: 0, description: "После завершения — карточки дня, оставшиеся к повторению." }
+        dueTomorrow: { type: [integer, 'null'], minimum: 0 }
+        nextDueInSeconds: { type: [integer, 'null'], format: int64, minimum: 0, description: "«next in 6 h»." }
+        cards:
+          type: array
+          description: Запланированные карточки (пусто в ответе на завершение).
+          items: { $ref: '#/components/schemas/ReviewCard' }
+    WordSetWord:
+      type: object
+      required: [lemma, partOfSpeech, definitionEn]
+      properties:
+        lemma: { type: string }
+        partOfSpeech: { type: string }
+        definitionEn: { type: string }
+        exampleEn: { type: [string, 'null'] }
+        ipa: { type: [string, 'null'] }
+    WordSetSummary:
+      type: object
+      required: [id, unitNo, theme, title, wordsTotal, inDictionary, learned, sourceLabel]
+      properties:
+        id: { type: string, format: uuid, description: "Совпадает с id юнита в content-service." }
+        unitNo: { type: integer, minimum: 1, maximum: 20 }
+        theme: { type: string, enum: [ARTS, LIFE_SCIENCE, SOCIAL_SCIENCE, PHYSICAL_SCIENCE, GENERAL] }
+        title: { type: string }
+        wordsTotal: { type: integer, minimum: 0 }
+        inDictionary: { type: integer, minimum: 0 }
+        learned: { type: integer, minimum: 0, description: "Слова в статусе REVIEW или MASTERED." }
+        sourceLabel: { type: string, description: "«Collins Vocabulary Unit N»." }
+    WordSet:
+      allOf:
+        - { $ref: '#/components/schemas/WordSetSummary' }
+        - type: object
+          required: [words]
+          properties:
+            words:
+              type: array
+              items: { $ref: '#/components/schemas/WordSetWord' }
+    WordSetList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/WordSetSummary' }
+    WordSetEnrollment:
+      type: object
+      required: [wordSetId, added, alreadyInDictionary]
+      properties:
+        wordSetId: { type: string, format: uuid }
+        added: { type: integer, minimum: 0 }
+        alreadyInDictionary: { type: integer, minimum: 0 }
+    WordSuggestionRequest:
+      type: object
+      description: Нужен `itemSetId` (текст задания, кэш на ItemSet) или `text`.
+      properties:
+        itemSetId: { type: [string, 'null'], format: uuid }
+        text: { type: [string, 'null'], maxLength: 12000 }
+      additionalProperties: false
+    WordSuggestion:
+      type: object
+      required: [lemma]
+      properties:
+        lemma: { type: string }
+        partOfSpeech: { type: [string, 'null'] }
+        definitionEn: { type: [string, 'null'] }
+        sentence: { type: [string, 'null'], description: "Предложение текста со словом." }
+    WordSuggestionList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items: { $ref: '#/components/schemas/WordSuggestion' }
+    VocabularySettings:
+      type: object
+      required: [newCardsPerDay, timezone, pronunciationAvailable]
+      properties:
+        newCardsPerDay: { type: integer, minimum: 5, maximum: 30 }
+        timezone: { type: string, description: "Часовой пояс из профиля (границы дня повторений)." }
+        pronunciationAvailable: { type: boolean }
+    VocabularySettingsRequest:
+      type: object
+      required: [newCardsPerDay]
+      properties:
+        newCardsPerDay: { type: integer, minimum: 5, maximum: 30 }
+      additionalProperties: false
+    VocabularySummary:
+      type: object
+      required: [entriesTotal, dueCount, recentEntries, lapsedEntries]
+      properties:
+        entriesTotal: { type: integer, format: int64, minimum: 0 }
+        dueCount: { type: integer, format: int64, minimum: 0 }
+        recentEntries:
+          type: array
+          items:
+            type: object
+            required: [entryId, term, addedAt]
+            properties:
+              entryId: { type: string, format: uuid }
+              term: { type: string }
+              addedAt: { type: string, format: date-time }
+        lapsedEntries:
+          type: array
+          items:
+            type: object
+            required: [entryId, term, lapses]
+            properties:
+              entryId: { type: string, format: uuid }
+              term: { type: string }
+              lapses: { type: integer, minimum: 1 }
+    InternalAddEntryRequest:
+      type: object
+      required: [term]
+      properties:
+        term: { type: string, minLength: 1, maxLength: 80 }
+        contextSentence: { type: [string, 'null'], maxLength: 300 }
+        sourceRef: { type: [string, 'null'], maxLength: 120, description: "Задание, попытка или работа, где встретилось слово." }
+      additionalProperties: false
+    InternalDueCards:
+      type: object
+      required: [dueCount, newCount, items]
+      properties:
+        dueCount: { type: integer, minimum: 0 }
+        newCount: { type: integer, minimum: 0 }
+        items:
+          type: array
+          maxItems: 10
+          items:
+            type: object
+            required: [cardId, entryId, term, state, due]
+            properties:
+              cardId: { type: string, format: uuid }
+              entryId: { type: string, format: uuid }
+              term: { type: string }
+              state: { $ref: '#/components/schemas/CardState' }
+              due: { type: string, format: date-time }
+    ReviewLogExport:
+      type: object
+      required: [cardId, rating, stateBefore, stateAfter, reviewedAt]
+      properties:
+        cardId: { type: string, format: uuid }
+        rating: { $ref: '#/components/schemas/Rating' }
+        stateBefore: { $ref: '#/components/schemas/CardState' }
+        stateAfter: { $ref: '#/components/schemas/CardState' }
+        stabilityAfter: { type: number }
+        difficultyAfter: { type: number }
+        scheduledDays: { type: number }
+        reviewedAt: { type: string, format: date-time }
+        durationMs: { type: integer }
+    VocabularyUserDataExport:
+      type: object
+      required: [userId, timezone, newCardsPerDay, entries, reviewLogs]
+      properties:
+        userId: { type: string, format: uuid }
+        timezone: { type: string }
+        newCardsPerDay: { type: integer }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/VocabularyEntry' }
+        reviewLogs:
+          type: array
+          items: { $ref: '#/components/schemas/ReviewLogExport' }
