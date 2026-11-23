@@ -30,6 +30,7 @@
         <module>services/assessment-service</module>
         <module>services/analytics-service</module>
         <module>services/billing-service</module>
+        <module>services/vocabulary-service</module>
         <module>tools/service-archetype</module>
         <module>infra/keycloak/extensions</module>
     </modules>

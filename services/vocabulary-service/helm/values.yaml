@@ -1,0 +1,12 @@
+# Values of vocabulary-service for the shared chart infra/helm/toefly-service-lib (phase 13 fills in the rest).
+image:
+  repository: ghcr.io/OWNER/toefly-vocabulary-service
+  digest: ""
+service:
+  port: 8090
+database:
+  name: vocabulary_db
+  role: vocabulary_app
+resources:
+  requests: { cpu: 50m, memory: 320Mi }
+  limits: { memory: 448Mi }
