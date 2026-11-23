@@ -79,6 +79,11 @@ spring:
               uri: ${toefly.gateway.services.billing-service}
               predicates:
                 - Path=/api/v1/plan-tiers,/api/v1/checkout-sessions,/api/v1/checkout-sessions/**,/api/v1/billing-portal-sessions,/api/v1/subscriptions/**,/api/v1/payments,/api/v1/entitlements,/api/v1/billing/app-store/**,/api/v1/admin/subscriptions,/api/v1/admin/subscriptions/**,/api/v1/admin/users/*/grants,/api/v1/admin/sagas,/api/v1/admin/sagas/**
+            # Personal dictionary, FSRS reviews and Collins word sets (docs/05 §6.10).
+            - id: vocabulary-service
+              uri: ${toefly.gateway.services.vocabulary-service}
+              predicates:
+                - Path=/api/v1/word-lookups,/api/v1/vocabulary-entries,/api/v1/vocabulary-entries/**,/api/v1/vocabulary-entry-batches,/api/v1/review-cards/**,/api/v1/review-sessions,/api/v1/review-sessions/**,/api/v1/word-sets,/api/v1/word-sets/**,/api/v1/word-suggestions,/api/v1/vocabulary-settings
 
 server:
   port: 8080
@@ -105,6 +110,7 @@ toefly:
       ai-gateway: http://localhost:8095
       analytics-service: http://localhost:8094
       billing-service: http://localhost:8092
+      vocabulary-service: http://localhost:8090
     internal-callers: [svc-profile-service]
     # docs/05-api-contracts.md §2.10. "N per minute": rate 1, cost 60/N, burst N * cost; "N per hour": cost 3600/N.
     rate-limits:
