@@ -50,6 +50,14 @@ import {
   PlanTiersApi as BillingPlanTiersApi,
   SubscriptionsApi as BillingSubscriptionsApi,
 } from './generated/billing';
+import {
+  Configuration as VocabularyConfiguration,
+  DictionaryApi as VocabularyDictionaryApi,
+  ReviewsApi as VocabularyReviewsApi,
+  SettingsApi as VocabularySettingsApi,
+  SuggestionsApi as VocabularySuggestionsApi,
+  WordSetsApi as VocabularyWordSetsApi,
+} from './generated/vocabulary';
 import { reportRefusal } from '@/lib/paywall';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
@@ -132,7 +140,19 @@ const billingConfiguration = new BillingConfiguration({
   middleware: [csrfMiddleware, paywallMiddleware],
 });
 
+// vocabulary-service.yaml keeps its paths relative to /api/v1 too (docs/05 §6.10).
+const vocabularyConfiguration = new VocabularyConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware, paywallMiddleware],
+});
+
 export const api = {
+  dictionary: new VocabularyDictionaryApi(vocabularyConfiguration),
+  reviews: new VocabularyReviewsApi(vocabularyConfiguration),
+  wordSets: new VocabularyWordSetsApi(vocabularyConfiguration),
+  wordSuggestions: new VocabularySuggestionsApi(vocabularyConfiguration),
+  vocabularySettings: new VocabularySettingsApi(vocabularyConfiguration),
   planTiers: new BillingPlanTiersApi(billingConfiguration),
   checkout: new BillingCheckoutApi(billingConfiguration),
   subscriptions: new BillingSubscriptionsApi(billingConfiguration),
