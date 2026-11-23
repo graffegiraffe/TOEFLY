@@ -2,6 +2,7 @@ package com.toefly.tutoragent.config;
 
 import com.toefly.tutoragent.application.port.in.LearnerModelUseCase;
 import com.toefly.tutoragent.application.port.in.MemoryUseCase;
+import com.toefly.tutoragent.application.port.in.ReengagementUseCase;
 import com.toefly.tutoragent.application.port.in.WeeklyReviewUseCase;
 import java.time.Clock;
 import javax.sql.DataSource;
@@ -33,12 +34,19 @@ public class TutorAgentJobs {
     private final LearnerModelUseCase learner;
     private final MemoryUseCase memory;
     private final WeeklyReviewUseCase reviews;
+    private final ReengagementUseCase reengagement;
     private final Clock clock;
 
-    public TutorAgentJobs(LearnerModelUseCase learner, MemoryUseCase memory, WeeklyReviewUseCase reviews, Clock clock) {
+    public TutorAgentJobs(
+            LearnerModelUseCase learner,
+            MemoryUseCase memory,
+            WeeklyReviewUseCase reviews,
+            ReengagementUseCase reengagement,
+            Clock clock) {
         this.learner = learner;
         this.memory = memory;
         this.reviews = reviews;
+        this.reengagement = reengagement;
         this.clock = clock;
     }
 
@@ -71,6 +79,16 @@ public class TutorAgentJobs {
         int handled = reviews.retryDeferred(clock.instant());
         if (handled > 0) {
             log.info("Retried {} deferred weekly reviews", handled);
+        }
+    }
+
+    /** Every 15 minutes: learners whose local time is 10:00–10:15 (docs/12, phase 5c, decision 7). */
+    @Scheduled(cron = "${toefly.tutor-agent.reengagement-cron:0 */15 * * * *}")
+    @SchedulerLock(name = "tutor-agent-reengagement")
+    public void writeComeBackMessages() {
+        int written = reengagement.writeDue(clock.instant());
+        if (written > 0) {
+            log.info("Wrote {} come-back messages", written);
         }
     }
 }

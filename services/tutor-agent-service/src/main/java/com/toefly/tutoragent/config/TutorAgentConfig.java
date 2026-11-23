@@ -12,6 +12,7 @@ import com.toefly.tutoragent.application.port.in.ChatUseCase;
 import com.toefly.tutoragent.application.port.in.LearnerModelUseCase;
 import com.toefly.tutoragent.application.port.in.MemoryUseCase;
 import com.toefly.tutoragent.application.port.in.ProjectionUseCase;
+import com.toefly.tutoragent.application.port.in.ReengagementUseCase;
 import com.toefly.tutoragent.application.port.in.WeeklyReviewUseCase;
 import com.toefly.tutoragent.application.port.out.AiPort;
 import com.toefly.tutoragent.application.port.out.AssessmentPort;
@@ -30,6 +31,8 @@ import com.toefly.tutoragent.application.port.out.PracticeResultRepository;
 import com.toefly.tutoragent.application.port.out.ProjectionRepository;
 import com.toefly.tutoragent.application.port.out.PromptPort;
 import com.toefly.tutoragent.application.port.out.PublicationSchedule;
+import com.toefly.tutoragent.application.port.out.ReengagementPublisherPort;
+import com.toefly.tutoragent.application.port.out.ReengagementRepository;
 import com.toefly.tutoragent.application.port.out.ReviewEventPublisherPort;
 import com.toefly.tutoragent.application.port.out.ToolLog;
 import com.toefly.tutoragent.application.port.out.WeeklyReviewRepository;
@@ -37,6 +40,7 @@ import com.toefly.tutoragent.application.service.ChatService;
 import com.toefly.tutoragent.application.service.LearnerModelService;
 import com.toefly.tutoragent.application.service.MemoryService;
 import com.toefly.tutoragent.application.service.ProjectionService;
+import com.toefly.tutoragent.application.service.ReengagementService;
 import com.toefly.tutoragent.application.service.ScreenContextAssembler;
 import com.toefly.tutoragent.application.service.ToolExecutor;
 import com.toefly.tutoragent.application.service.Transactions;
@@ -251,6 +255,19 @@ class TutorAgentConfig {
                 taxonomy,
                 transactions,
                 clock);
+    }
+
+    @Bean
+    ReengagementUseCase reengagementService(
+            ReengagementRepository repository,
+            ReengagementPublisherPort events,
+            LearnerModelUseCase learner,
+            PracticeResultRepository results,
+            OwnerToolsPort owners,
+            AiPort ai,
+            Transactions transactions,
+            Clock clock) {
+        return new ReengagementService(repository, events, learner, results, owners, ai, transactions, clock);
     }
 
     @Bean
