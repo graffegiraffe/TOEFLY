@@ -15,5 +15,8 @@ public interface CatalogQueryPort {
 
     List<Hit> fullText(String query, Filter filter, int limit);
 
+    /** Sets for extra practice, closest to {@code band.target} first (by id without a band), at most {@code limit}. */
+    List<Row> candidates(CandidateQuery query);
+
     List<Hit> nearest(float[] embedding, Filter filter, int limit);
 }

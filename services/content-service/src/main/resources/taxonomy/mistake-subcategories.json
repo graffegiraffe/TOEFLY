@@ -1,0 +1,374 @@
+{
+ "version": 1,
+ "source": "docs/06-ai-agent.md §6.3",
+ "entries": [
+  {
+   "code": "GRAMMAR.VERB_TENSES",
+   "category": "GRAMMAR",
+   "description": "verb tenses",
+   "descriptionRu": "Выбор и форма времени",
+   "unitCode": "ROUNDUP5.U01",
+   "unitTitle": "Round-Up Unit 1: Present Forms"
+  },
+  {
+   "code": "GRAMMAR.SUBJECT_VERB_AGREEMENT",
+   "category": "GRAMMAR",
+   "description": "subject verb agreement",
+   "descriptionRu": "Согласование подлежащего и сказуемого",
+   "unitCode": "ROUNDUP5.U10",
+   "unitTitle": "Round-Up Unit 10: Nouns – Articles"
+  },
+  {
+   "code": "GRAMMAR.ARTICLES",
+   "category": "GRAMMAR",
+   "description": "articles",
+   "descriptionRu": "a/an/the/нулевой артикль",
+   "unitCode": "ROUNDUP5.U10",
+   "unitTitle": "Round-Up Unit 10: Nouns – Articles"
+  },
+  {
+   "code": "GRAMMAR.NOUN_NUMBER",
+   "category": "GRAMMAR",
+   "description": "noun number",
+   "descriptionRu": "Исчисляемые/неисчисляемые, множественное число",
+   "unitCode": "ROUNDUP5.U10",
+   "unitTitle": "Round-Up Unit 10: Nouns – Articles"
+  },
+  {
+   "code": "GRAMMAR.INFINITIVE_GERUND",
+   "category": "GRAMMAR",
+   "description": "infinitive gerund",
+   "descriptionRu": "Инфинитив / -ing / причастия",
+   "unitCode": "ROUNDUP5.U04",
+   "unitTitle": "Round-Up Unit 4: Infinitive / -ing form / Participles"
+  },
+  {
+   "code": "GRAMMAR.MODALS",
+   "category": "GRAMMAR",
+   "description": "modals",
+   "descriptionRu": "Модальные глаголы",
+   "unitCode": "ROUNDUP5.U05",
+   "unitTitle": "Round-Up Unit 5: Modal Verbs"
+  },
+  {
+   "code": "GRAMMAR.PASSIVE",
+   "category": "GRAMMAR",
+   "description": "passive",
+   "descriptionRu": "Пассивный залог",
+   "unitCode": "ROUNDUP5.U06",
+   "unitTitle": "Round-Up Unit 6: The Passive"
+  },
+  {
+   "code": "GRAMMAR.CONDITIONALS",
+   "category": "GRAMMAR",
+   "description": "conditionals",
+   "descriptionRu": "Условные предложения, wishes",
+   "unitCode": "ROUNDUP5.U07",
+   "unitTitle": "Round-Up Unit 7: Conditionals – Wishes"
+  },
+  {
+   "code": "GRAMMAR.CLAUSES_LINKING",
+   "category": "GRAMMAR",
+   "description": "clauses linking",
+   "descriptionRu": "Придаточные времени, цели, уступки, результата, причины",
+   "unitCode": "ROUNDUP5.U08",
+   "unitTitle": "Round-Up Unit 8: Clauses – Linking Words"
+  },
+  {
+   "code": "GRAMMAR.RELATIVE_CLAUSES",
+   "category": "GRAMMAR",
+   "description": "relative clauses",
+   "descriptionRu": "Относительные придаточные",
+   "unitCode": "ROUNDUP5.U08",
+   "unitTitle": "Round-Up Unit 8: Clauses – Linking Words"
+  },
+  {
+   "code": "GRAMMAR.REPORTED_SPEECH",
+   "category": "GRAMMAR",
+   "description": "reported speech",
+   "descriptionRu": "Косвенная речь",
+   "unitCode": "ROUNDUP5.U09",
+   "unitTitle": "Round-Up Unit 9: Reported Speech"
+  },
+  {
+   "code": "GRAMMAR.CAUSATIVE",
+   "category": "GRAMMAR",
+   "description": "causative",
+   "descriptionRu": "Have something done",
+   "unitCode": "ROUNDUP5.U11",
+   "unitTitle": "Round-Up Unit 11: Causative Form"
+  },
+  {
+   "code": "GRAMMAR.COMPARISON",
+   "category": "GRAMMAR",
+   "description": "comparison",
+   "descriptionRu": "Степени сравнения, too/enough",
+   "unitCode": "ROUNDUP5.U12",
+   "unitTitle": "Round-Up Unit 12: Adjectives – Adverbs – Comparisons"
+  },
+  {
+   "code": "GRAMMAR.ADJ_ADV",
+   "category": "GRAMMAR",
+   "description": "adj adv",
+   "descriptionRu": "Прилагательное vs наречие, порядок",
+   "unitCode": "ROUNDUP5.U12",
+   "unitTitle": "Round-Up Unit 12: Adjectives – Adverbs – Comparisons"
+  },
+  {
+   "code": "GRAMMAR.PRONOUNS_REFERENCE",
+   "category": "GRAMMAR",
+   "description": "pronouns reference",
+   "descriptionRu": "Местоимения, притяжательные",
+   "unitCode": "ROUNDUP5.U13",
+   "unitTitle": "Round-Up Unit 13: Demonstratives – Pronouns – Possessives – Quantifiers"
+  },
+  {
+   "code": "GRAMMAR.QUANTIFIERS",
+   "category": "GRAMMAR",
+   "description": "quantifiers",
+   "descriptionRu": "some/any/much/many/few/little",
+   "unitCode": "ROUNDUP5.U13",
+   "unitTitle": "Round-Up Unit 13: Demonstratives – Pronouns – Possessives – Quantifiers"
+  },
+  {
+   "code": "GRAMMAR.PREPOSITIONS",
+   "category": "GRAMMAR",
+   "description": "prepositions",
+   "descriptionRu": "Предлоги места, движения, времени, зависимые предлоги",
+   "unitCode": "ROUNDUP5.U14",
+   "unitTitle": "Round-Up Unit 14: Prepositions"
+  },
+  {
+   "code": "GRAMMAR.QUESTIONS_WORD_ORDER",
+   "category": "GRAMMAR",
+   "description": "questions word order",
+   "descriptionRu": "Прямые и косвенные вопросы, question tags",
+   "unitCode": "ROUNDUP5.U15",
+   "unitTitle": "Round-Up Unit 15: Questions and Answers"
+  },
+  {
+   "code": "GRAMMAR.WORD_ORDER",
+   "category": "GRAMMAR",
+   "description": "word order",
+   "descriptionRu": "Порядок слов в утвердительном предложении, there/it",
+   "unitCode": "ROUNDUP5.U15",
+   "unitTitle": "Round-Up Unit 15: Questions and Answers"
+  },
+  {
+   "code": "GRAMMAR.SENTENCE_STRUCTURE",
+   "category": "GRAMMAR",
+   "description": "sentence structure",
+   "descriptionRu": "Фрагменты, run-on, comma splice",
+   "unitCode": "ROUNDUP5.U08",
+   "unitTitle": "Round-Up Unit 8: Clauses – Linking Words"
+  },
+  {
+   "code": "VOCABULARY.WORD_CHOICE",
+   "category": "VOCABULARY",
+   "description": "word choice",
+   "descriptionRu": "Неточное слово, калька",
+   "unitCode": "COLLINS_VOC.U19",
+   "unitTitle": "Collins Vocabulary Unit 19: Paraphrasing"
+  },
+  {
+   "code": "VOCABULARY.COLLOCATION",
+   "category": "VOCABULARY",
+   "description": "collocation",
+   "descriptionRu": "Неверная сочетаемость",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "VOCABULARY.WORD_FORM",
+   "category": "VOCABULARY",
+   "description": "word form",
+   "descriptionRu": "Словообразование",
+   "unitCode": "COLLINS_VOC.U20",
+   "unitTitle": "Collins Vocabulary Unit 20: Prefixes and roots"
+  },
+  {
+   "code": "VOCABULARY.ACADEMIC_RANGE",
+   "category": "VOCABULARY",
+   "description": "academic range",
+   "descriptionRu": "Бедность академической лексики",
+   "unitCode": "COLLINS_VOC.U16",
+   "unitTitle": "Collins Vocabulary Unit 16: Reporting verbs"
+  },
+  {
+   "code": "VOCABULARY.REGISTER",
+   "category": "VOCABULARY",
+   "description": "register",
+   "descriptionRu": "Неуместный регистр (разговорное в академическом и наоборот)",
+   "unitCode": "COLLINS_VOC.U08",
+   "unitTitle": "Collins Vocabulary Unit 8: Opinions"
+  },
+  {
+   "code": "VOCABULARY.REPETITION",
+   "category": "VOCABULARY",
+   "description": "repetition",
+   "descriptionRu": "Повтор одних и тех же слов",
+   "unitCode": "COLLINS_VOC.U19",
+   "unitTitle": "Collins Vocabulary Unit 19: Paraphrasing"
+  },
+  {
+   "code": "VOCABULARY.IN_CONTEXT",
+   "category": "VOCABULARY",
+   "description": "in context",
+   "descriptionRu": "Значение слова в контексте (Reading/Listening)",
+   "unitCode": "COLLINS_VOC.U19",
+   "unitTitle": "Collins Vocabulary Unit 19: Paraphrasing"
+  },
+  {
+   "code": "SPELLING.COMMON",
+   "category": "SPELLING",
+   "description": "common",
+   "descriptionRu": "Орфография",
+   "unitCode": "COLLINS_GR.U20",
+   "unitTitle": "Collins Grammar Unit 20: Common errors"
+  },
+  {
+   "code": "SPELLING.HOMOPHONES",
+   "category": "SPELLING",
+   "description": "homophones",
+   "descriptionRu": "their/there, its/it's",
+   "unitCode": "COLLINS_GR.U20",
+   "unitTitle": "Collins Grammar Unit 20: Common errors"
+  },
+  {
+   "code": "SPELLING.CAPITALIZATION",
+   "category": "SPELLING",
+   "description": "capitalization",
+   "descriptionRu": "Заглавные буквы",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "SPELLING.PUNCTUATION",
+   "category": "SPELLING",
+   "description": "punctuation",
+   "descriptionRu": "Пунктуация",
+   "unitCode": "ROUNDUP5.U08",
+   "unitTitle": "Round-Up Unit 8: Clauses – Linking Words"
+  },
+  {
+   "code": "COHERENCE.TRANSITIONS",
+   "category": "COHERENCE",
+   "description": "transitions",
+   "descriptionRu": "Связки",
+   "unitCode": "ROUNDUP5.U08",
+   "unitTitle": "Round-Up Unit 8: Clauses – Linking Words"
+  },
+  {
+   "code": "COHERENCE.ORGANIZATION",
+   "category": "COHERENCE",
+   "description": "organization",
+   "descriptionRu": "Структура, логика абзацев",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "COHERENCE.REFERENCE",
+   "category": "COHERENCE",
+   "description": "reference",
+   "descriptionRu": "Неясная референция местоимений",
+   "unitCode": "ROUNDUP5.U13",
+   "unitTitle": "Round-Up Unit 13: Demonstratives – Pronouns – Possessives – Quantifiers"
+  },
+  {
+   "code": "COHERENCE.TOPIC_SENTENCE",
+   "category": "COHERENCE",
+   "description": "topic sentence",
+   "descriptionRu": "Нет ясной позиции/главного предложения",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "TASK_RESPONSE.BULLET_MISSING",
+   "category": "TASK_RESPONSE",
+   "description": "bullet missing",
+   "descriptionRu": "Email: пропущен пункт задания",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "TASK_RESPONSE.ELABORATION",
+   "category": "TASK_RESPONSE",
+   "description": "elaboration",
+   "descriptionRu": "Мало объяснений, примеров, деталей",
+   "unitCode": "COLLINS_GR.U07",
+   "unitTitle": "Collins Grammar Unit 7: Problems and solutions"
+  },
+  {
+   "code": "TASK_RESPONSE.RELEVANCE",
+   "category": "TASK_RESPONSE",
+   "description": "relevance",
+   "descriptionRu": "Не отвечает на вопрос",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "TASK_RESPONSE.CONTRIBUTION",
+   "category": "TASK_RESPONSE",
+   "description": "contribution",
+   "descriptionRu": "Discussion: пересказ постов вместо своего вклада",
+   "unitCode": "COLLINS_VOC.U08",
+   "unitTitle": "Collins Vocabulary Unit 8: Opinions"
+  },
+  {
+   "code": "TASK_RESPONSE.CONVENTIONS",
+   "category": "TASK_RESPONSE",
+   "description": "conventions",
+   "descriptionRu": "Email: приветствие, завершение, тон, вежливые формулы",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "TASK_RESPONSE.LENGTH",
+   "category": "TASK_RESPONSE",
+   "description": "length",
+   "descriptionRu": "Недостаточный объём",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "GRAMMAR.OTHER",
+   "category": "GRAMMAR",
+   "description": "other",
+   "descriptionRu": "Другое",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "VOCABULARY.OTHER",
+   "category": "VOCABULARY",
+   "description": "other",
+   "descriptionRu": "Другое",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "SPELLING.OTHER",
+   "category": "SPELLING",
+   "description": "other",
+   "descriptionRu": "Другое",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "COHERENCE.OTHER",
+   "category": "COHERENCE",
+   "description": "other",
+   "descriptionRu": "Другое",
+   "unitCode": null,
+   "unitTitle": null
+  },
+  {
+   "code": "TASK_RESPONSE.OTHER",
+   "category": "TASK_RESPONSE",
+   "description": "other",
+   "descriptionRu": "Другое",
+   "unitCode": null,
+   "unitTitle": null
+  }
+ ]
+}

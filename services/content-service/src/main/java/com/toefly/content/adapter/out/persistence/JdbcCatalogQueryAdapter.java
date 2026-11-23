@@ -3,8 +3,10 @@ package com.toefly.content.adapter.out.persistence;
 import com.toefly.content.application.port.in.BrowseCatalogUseCase.Filter;
 import com.toefly.content.application.port.in.BrowseCatalogUseCase.Hit;
 import com.toefly.content.application.port.in.BrowseCatalogUseCase.Row;
+import com.toefly.content.application.port.out.CandidateQuery;
 import com.toefly.content.application.port.out.CatalogQueryPort;
 import com.toefly.content.domain.catalog.ExamFormat;
+import com.toefly.content.domain.catalog.RelativeDifficulty;
 import com.toefly.content.domain.catalog.Source;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -87,6 +89,52 @@ public class JdbcCatalogQueryAdapter implements CatalogQueryPort {
         return jdbc.sql(sql)
                 .params(params)
                 .query((rs, n) -> new Hit(row(rs, n), rs.getDouble("score")))
+                .list();
+    }
+
+    @Override
+    public List<Row> candidates(CandidateQuery q) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> where = new ArrayList<>(List.of(
+                "i.status = 'APPROVED'",
+                "i.exam_format = 'TOEFL_2026'",
+                "i.task_type = :taskType",
+                "NOT (CAST(:reserved AS text) = ANY (i.skills))"));
+        params.put("taskType", q.taskType().name());
+        params.put("reserved", CandidateQuery.EXAM_RESERVED);
+        if (!q.excludeItemSetIds().isEmpty()) {
+            where.add("i.id NOT IN (:exclude)");
+            params.put("exclude", q.excludeItemSetIds());
+        }
+        if (q.skill() != null) {
+            where.add("(CAST(:skill AS text) = ANY (i.skills) OR EXISTS (SELECT 1 FROM item it"
+                    + " WHERE it.item_set_id = i.id AND upper(it.subskill) = :subskill))");
+            params.put("skill", q.skill());
+            params.put("subskill", q.subskill());
+        }
+        if (q.topic() != null) {
+            where.add("(i.topic ILIKE :topicLike OR i.search_tsv @@ plainto_tsquery('english', :topic))");
+            params.put("topic", q.topic());
+            params.put("topicLike", "%" + q.topic().replace("%", "\\%").replace("_", "\\_") + "%");
+        }
+        String order = " ORDER BY i.id";
+        RelativeDifficulty.Band band = q.band();
+        if (band != null) {
+            if (band.min() != null) {
+                where.add("i.b_mean " + (band.minInclusive() ? ">=" : ">") + " :min");
+                params.put("min", band.min());
+            }
+            if (band.max() != null) {
+                where.add("i.b_mean " + (band.maxInclusive() ? "<=" : "<") + " :max");
+                params.put("max", band.max());
+            }
+            order = " ORDER BY abs(i.b_mean - :target), i.id";
+            params.put("target", band.target());
+        }
+        params.put("limit", q.limit());
+        return jdbc.sql(SELECT + clause(where) + order + " LIMIT :limit")
+                .params(params)
+                .query(JdbcCatalogQueryAdapter::row)
                 .list();
     }
 

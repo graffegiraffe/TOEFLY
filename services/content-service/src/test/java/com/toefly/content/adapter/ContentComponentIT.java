@@ -388,6 +388,149 @@ class ContentComponentIT {
                 MockMvcExchanger.of(mvc, JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE")));
     }
 
+    // ---- searches of the tutor agent (docs/12 phase 5c, decision 2) ----
+
+    static final String EMAIL_JOB = "7a000000-0000-4000-8000-000000000001";
+    static final String EMAIL_LIBRARY = "7a000000-0000-4000-8000-000000000002";
+    static final String EMAIL_EASY = "7a000000-0000-4000-8000-000000000003";
+    static final String EMAIL_RESERVED = "7a000000-0000-4000-8000-000000000004";
+    static final String EMAIL_HIDDEN = "7a000000-0000-4000-8000-000000000005";
+    static final String EMAIL_HARD = "7a000000-0000-4000-8000-000000000006";
+
+    @TestFactory
+    @Order(23)
+    @DisplayName("ADR-0031 the searches fulfil the contracts of tutor-agent-service")
+    Stream<DynamicTest> tutorAgentContracts() {
+        prepareTutorSearchData();
+        return ContractTests.rest(
+                CONTRACTS.resolve("tutor-agent-service"),
+                MockMvcExchanger.of(mvc, JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE")));
+    }
+
+    @Test
+    @Order(24)
+    @DisplayName("searchItemSetsInternal: difficulty band, skill, topic; never hidden or exam-reserved sets")
+    void searchItemSetsInternal() throws Exception {
+        prepareTutorSearchData();
+        search("{\"taskType\":\"WRITE_EMAIL\",\"referenceB\":0.1,\"limit\":5}")
+                .andExpect(jsonPath("$.items[*].itemSetId")
+                        .value(org.hamcrest.Matchers.contains(EMAIL_JOB, EMAIL_LIBRARY)));
+        search("{\"taskType\":\"WRITE_EMAIL\",\"difficulty\":\"EASIER\",\"referenceB\":0.1}")
+                .andExpect(jsonPath("$.items[*].itemSetId").value(org.hamcrest.Matchers.contains(EMAIL_EASY)));
+        search("{\"taskType\":\"WRITE_EMAIL\",\"difficulty\":\"HARDER\",\"referenceB\":0.1}")
+                .andExpect(jsonPath("$.items[*].itemSetId").value(org.hamcrest.Matchers.contains(EMAIL_HARD)));
+        search("{\"taskType\":\"WRITE_EMAIL\",\"skillFocus\":\"WRITING.REQUEST\"}")
+                .andExpect(jsonPath("$.items[*].itemSetId").value(org.hamcrest.Matchers.contains(EMAIL_HARD)));
+        search("{\"taskType\":\"WRITE_EMAIL\",\"skillFocus\":\"Writing.Email\"}")
+                .andExpect(jsonPath("$.items[*].itemSetId").value(org.hamcrest.Matchers.contains(EMAIL_JOB)));
+        search("{\"taskType\":\"WRITE_EMAIL\",\"topic\":\"library\"}")
+                .andExpect(jsonPath("$.items[*].itemSetId").value(org.hamcrest.Matchers.contains(EMAIL_LIBRARY)));
+        search("{\"taskType\":\"WRITE_EMAIL\",\"excludeItemSetIds\":[\"" + EMAIL_JOB + "\",\"" + EMAIL_EASY + "\"]}")
+                .andExpect(jsonPath("$.items[*].itemSetId")
+                        .value(org.hamcrest.Matchers.contains(EMAIL_LIBRARY, EMAIL_HARD)));
+        mvc.perform(post("/internal/v1/item-sets/search")
+                        .with(JwtFixtures.student(UUID.randomUUID()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"taskType\":\"WRITE_EMAIL\",\"limit\":1}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1));
+        mvc.perform(post("/internal/v1/item-sets/search")
+                        .with(JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"taskType\":\"WRITE_EMAIL\",\"limit\":9}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/internal/v1/item-sets/search")
+                        .with(JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"limit\":1}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/internal/v1/item-sets/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"taskType\":\"WRITE_EMAIL\"}"))
+                .andExpect(status().isUnauthorized());
+        // the rest of /internal stays for the service token only
+        mvc.perform(get("/internal/v1/item-sets/" + EMAIL_JOB).with(JwtFixtures.student(UUID.randomUUID())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Order(25)
+    @DisplayName("searchGrammarUnitsInternal: a subcategory through the taxonomy, a topic by the words of titles")
+    void searchGrammarUnitsInternal() throws Exception {
+        prepareTutorSearchData();
+        mvc.perform(get("/internal/v1/grammar-units/search")
+                        .param("subcategory", "GRAMMAR.VERB_TENSES")
+                        .with(JwtFixtures.student(UUID.randomUUID())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.units[0].code").value("ROUNDUP5.U01"))
+                .andExpect(jsonPath("$.units[0].source").value("Demo reading"));
+        mvc.perform(get("/internal/v1/grammar-units/search")
+                        .param("topic", "present perfect vs past simple")
+                        .with(JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.units[0].title").value("Present forms"));
+        mvc.perform(get("/internal/v1/grammar-units/search")
+                        .param("subcategory", "GRAMMAR.ARTICLES")
+                        .with(JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.units").isEmpty());
+        mvc.perform(get("/internal/v1/grammar-units/search").param("topic", "present"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions search(String body) throws Exception {
+        return mvc.perform(post("/internal/v1/item-sets/search")
+                        .with(JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+    }
+
+    /** Six Write an Email sets of our own around b = 0.1 and the approved Round-Up unit 1 of the bundle. */
+    private void prepareTutorSearchData() {
+        jdbc.sql("UPDATE grammar_unit SET status = 'APPROVED' WHERE framework = 'ROUND_UP_5' AND unit_no = 1")
+                .update();
+        if (jdbc.sql("SELECT count(*) FROM item_set WHERE task_type = 'WRITE_EMAIL'")
+                        .query(Integer.class)
+                        .single()
+                > 0) {
+            return;
+        }
+        String source = jdbc.sql("SELECT id::text FROM source WHERE code = 'demo-reading'")
+                .query(String.class)
+                .single();
+        emailSet(EMAIL_JOB, source, "job interview", "Asking to move an interview", 0.0, "{writing.email}", "APPROVED");
+        emailSet(EMAIL_LIBRARY, source, "library card", "A lost library card", 0.3, "{}", "APPROVED");
+        emailSet(EMAIL_EASY, source, "class schedule", "A question about a class", -1.0, "{}", "APPROVED");
+        emailSet(EMAIL_RESERVED, source, "job offer", "Accepting an offer", 0.1, "{exam-reserved}", "APPROVED");
+        emailSet(EMAIL_HIDDEN, source, "job fair", "A job fair", 0.0, "{}", "HIDDEN");
+        emailSet(EMAIL_HARD, source, "lease renewal", "Renewing a lease", 1.2, "{}", "APPROVED");
+        jdbc.sql("""
+                        INSERT INTO item (id, item_set_id, ordinal, subskill)
+                        VALUES (gen_random_uuid(), CAST(:set AS uuid), 1, 'REQUEST')
+                        """).param("set", EMAIL_HARD).update();
+    }
+
+    private void emailSet(
+            String id, String source, String topic, String title, double b, String skills, String status) {
+        jdbc.sql("""
+                        INSERT INTO item_set (id, version, section, task_type, exam_format, cefr, topic, skills,
+                            source_id, provenance, status, b_mean, ets_norm_seconds, estimated_minutes, item_count,
+                            payload, content_hash, created_at, updated_at)
+                        VALUES (CAST(:id AS uuid), 1, 'WRITING', 'WRITE_EMAIL', 'TOEFL_2026', 'B2', :topic,
+                            CAST(:skills AS text[]), CAST(:source AS uuid), 'GENERATED', :status, :b, 420, 7, 1,
+                            CAST(:payload AS jsonb), repeat('a', 64), now(), now())
+                        """)
+                .param("id", id)
+                .param("topic", topic)
+                .param("skills", skills)
+                .param("source", source)
+                .param("status", status)
+                .param("b", b)
+                .param("payload", "{\"stimulus\":{\"title\":\"" + title + "\"},\"items\":[]}")
+                .update();
+    }
+
     void itemSetPublished() throws Exception {
         String id = librarySetId();
         setStatus(id, "HIDDEN");

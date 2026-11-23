@@ -1,0 +1,34 @@
+name: search_item_sets_internal
+description: the searchItems tool of the tutor agent finds extra practice of the same difficulty (docs/06 §4.5, docs/12 phase 5c decision 2)
+request:
+  method: POST
+  url: /internal/v1/item-sets/search
+  headers:
+    Authorization: Bearer service-token
+    Content-Type: application/json
+  body:
+    taskType: WRITE_EMAIL
+    difficulty: SAME
+    referenceB: 0.1
+    excludeItemSetIds:
+      - 7a000000-0000-4000-8000-000000000006
+    limit: 3
+response:
+  status: 200
+  body:
+    items:
+      - itemSetId: 7a000000-0000-4000-8000-000000000001
+        taskType: WRITE_EMAIL
+        title: Asking to move an interview
+        topic: job interview
+        estimatedMinutes: 7
+        difficultyB: 0.0
+        skills:
+          - writing.email
+      - itemSetId: 7a000000-0000-4000-8000-000000000002
+        taskType: WRITE_EMAIL
+        title: A lost library card
+        topic: library card
+        estimatedMinutes: 7
+        difficultyB: 0.3
+        skills: []
