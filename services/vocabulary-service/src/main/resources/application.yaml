@@ -26,6 +26,18 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+      client:
+        registration:
+          svc-vocabulary-service:
+            provider: keycloak
+            client-id: svc-vocabulary-service
+            client-secret: ${SVC_VOCABULARY_SERVICE_SECRET:svc-vocabulary-service-local}
+            authorization-grant-type: client_credentials
+            scope: internal
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/toefly/protocol/openid-connect/token
   mvc:
     problemdetails:
       enabled: true
@@ -37,6 +49,14 @@ toefly:
   events:
     registry-url: http://localhost:8380/apis/registry/v3
     auto-register: false
+  vocabulary:
+    content-url: http://localhost:8082
+    ai-gateway-url: http://localhost:8095
+    # Word cards and key words go through ai-gateway; off until its vocabulary prompts are registered.
+    ai:
+      enabled: ${TOEFLY_VOCABULARY_AI_ENABLED:false}
+    # The pronunciation button needs speech-service (phase 6).
+    pronunciation-enabled: false
 
 management:
   opentelemetry:
