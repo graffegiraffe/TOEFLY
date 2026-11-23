@@ -39,7 +39,11 @@ class WordData {
         }
         try {
             AiDictionaryPort.WordCard card = ai.wordCard(lemma, context, userId);
-            String aiLemma = lemmaOr(card.lemma(), lemma);
+            String aiLemma = lemmaOf(card.lemma(), lemma);
+            if (aiLemma == null) {
+                log.warn("Word card for '{}' named another word; the data is dropped", lemma);
+                return new Resolved(lemma, WordDetails.EMPTY, false);
+            }
             if (!aiLemma.equals(lemma)) {
                 Optional<WordDetails> base = cache.find(aiLemma);
                 if (base.isPresent()) {
@@ -56,15 +60,23 @@ class WordData {
         }
     }
 
-    private static String lemmaOr(@Nullable String candidate, String fallback) {
+    /** The model's lemma; the term itself when it gave none, null when it named an unrelated word. */
+    private static @Nullable String lemmaOf(@Nullable String candidate, String term) {
         if (candidate == null || candidate.isBlank()) {
-            return fallback;
+            return term;
         }
         try {
-            return Lemma.normalize(candidate);
+            String lemma = Lemma.normalize(candidate);
+            return related(lemma, term) ? lemma : null;
         } catch (InvalidTermException invalid) {
-            return fallback;
+            return term;
         }
+    }
+
+    /** The model may only reduce an inflection ("mitigating" → "mitigate"), never swap the word. */
+    static boolean related(String lemma, String term) {
+        int stem = Math.min(3, Math.min(lemma.length(), term.length()));
+        return lemma.regionMatches(0, term, 0, stem);
     }
 
     record Resolved(String lemma, WordDetails details, boolean found) {}

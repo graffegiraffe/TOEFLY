@@ -5,7 +5,6 @@ import com.toefly.vocabulary.domain.review.DailyLimits;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -65,7 +64,7 @@ public class JdbcLearnerSettingsRepositoryAdapter implements LearnerSettingsRepo
         try {
             return ZoneId.of(id);
         } catch (DateTimeException unknown) {
-            return ZoneOffset.UTC;
+            return ZoneId.of("UTC");
         }
     }
 }

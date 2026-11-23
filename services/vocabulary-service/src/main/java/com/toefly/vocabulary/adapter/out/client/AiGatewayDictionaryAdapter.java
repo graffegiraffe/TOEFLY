@@ -105,13 +105,14 @@ public class AiGatewayDictionaryAdapter implements AiDictionaryPort {
                     .body(String.class);
             response = raw == null || raw.isBlank() ? null : JSON.readTree(raw);
         } catch (RestClientResponseException failure) {
-            throw new AiUnavailableException(
-                    "ai-gateway answered " + failure.getStatusCode().value(), failure);
+            int status = failure.getStatusCode().value();
+            boolean permanent = status >= 400 && status < 500 && status != 429;
+            throw new AiUnavailableException("ai-gateway answered " + status, permanent, failure);
         } catch (RestClientException | JacksonException failure) {
-            throw new AiUnavailableException("ai-gateway unreachable: " + failure.getMessage(), failure);
+            throw new AiUnavailableException("ai-gateway unreachable: " + failure.getMessage(), false, failure);
         }
         if (response == null || !response.path("output").isObject()) {
-            throw new AiUnavailableException("ai-gateway returned no structured output");
+            throw new AiUnavailableException("ai-gateway returned no structured output", true, null);
         }
         return response;
     }
