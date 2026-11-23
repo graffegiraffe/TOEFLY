@@ -18,11 +18,11 @@ public record VocabularyProperties(
      * of ai-gateway's registry.
      */
     public record Ai(
-            @DefaultValue("false") boolean enabled,
+            @DefaultValue("true") boolean enabled,
             @DefaultValue("20s") Duration readTimeout,
-            @DefaultValue("TRANSLATION_RU") String wordCardUseCase,
+            @DefaultValue("WORD_CARD") String wordCardUseCase,
             @DefaultValue("vocabulary.word-card") String wordCardPrompt,
-            @DefaultValue("TRANSLATION_RU") String keyWordsUseCase,
+            @DefaultValue("KEY_WORDS") String keyWordsUseCase,
             @DefaultValue("vocabulary.key-words") String keyWordsPrompt) {}
 
     public record Jobs(
