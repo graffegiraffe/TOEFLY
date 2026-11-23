@@ -16,4 +16,10 @@ public interface ActivityQueryUseCase {
     List<ActivityDay> days(Caller caller, @Nullable UUID studentId, LocalDate from, LocalDate to);
 
     TimeReport timeReport(Caller caller, @Nullable UUID studentId, @Nullable LocalDate from, @Nullable LocalDate to);
+
+    /**
+     * The time report of a user over a named period in the learner's time zone, for an internal call; who may ask is
+     * checked by the security chain.
+     */
+    TimeReport timeReportOf(UUID userId, ReportPeriod period);
 }

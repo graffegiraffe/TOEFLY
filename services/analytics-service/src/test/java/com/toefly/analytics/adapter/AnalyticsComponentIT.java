@@ -14,7 +14,9 @@ import com.toefly.common.test.JwtFixtures;
 import com.toefly.common.test.KafkaTestcontainersConfiguration;
 import com.toefly.common.test.PostgresTestcontainersConfiguration;
 import com.toefly.common.test.contract.Contract;
+import com.toefly.common.test.contract.ContractTests;
 import com.toefly.common.test.contract.Contracts;
+import com.toefly.common.test.contract.MockMvcExchanger;
 import com.toefly.events.aigateway.AiCallOutcome;
 import com.toefly.events.aigateway.UsageRecordedV1;
 import com.toefly.events.assessment.BandEstimateUpdatedV1;
@@ -398,6 +400,69 @@ class AnalyticsComponentIT {
                         .query(Boolean.class)
                         .single())
                 .isTrue();
+    }
+
+    // ---- internal reads for tutor-agent-service (docs/12 phase 5c, decision 2) ----
+
+    @Test
+    @DisplayName("getStudentDashboardInternal and getTimeReportInternal answer as the public reads; own JWT or service")
+    void internalReads() throws Exception {
+        journey(user);
+
+        JsonNode dashboard =
+                JSON.readTree(mvc.perform(get("/api/v1/dashboards/student").with(JwtFixtures.student(user)))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        JsonNode internal = JSON.readTree(
+                mvc.perform(get("/internal/v1/users/" + user + "/dashboard").with(service()))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        assertThat(internal).isEqualTo(dashboard);
+        mvc.perform(get("/internal/v1/users/" + user + "/dashboard").with(JwtFixtures.student(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weekActiveSeconds").value(1500));
+
+        mvc.perform(get("/internal/v1/users/" + user + "/time-reports")
+                        .param("period", "TODAY")
+                        .with(JwtFixtures.student(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value(today.toString()))
+                .andExpect(jsonPath("$.to").value(today.plusDays(1).toString()));
+        mvc.perform(get("/internal/v1/users/" + user + "/time-reports").with(service()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value(day1.toString()))
+                .andExpect(jsonPath("$.totalSeconds").value(1500));
+        mvc.perform(get("/internal/v1/users/" + user + "/time-reports")
+                        .param("period", "LAST_4_WEEKS")
+                        .with(service()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value(today.minusDays(27).toString()))
+                .andExpect(jsonPath("$.totalSeconds").value(1500));
+
+        mvc.perform(get("/internal/v1/users/" + user + "/time-reports")
+                        .param("period", "YESTERDAY")
+                        .with(service()))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/internal/v1/users/" + user + "/dashboard").with(JwtFixtures.student(UUID.randomUUID())))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/internal/v1/users/" + user + "/dashboard")).andExpect(status().isUnauthorized());
+    }
+
+    // ---- producer contracts (ADR-0031) ----
+
+    @TestFactory
+    @DisplayName("ADR-0031: the internal API fulfils the contracts of tutor-agent-service")
+    Stream<DynamicTest> restContracts() {
+        return ContractTests.rest(
+                Path.of("src/test/resources/contracts/tutor-agent-service"), MockMvcExchanger.of(mvc, service()));
+    }
+
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor service() {
+        return JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE");
     }
 
     // ---- consumer contracts (ADR-0031) ----

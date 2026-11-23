@@ -1,0 +1,30 @@
+name: get_student_dashboard_internal
+description: the getProgress tool of the tutor agent reads the dashboard of the learner (docs/06 §4.5, docs/12 phase 5c decision 2)
+request:
+  method: GET
+  url: /internal/v1/users/2b7c4d9e-1f3a-4b5c-8d6e-7f8091a2b3c4/dashboard
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    userId: 2b7c4d9e-1f3a-4b5c-8d6e-7f8091a2b3c4
+    theta: []
+    lastResults: []
+    weekActiveSeconds: 0
+    weeks: []
+  matchers:
+    body:
+      - path: $.today
+        type: by_regex
+        predefined: iso_date
+      - path: $.timezone
+        type: by_regex
+        predefined: non_empty
+      - path: $.targets
+        type: by_type
+      - path: $.todayGoal.goalMet
+        type: by_type
+      - path: $.streak.current
+        type: by_regex
+        predefined: number

@@ -7,6 +7,7 @@ import com.toefly.analytics.application.port.in.AccessDeniedException;
 import com.toefly.analytics.application.port.in.Caller;
 import com.toefly.analytics.application.port.in.InvalidPeriodException;
 import com.toefly.analytics.application.port.in.ProjectionName;
+import com.toefly.analytics.application.port.in.ReportPeriod;
 import com.toefly.analytics.application.port.in.StreakResult;
 import com.toefly.analytics.application.port.in.StudentDashboardResult;
 import com.toefly.analytics.application.port.in.event.AbilityUpdated;
@@ -188,6 +189,41 @@ class AnalyticsScenarioTest {
         assertThat(report.bySection()).containsEntry(WeekSection.READING, 600 + 300 + 522);
         assertThat(fakes.activityQuery.days(learner, null, TODAY.minusDays(7), TODAY.plusDays(1)))
                 .hasSize(2);
+    }
+
+    @Test
+    @DisplayName("docs/12 phase 5c decision 2: the internal dashboard is the one the learner sees")
+    void internalDashboard() {
+        plan().forEach(fakes::record);
+
+        assertThat(fakes.dashboardQuery.studentOf(user)).isEqualTo(fakes.dashboardQuery.student(learner, null));
+        UUID stranger = UUID.randomUUID();
+        assertThat(fakes.dashboardQuery.studentOf(stranger).dashboard().userId())
+                .isEqualTo(stranger);
+    }
+
+    @Test
+    @DisplayName("docs/12 phase 5c decision 2: named periods of the time report in the learner's days")
+    void internalTimeReportPeriods() {
+        plan().forEach(fakes::record);
+
+        TimeReport today = fakes.activityQuery.timeReportOf(user, ReportPeriod.TODAY);
+        assertThat(today.from()).isEqualTo(TODAY);
+        assertThat(today.to()).isEqualTo(TODAY.plusDays(1));
+        assertThat(today.totalSeconds()).isEqualTo(300);
+
+        TimeReport week = fakes.activityQuery.timeReportOf(user, ReportPeriod.THIS_WEEK);
+        assertThat(week.from()).isEqualTo(DAY1);
+        assertThat(week.to()).isEqualTo(TODAY.plusDays(1));
+        assertThat(week.totalSeconds()).isEqualTo(600 + 300);
+
+        TimeReport month = fakes.activityQuery.timeReportOf(user, ReportPeriod.LAST_4_WEEKS);
+        assertThat(month.from()).isEqualTo(TODAY.minusDays(27));
+        assertThat(month.totalSeconds()).isEqualTo(600 + 300);
+
+        TimeReport noWeek = fakes.activityQuery.timeReportOf(UUID.randomUUID(), ReportPeriod.THIS_WEEK);
+        assertThat(noWeek.from()).isEqualTo(noWeek.to().minusDays(7));
+        assertThat(noWeek.totalSeconds()).isZero();
     }
 
     @Test

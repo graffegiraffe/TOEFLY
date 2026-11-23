@@ -9,4 +9,7 @@ public interface DashboardQueryUseCase {
     StudentDashboardResult student(Caller caller, @Nullable UUID studentId);
 
     StreakResult streak(Caller caller);
+
+    /** The dashboard of a user for an internal call; who may ask is checked by the security chain. */
+    StudentDashboardResult studentOf(UUID userId);
 }

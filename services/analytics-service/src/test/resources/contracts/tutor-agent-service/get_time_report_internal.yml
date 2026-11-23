@@ -1,0 +1,28 @@
+name: get_time_report_internal
+description: the getTimeStats tool of the tutor agent reads the time of the learner over a named period (docs/06 §4.5, docs/12 phase 5c decision 2)
+request:
+  method: GET
+  url: /internal/v1/users/2b7c4d9e-1f3a-4b5c-8d6e-7f8091a2b3c4/time-reports?period=LAST_4_WEEKS
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    totalSeconds: 0
+  matchers:
+    body:
+      - path: $.bySection
+        type: by_type
+      - path: $.byTaskType
+        type: by_type
+      - path: $.from
+        type: by_regex
+        predefined: iso_date
+      - path: $.to
+        type: by_regex
+        predefined: iso_date
+      - path: $.plannedSeconds
+        type: by_regex
+        predefined: number
+      - path: $.byDay
+        type: by_type
