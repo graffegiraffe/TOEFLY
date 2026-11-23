@@ -770,7 +770,7 @@ public class ChatService implements ChatUseCase {
         request.put("source", "TUTOR_AGENT");
         Map<String, Object> task = owners.addExtraTask(
                 UUID.fromString(weekId.toString()), request, action.id().toString());
-        Object taskId = task.getOrDefault("weekTaskId", task.get("id"));
+        Object taskId = task.getOrDefault("taskId", task.get("weekTaskId"));
         PendingAction confirmed = action.confirmed(taskId == null ? action.id() : UUID.fromString(taskId.toString()));
         transactions.run(() -> actions.save(confirmed));
         return confirmed;

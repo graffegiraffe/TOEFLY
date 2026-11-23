@@ -389,7 +389,7 @@ class ChatScenarioTest {
                 added.add(request);
                 return UUID.randomUUID();
             });
-            return Map.of("weekTaskId", id.toString());
+            return Map.of("taskId", id.toString());
         }
 
         @Override
