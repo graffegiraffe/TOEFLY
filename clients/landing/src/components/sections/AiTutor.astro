@@ -1,0 +1,192 @@
+---
+import Sparkles from '@lucide/astro/icons/sparkles';
+
+const points = [
+  {
+    title: 'It remembers your mistakes',
+    text: 'Every error is filed by type. When the same slip comes back, the tutor says so and links the grammar unit that fixes it.',
+  },
+  {
+    title: 'It hints before it tells',
+    text: 'Ask during a practice question and you get a nudge, not the answer. After you answer, it explains everything.',
+  },
+  {
+    title: 'It knows where you are',
+    text: 'Open it from any task, essay or week. It sees the context, so you can just ask “why?”.',
+  },
+  {
+    title: 'It explains in Russian on request',
+    text: 'Switch the explanation language when an idea does not land in English. The tasks stay in English.',
+  },
+];
+---
+
+<section class="section tutor" id="ai-tutor" aria-labelledby="tutor-title">
+  <div class="wrap grid">
+    <div>
+      <div class="section-head">
+        <h2 id="tutor-title">Toefly Tutor, the AI that plans your weeks</h2>
+        <p>
+          The same agent builds your weeks, reviews your work and answers your questions. It is honest about what it
+          knows: every predicted score is marked as an AI estimate.
+        </p>
+      </div>
+      <dl class="points">
+        {points.map((p) => (
+          <div>
+            <dt>{p.title}</dt>
+            <dd>{p.text}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    <figure class="chat card" aria-labelledby="chat-caption">
+      <figcaption id="chat-caption" class="visually-hidden">
+        An example conversation with Toefly Tutor about an essay.
+      </figcaption>
+      <div class="chat-head">
+        <span class="avatar" aria-hidden="true">
+          <Sparkles size={16} />
+        </span>
+        <span class="who">Toefly Tutor</span>
+        <span class="context">Your essay, Attempt 2</span>
+      </div>
+      <div class="msgs">
+        <p class="msg me">Why did I lose a point in the second paragraph?</p>
+        <div class="msg ai">
+          <p>
+            You wrote <q>the research show</q>. <q>Research</q> is singular here, so the verb needs <q>shows</q>.
+          </p>
+          <p>
+            This is the third subject–verb slip in your essays this month. I added a short grammar unit on it to
+            Thursday.
+          </p>
+        </div>
+        <p class="msg me">Can you check my new version of that sentence?</p>
+        <div class="msg ai">
+          <p>Paste it here. I will only point at the problem, so you fix it yourself first.</p>
+        </div>
+      </div>
+      <div class="composer" aria-hidden="true">
+        <span>Ask about this essay</span>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .points {
+    display: grid;
+    gap: 20px;
+  }
+
+  .points dt {
+    font-weight: 600;
+  }
+
+  .points dd {
+    margin-top: 4px;
+    color: var(--ink-muted);
+    max-width: 52ch;
+  }
+
+  .chat {
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--elevation-2);
+  }
+
+  .chat-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-on-soft);
+  }
+
+  .who {
+    font-weight: 600;
+  }
+
+  .context {
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: var(--surface-sunken);
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .msgs {
+    display: grid;
+    gap: 12px;
+    padding: 20px 18px;
+  }
+
+  .msg {
+    max-width: 88%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .msg p + p {
+    margin-top: 8px;
+  }
+
+  .me {
+    justify-self: end;
+    background: var(--brand-700);
+    color: #ffffff;
+    border-bottom-right-radius: 6px;
+  }
+
+  .ai {
+    justify-self: start;
+    background: var(--surface-sunken);
+    border-bottom-left-radius: 6px;
+  }
+
+  q {
+    font-weight: 600;
+  }
+
+  .composer {
+    margin: 0 18px 18px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-full);
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 1024px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+    }
+
+    .chat {
+      margin-top: 8px;
+    }
+  }
+</style>

@@ -1,0 +1,74 @@
+---
+import Legal from '../layouts/Legal.astro';
+import { contact, site } from '../data/site';
+---
+
+<Legal
+  title="Terms of use"
+  description="The rules for using TOEFLY: accounts, plans and payments, acceptable use, tutor materials and AI estimates."
+  updated="2026-11-23"
+  version="0.1"
+>
+  <h2>The service</h2>
+  <p>
+    TOEFLY helps you prepare for the TOEFL iBT with weekly study plans, practice tasks, AI feedback and mock exams, and
+    gives tutors tools to guide their students. By creating an account you accept these terms and the
+    <a href="/privacy">privacy policy</a>. You must be 16 or older.
+  </p>
+
+  <h2>Your account</h2>
+  <p>
+    Keep your sign-in details to yourself and tell us if you think someone else has used your account. You can delete
+    your account at any time in Settings.
+  </p>
+
+  <h2>Plans and payments</h2>
+  <ul>
+    <li>The Free plan includes the diagnostic, one week and 10 AI checks of Writing and Speaking.</li>
+    <li>Pro, Tutor and Tutor Plus are monthly subscriptions. New learners get 7 days of Pro for free.</li>
+    <li>
+      Prices are shown on the <a href="/#pricing">pricing section</a> and include VAT for customers in the EU.
+    </li>
+    <li>
+      You can cancel a subscription in Settings, Billing. While TOEFLY is in development, payments run in test mode.
+    </li>
+  </ul>
+
+  <h2>Acceptable use</h2>
+  <ul>
+    <li>Do not use TOEFLY to cheat on a real exam or to help anyone else do so.</li>
+    <li>Do not try to break, overload or get around the limits of the service.</li>
+    <li>Do not upload material you have no right to share.</li>
+  </ul>
+
+  <h2>Tutors and their materials</h2>
+  <p>
+    Tutors are responsible for the books and files they upload and for having the right to use them with their students.
+    We remove material when a rights holder asks us to.
+  </p>
+
+  <h2>Study material</h2>
+  <p>
+    Some tasks are based on published preparation materials, and each task names its source. Rights holders can ask for
+    removal through <a href={contact.href}>{contact.label}</a>; see{' '}
+    <a href="/#sources">where the study material comes from</a>.
+  </p>
+
+  <h2>AI estimates</h2>
+  <p>
+    Predicted bands, AI scores and AI feedback are estimates to guide your study. They are not official scores and do
+    not guarantee any result on the TOEFL iBT.
+  </p>
+
+  <h2>Trademarks</h2>
+  <p>{site.trademark}</p>
+
+  <h2>Liability</h2>
+  <p>
+    We work to keep TOEFLY available and accurate, but provide it as is. To the extent the law allows, we are not liable
+    for exam results or for losses from using the service.
+  </p>
+
+  <h2>Changes</h2>
+  <p>When these terms change, we tell you in the app and ask you to accept the new version.</p>
+</Legal>

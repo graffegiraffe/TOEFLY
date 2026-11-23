@@ -1,0 +1,46 @@
+---
+import { getImage } from 'astro:assets';
+import type { Screenshot } from '../data/screenshots';
+
+interface Props {
+  shot: Screenshot;
+  /** Rendered widths in CSS px, used to build the srcset. */
+  widths: number[];
+  sizes: string;
+  priority?: boolean;
+  class?: string;
+}
+
+const { shot, widths, sizes, priority = false, class: className } = Astro.props;
+
+async function sources(image: Screenshot['light']) {
+  const usable = widths.filter((w) => w <= image.width);
+  const list = usable.length > 0 ? usable : [image.width];
+  const [avif, webp, fallback] = await Promise.all([
+    getImage({ src: image, format: 'avif', widths: list, quality: 70 }),
+    getImage({ src: image, format: 'webp', widths: list, quality: 78 }),
+    getImage({ src: image, format: 'webp', width: list[list.length - 1] ?? image.width, quality: 78 }),
+  ]);
+  return { avif: avif.srcSet.attribute, webp: webp.srcSet.attribute, fallback };
+}
+
+const [light, dark] = await Promise.all([sources(shot.light), sources(shot.dark)]);
+const darkMedia = '(prefers-color-scheme: dark)';
+---
+
+<picture class={className}>
+  {/* The theme script rewrites the media of the dark sources when the reader picks a theme by hand. */}
+  <source type="image/avif" srcset={dark.avif} sizes={sizes} media={darkMedia} data-scheme="dark" />
+  <source type="image/webp" srcset={dark.webp} sizes={sizes} media={darkMedia} data-scheme="dark" />
+  <source type="image/avif" srcset={light.avif} sizes={sizes} />
+  <source type="image/webp" srcset={light.webp} sizes={sizes} />
+  <img
+    src={light.fallback.src}
+    width={shot.light.width}
+    height={shot.light.height}
+    alt={shot.alt}
+    loading={priority ? 'eager' : 'lazy'}
+    decoding={priority ? 'sync' : 'async'}
+    fetchpriority={priority ? 'high' : 'auto'}
+  />
+</picture>

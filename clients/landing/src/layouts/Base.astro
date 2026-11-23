@@ -1,0 +1,130 @@
+---
+import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import ogSource from '../assets/og.png';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Page-specific header links; the home page passes its section anchors. */
+  nav?: { href: string; label: string }[];
+}
+
+const { title, description = site.description, nav } = Astro.props;
+const pageTitle = title ? `${title} | ${site.name}` : site.title;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const og = await getImage({ src: ogSource, format: 'png', width: 1200, height: 630 });
+const ogUrl = new URL(og.src, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#F4F8F5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B140F" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TOEFLY: prepare for the new TOEFL iBT week by week." />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
+
+    <script is:inline>
+      // Resolve the theme before the first paint: a saved choice wins, otherwise the system setting.
+      (function () {
+        let saved = null;
+        try {
+          saved = localStorage.getItem('toefly-theme');
+        } catch {
+          // Storage can be blocked; the theme then follows the system.
+        }
+        const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        if (saved) document.documentElement.dataset.themeSource = 'user';
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <Header nav={nav} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script is:inline>
+      // Theme toggle. Screenshots are <picture> elements whose dark sources carry data-scheme="dark": their media query
+      // follows the system by default and is forced on or off when the reader picks a theme.
+      (function () {
+        const root = document.documentElement;
+        const system = matchMedia('(prefers-color-scheme: dark)');
+        const button = document.querySelector('[data-theme-toggle]');
+
+        function syncPictures() {
+          const user = root.dataset.themeSource === 'user';
+          const media = user ? (root.dataset.theme === 'dark' ? 'all' : 'not all') : '(prefers-color-scheme: dark)';
+          document.querySelectorAll('source[data-scheme="dark"]').forEach(function (s) {
+            if (s.media !== media) s.media = media;
+          });
+        }
+
+        function render() {
+          const dark = root.dataset.theme === 'dark';
+          if (button) {
+            button.setAttribute('aria-pressed', String(dark));
+            button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+          }
+          syncPictures();
+        }
+
+        if (button) {
+          button.addEventListener('click', function () {
+            const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = next;
+            root.dataset.themeSource = 'user';
+            try {
+              localStorage.setItem('toefly-theme', next);
+            } catch {
+              // Storage can be blocked; the theme then follows the system.
+            }
+            render();
+          });
+        }
+
+        system.addEventListener('change', function (e) {
+          if (root.dataset.themeSource === 'user') return;
+          root.dataset.theme = e.matches ? 'dark' : 'light';
+          render();
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>

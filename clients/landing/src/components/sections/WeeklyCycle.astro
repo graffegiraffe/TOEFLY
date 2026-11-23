@@ -1,0 +1,208 @@
+---
+const steps = [
+  {
+    title: 'Diagnostic',
+    text: 'About 25 minutes across all four skills. It sets your starting band and the weak spots to work on first.',
+  },
+  {
+    title: 'Your plan',
+    text: 'Pick a target and an exam date. You get 1 to 16 weeks, 8 by default, sized to the minutes you have each day.',
+  },
+  {
+    title: 'This week',
+    text: 'A week of tasks built for you. If you study with a tutor, they review and approve it first.',
+  },
+  {
+    title: 'Today',
+    text: 'Each day lists what to do now, in any order. A review follows every task, so no mistake goes unexplained.',
+  },
+  {
+    title: 'Weekly review',
+    text: 'What you did, your scores, your top five mistakes and what to focus on next.',
+  },
+  {
+    title: 'Next week',
+    text: 'Built from your own mistakes. Mock exams come on weeks 4, 8 and the last one.',
+  },
+];
+
+const sections = [
+  { tag: 'reading', label: 'Reading', text: 'Complete the Words, daily life texts, academic passages' },
+  { tag: 'listening', label: 'Listening', text: 'All four 2026 task types, the audio plays once' },
+  { tag: 'writing', label: 'Writing', text: 'Build a Sentence, an email, an academic discussion' },
+  { tag: 'speaking', label: 'Speaking', text: 'Listen and Repeat, an interview with a voice AI' },
+  { tag: 'grammar', label: 'Grammar', text: 'Units in order, plus units linked to your mistakes' },
+  { tag: 'vocabulary', label: 'Vocabulary', text: 'A unit a week and spaced review of your own words' },
+  { tag: 'resources', label: 'Resources', text: 'Outside links and your tutor’s own materials' },
+];
+---
+
+<section class="section cycle" id="how-it-works" aria-labelledby="cycle-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="cycle-title">How a week works</h2>
+      <p>
+        The week is the unit of study, the way a tutor plans it. Each one ends with a review, and the review shapes the
+        next week.
+      </p>
+    </div>
+
+    <ol class="steps">
+      {steps.map((step, i) => (
+        <li class="step">
+          <span class="num" aria-hidden="true">
+            {i + 1}
+          </span>
+          <h3>{step.title}</h3>
+          <p>{step.text}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div class="week card">
+      <h3 class="week-title">What goes into a week</h3>
+      <ul class="week-table">
+        {sections.map((s) => (
+          <li>
+            <span class={`tag tag-${s.tag}`}>{s.label}</span>
+            <span class="what">{s.text}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .steps {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-content: start;
+    column-gap: 16px;
+    padding-bottom: 28px;
+  }
+
+  /* The connecting line: the cycle reads as one track, not six separate cards. */
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    bottom: 0;
+    width: 2px;
+    background: var(--bar-gradient);
+    opacity: 0.35;
+  }
+
+  .step:last-child::before {
+    display: none;
+  }
+
+  .num {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-on-soft);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step h3 {
+    padding-top: 8px;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  .step p {
+    margin-top: 4px;
+    color: var(--ink-muted);
+    max-width: 46ch;
+  }
+
+  .week {
+    margin-top: 40px;
+    padding: 24px;
+  }
+
+  .week-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .week-table {
+    display: grid;
+    margin-top: 12px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .week-table li {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .week-table .tag {
+    justify-self: start;
+  }
+
+  .what {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 1024px) {
+    .steps {
+      grid-template-columns: repeat(6, 1fr);
+      gap: 20px;
+    }
+
+    .step {
+      grid-template-columns: 1fr;
+      row-gap: 0;
+      padding-bottom: 0;
+    }
+
+    .step::before {
+      left: 48px;
+      right: -20px;
+      top: 19px;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+
+    .num {
+      grid-row: auto;
+    }
+
+    .step h3 {
+      padding-top: 16px;
+    }
+
+    .week {
+      padding: 28px 32px;
+    }
+
+    .week-table {
+      grid-template-columns: 1fr 1fr;
+      column-gap: 40px;
+    }
+  }
+</style>

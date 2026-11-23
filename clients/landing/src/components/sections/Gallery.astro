@@ -1,0 +1,113 @@
+---
+import Screenshot from '../Screenshot.astro';
+import { gallery } from '../../data/screenshots';
+
+const phones = gallery.filter((s) => s.platform === 'ios');
+const web = gallery.filter((s) => s.platform === 'web');
+---
+
+<section class="section gallery" id="app" aria-labelledby="gallery-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="gallery-title">On the web and on iPhone</h2>
+      <p>The same weeks, the same reviews and the same progress on both. Start on your laptop, finish on the bus.</p>
+    </div>
+
+    {/* On narrow screens the phones scroll sideways; the region is focusable so the keyboard can scroll it. */}
+    <div class="phones-scroll" role="region" aria-label="iPhone screens" tabindex="0">
+      <ul class="phones">
+        {phones.map((shot) => (
+          <li>
+            <figure>
+              <Screenshot shot={shot} widths={[280, 420, 560]} sizes="(min-width: 1024px) 300px, 240px" />
+              <figcaption>{shot.caption}</figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <ul class="web" aria-label="Web app screens">
+      {web.map((shot) => (
+        <li>
+          <figure>
+            <Screenshot
+              shot={shot}
+              widths={[480, 720, 1080, 1280]}
+              sizes="(min-width: 1184px) 550px, (min-width: 900px) 45vw, calc(100vw - 32px)"
+            />
+            <figcaption>{shot.caption}</figcaption>
+          </figure>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  figcaption {
+    margin-top: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  .phones-scroll {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 4px var(--gutter) 12px;
+    scrollbar-width: thin;
+  }
+
+  .phones {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .phones li {
+    width: 100%;
+    max-width: 300px;
+    justify-self: center;
+    scroll-snap-align: start;
+  }
+
+  .phones :global(img) {
+    width: 100%;
+    border-radius: 28px;
+    border: 1px solid var(--border);
+    box-shadow: var(--elevation-2);
+  }
+
+  .web {
+    display: grid;
+    gap: 28px;
+    margin-top: 40px;
+  }
+
+  .web :global(img) {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--elevation-2);
+  }
+
+  @media (min-width: 900px) {
+    .phones-scroll {
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+
+    .web {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

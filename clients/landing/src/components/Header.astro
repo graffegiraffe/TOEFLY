@@ -1,0 +1,153 @@
+---
+import Moon from '@lucide/astro/icons/moon';
+import Sun from '@lucide/astro/icons/sun';
+import Logo from './Logo.astro';
+import { appLink } from '../data/site';
+
+interface Props {
+  nav?: { href: string; label: string }[] | undefined;
+}
+
+const { nav = [] } = Astro.props;
+---
+
+<header class="header">
+  <div class="wrap bar">
+    <a class="home" href="/" aria-label="TOEFLY home">
+      <Logo />
+    </a>
+    {nav.length > 0 && (
+      <nav aria-label="Sections" class="links">
+        <ul>
+          {nav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+    <div class="actions">
+      <button class="theme" type="button" data-theme-toggle aria-label="Switch theme" aria-pressed="false">
+        <Sun class="icon-sun" size={18} aria-hidden="true" />
+        <Moon class="icon-moon" size={18} aria-hidden="true" />
+      </button>
+      <a class="signin" href={appLink('/sign-in')}>
+        Sign in
+      </a>
+      <a class="btn btn-primary btn-sm" href={appLink('/sign-up')}>
+        Start free
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  /* Liquid Glass belongs to the frame of the interface (docs/07 §2.6): the sticky header is the only glass here. */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--header-h);
+    background: var(--glass-fill);
+    border-bottom: 1px solid var(--border);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 100%;
+  }
+
+  .home {
+    display: inline-flex;
+    padding: 6px 0;
+  }
+
+  .links {
+    display: none;
+  }
+
+  .links ul {
+    display: flex;
+    gap: 4px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .links a {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    color: var(--ink-muted);
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    color: var(--ink);
+    background: var(--accent-soft);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .theme {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+
+  .theme:hover {
+    color: var(--ink);
+    background: var(--accent-soft);
+  }
+
+  .theme :global(.icon-moon),
+  :global(:root[data-theme='dark']) .theme :global(.icon-sun) {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme :global(.icon-moon) {
+    display: block;
+  }
+
+  .signin {
+    display: none;
+    padding: 8px 12px;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  .signin:hover {
+    color: var(--link);
+  }
+
+  @media (min-width: 480px) {
+    .signin {
+      display: inline-block;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .links {
+      display: block;
+    }
+  }
+</style>

@@ -1,0 +1,53 @@
+---
+import { appLink } from '../../data/site';
+---
+
+<section class="final" aria-labelledby="final-title">
+  <div class="wrap">
+    <div class="box">
+      <h2 id="final-title">Start with a 25-minute diagnostic.</h2>
+      <p>You will see your starting band and your first week right after it.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href={appLink('/sign-up')}>
+          Start free
+        </a>
+        <a class="btn btn-secondary" href={appLink('/sign-in')}>
+          Sign in
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .final {
+    padding-block: 16px 88px;
+  }
+
+  .box {
+    padding: 40px 24px;
+    border-radius: var(--radius-xl);
+    background: var(--accent-soft);
+    text-align: center;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin-top: 10px;
+    color: var(--accent-on-soft);
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+</style>

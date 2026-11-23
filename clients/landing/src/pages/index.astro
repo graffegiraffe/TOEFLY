@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/sections/Hero.astro';
+import Audiences from '../components/sections/Audiences.astro';
+import WeeklyCycle from '../components/sections/WeeklyCycle.astro';
+import AiTutor from '../components/sections/AiTutor.astro';
+import Gallery from '../components/sections/Gallery.astro';
+import Pricing from '../components/sections/Pricing.astro';
+import Sources from '../components/sections/Sources.astro';
+import Faq from '../components/sections/Faq.astro';
+import FinalCta from '../components/sections/FinalCta.astro';
+
+const nav = [
+  { href: '#how-it-works', label: 'How it works' },
+  { href: '#ai-tutor', label: 'AI Tutor' },
+  { href: '#tutors', label: 'For tutors' },
+  { href: '#pricing', label: 'Pricing' },
+];
+---
+
+<Base nav={nav}>
+  <Hero />
+  <Audiences />
+  <WeeklyCycle />
+  <AiTutor />
+  <Gallery />
+  <Pricing />
+  <Sources />
+  <Faq />
+  <FinalCta />
+</Base>
