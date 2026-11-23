@@ -58,6 +58,12 @@ import {
   SuggestionsApi as VocabularySuggestionsApi,
   WordSetsApi as VocabularyWordSetsApi,
 } from './generated/vocabulary';
+import {
+  ChatThreadsApi as TutorChatThreadsApi,
+  Configuration as TutorAgentConfiguration,
+  PendingActionsApi as TutorPendingActionsApi,
+  WeeklyReviewsApi as TutorWeeklyReviewsApi,
+} from './generated/tutoragent';
 import { reportRefusal } from '@/lib/paywall';
 import { API_URL } from './config';
 import { currentCsrfToken } from './session';
@@ -147,12 +153,23 @@ const vocabularyConfiguration = new VocabularyConfiguration({
   middleware: [csrfMiddleware, paywallMiddleware],
 });
 
+// tutor-agent-service.yaml keeps its paths relative to /api/v1 as well (docs/05 §6.8). The chat stream itself is
+// read with fetch in api/tutor.ts: the generated client cannot hand out the response body as it arrives.
+export const tutorAgentConfiguration = new TutorAgentConfiguration({
+  basePath: `${API_URL}/api/v1`,
+  credentials: 'include',
+  middleware: [csrfMiddleware, paywallMiddleware],
+});
+
 export const api = {
   dictionary: new VocabularyDictionaryApi(vocabularyConfiguration),
   reviews: new VocabularyReviewsApi(vocabularyConfiguration),
   wordSets: new VocabularyWordSetsApi(vocabularyConfiguration),
   wordSuggestions: new VocabularySuggestionsApi(vocabularyConfiguration),
   vocabularySettings: new VocabularySettingsApi(vocabularyConfiguration),
+  chatThreads: new TutorChatThreadsApi(tutorAgentConfiguration),
+  pendingActions: new TutorPendingActionsApi(tutorAgentConfiguration),
+  weeklyReviews: new TutorWeeklyReviewsApi(tutorAgentConfiguration),
   planTiers: new BillingPlanTiersApi(billingConfiguration),
   checkout: new BillingCheckoutApi(billingConfiguration),
   subscriptions: new BillingSubscriptionsApi(billingConfiguration),

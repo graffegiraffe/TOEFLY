@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router';
-import { AlertTriangle, ArrowLeft, Hourglass } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Hourglass, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ import {
 } from '@/api/assessment';
 import { AttemptMode, SubmissionStatus, type Submission, type SubmissionVersion } from '@/api/generated/assessment';
 import type { ItemSet } from '@/api/generated/content';
+import { useTutor, useTutorScreen } from '@/components/tutor/use-tutor';
 import { Button, buttonClass } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -91,6 +92,13 @@ function SubmissionReview({ submission, versions, reviewable, selected, itemSet 
   const title = itemSet?.topic
     ? `${t(`practice.taskType.${submission.taskType}`)}: ${itemSet.topic}`
     : t(`practice.taskType.${submission.taskType}`);
+  const { openTutor } = useTutor();
+  const tutorContext = {
+    type: 'SUBMISSION_REVIEW' as const,
+    ref: submission.id,
+    label: t('tutor.context.essay', { version: t(`writing.version.${selected.versionNo}`) }),
+  };
+  useTutorScreen(tutorContext);
 
   return (
     <div className="flex flex-col gap-6">
@@ -156,7 +164,15 @@ function SubmissionReview({ submission, versions, reviewable, selected, itemSet 
 
       <ModelAnswer itemSet={itemSet} />
 
-      <Actions submission={submission} selected={selected} />
+      <div className="flex flex-wrap items-start gap-3">
+        <Actions submission={submission} selected={selected} />
+        {EVALUATED.has(selected.status) && (
+          <Button variant="secondary" onClick={() => openTutor(tutorContext)}>
+            <MessageCircle className="size-4" aria-hidden="true" />
+            {t('review.askTutor')}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
