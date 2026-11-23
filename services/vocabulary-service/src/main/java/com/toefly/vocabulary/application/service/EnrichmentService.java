@@ -59,6 +59,9 @@ public class EnrichmentService implements EnrichmentUseCase {
                     }
                 } catch (AiUnavailableException unavailable) {
                     entries.countEnrichAttempt(entry.id());
+                    if (unavailable.permanent()) {
+                        continue;
+                    }
                     log.info("Enrichment paused: {}", unavailable.getMessage());
                     return enriched;
                 }
