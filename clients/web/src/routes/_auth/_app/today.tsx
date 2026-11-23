@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { firstOpen } from '@/lib/weeks';
+import { TodayVocabulary } from '@/components/vocabulary/today-vocabulary';
 
 /** Today (docs/07-ux-ui.md §5.5, US-05.01): overdue tasks first, then the tasks of the day, then "Get ahead". */
 export const Route = createFileRoute('/_auth/_app/today')({
@@ -106,6 +107,7 @@ function TodayPage() {
           </Card>
         )}
       </section>
+      <TodayVocabulary />
       {allDone && (data.getAhead?.length ?? 0) > 0 && (
         <section aria-labelledby="get-ahead">
           <h2 id="get-ahead" className="text-title-3 font-semibold text-ink">
