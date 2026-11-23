@@ -1,0 +1,111 @@
+{
+  "type": "record",
+  "name": "WordAddedV1",
+  "namespace": "com.toefly.events.vocabulary",
+  "doc": "A word was added to the personal dictionary (toefly.vocabulary.word-added.v1, AC-15.01.2); repeated saves of the same lemma add a context and publish nothing.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier (request or saga); equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "entryId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "VocabularyEntry."
+    },
+    {
+      "name": "lemma",
+      "type": "string",
+      "doc": "Dictionary form of the word, lower case, up to 80 characters."
+    },
+    {
+      "name": "origin",
+      "type": {
+        "type": "enum",
+        "name": "VocabularyEntryOrigin",
+        "namespace": "com.toefly.events.vocabulary",
+        "doc": "Where the word came from.",
+        "symbols": [
+          "UNKNOWN",
+          "TAP",
+          "KEY_WORDS",
+          "COLLINS_UNIT",
+          "MANUAL"
+        ],
+        "default": "UNKNOWN"
+      },
+      "doc": "How the word was added."
+    },
+    {
+      "name": "itemSetId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ItemSet whose text the word was met in; null for other sources."
+    },
+    {
+      "name": "wordSetId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "Collins Vocabulary unit (word set) for origin COLLINS_UNIT; equals the unit id of content-service."
+    }
+  ]
+}

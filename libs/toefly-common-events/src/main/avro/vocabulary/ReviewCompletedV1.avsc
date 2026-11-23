@@ -1,0 +1,119 @@
+{
+  "type": "record",
+  "name": "ReviewCompletedV1",
+  "namespace": "com.toefly.events.vocabulary",
+  "doc": "A review session of the day was completed (toefly.vocabulary.review-completed.v1, AC-15.03.3); planning marks VOCABULARY_REVIEW done and sizes tomorrow's task from dueTomorrow.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "CloudEvents id; equals outbox_event.id; the idempotency key of consumers."
+    },
+    {
+      "name": "occurredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Moment the domain fact happened, UTC milliseconds; equals ce_time."
+    },
+    {
+      "name": "userId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "User the event is about (sub of Keycloak); equals the partition key."
+    },
+    {
+      "name": "correlationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "End-to-end chain identifier (request or saga); equals ce_correlationid."
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "ce_id of the event that caused this one; equals ce_causationid."
+    },
+    {
+      "name": "sessionId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      "doc": "Review session."
+    },
+    {
+      "name": "weekTaskId",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "default": null,
+      "doc": "WeekTask VOCABULARY_REVIEW the session was started from; null when started from the vocabulary screen."
+    },
+    {
+      "name": "localDate",
+      "type": {
+        "type": "int",
+        "logicalType": "date"
+      },
+      "doc": "Day of the session in the learner's time zone."
+    },
+    {
+      "name": "timezone",
+      "type": "string",
+      "doc": "IANA time zone the day was counted in."
+    },
+    {
+      "name": "reviewed",
+      "type": "int",
+      "doc": "Distinct cards graded in the session."
+    },
+    {
+      "name": "againCount",
+      "type": "int",
+      "doc": "Grades Again in the session."
+    },
+    {
+      "name": "newIntroduced",
+      "type": "int",
+      "doc": "New cards seen for the first time in the session."
+    },
+    {
+      "name": "dueRemaining",
+      "type": "int",
+      "doc": "Cards of today still due after the session (0 when the day's queue is done)."
+    },
+    {
+      "name": "dueTomorrow",
+      "type": "int",
+      "doc": "Cards due by the end of tomorrow, local time (docs/03 §11.5)."
+    },
+    {
+      "name": "activeSeconds",
+      "type": "int",
+      "doc": "Time spent on answers, seconds (each answer counts up to 10 minutes)."
+    }
+  ]
+}
