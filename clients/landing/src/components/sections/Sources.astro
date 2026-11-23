@@ -1,0 +1,119 @@
+---
+/* Study-material sources and the takedown contact, as required by ADR-0020. */
+import { contact } from '../../data/site';
+
+const sources = [
+  {
+    publisher: 'TST Prep',
+    titles: 'TOEFL 2026 Reading and Listening practice questions, Practice Test #1, Your Guide to the TOEFL Speaking',
+    note: 'Listening audio plays from the publisher’s own links and is not copied.',
+  },
+  {
+    publisher: 'TST Prep, earlier editions',
+    titles: '100 TOEFL Reading and Listening Practice Questions (2020, 2021)',
+    note: 'Older format. Shown with a legacy label and left out of score predictions and mock exams.',
+  },
+  {
+    publisher: 'Collins English for Exams',
+    titles: 'Vocabulary and Grammar for the TOEFL iBT (2013)',
+    note: 'Vocabulary and grammar units.',
+  },
+  {
+    publisher: 'Pearson',
+    titles: 'New Round-Up 5',
+    note: 'The order of grammar units.',
+  },
+  {
+    publisher: 'The Secret TOEFL Society',
+    titles: 'TOEFL Reading Sets',
+    note: 'Legacy reading practice.',
+  },
+];
+---
+
+<section class="section sources" id="sources" aria-labelledby="sources-title">
+  <div class="wrap grid">
+    <div class="section-head">
+      <h2 id="sources-title">Where the study material comes from</h2>
+      <p>
+        Tasks come from published TOEFL preparation materials and from new tasks written in the same format. Every task
+        shows its source in the player and in the review: publisher, title, year and page.
+      </p>
+      <p>
+        New tasks use published ones only as examples of style and format, and are checked so they do not repeat the
+        original texts. When an audio file is unavailable, speech is synthesized from the transcript and marked as such.
+      </p>
+    </div>
+
+    <div>
+      <ul class="list">
+        {sources.map((s) => (
+          <li>
+            <p class="pub">{s.publisher}</p>
+            <p class="titles">{s.titles}</p>
+            <p class="note">{s.note}</p>
+          </li>
+        ))}
+      </ul>
+      <p class="rights">
+        All materials belong to their publishers. If you hold rights to any of them and want them removed, write to us
+        through <a href={contact.href}>{contact.label}</a>. We can hide every task from a source at once.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sources {
+    background: var(--surface);
+    border-block: 1px solid var(--border);
+  }
+
+  .grid {
+    display: grid;
+    gap: 8px;
+  }
+
+  .section-head p + p {
+    margin-top: 12px;
+    font-size: 0.9375rem;
+  }
+
+  .list {
+    padding: 0;
+    list-style: none;
+  }
+
+  .list li {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .pub {
+    font-weight: 600;
+  }
+
+  .titles {
+    margin-top: 2px;
+  }
+
+  .note {
+    margin-top: 2px;
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+  }
+
+  .rights {
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 1024px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+    }
+  }
+</style>

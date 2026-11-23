@@ -1,0 +1,24 @@
+---
+/* The wordmark from .github/assets/logo-*.svg: TOE in ink, FLY in brand-500 (docs/00-README.md §7). */
+interface Props {
+  class?: string;
+  height?: number;
+}
+const { class: className, height = 22 } = Astro.props;
+const width = Math.round((height * 300) / 70);
+---
+
+<svg
+  class:list={['logo', className]}
+  viewBox="0 6 300 70"
+  width={width}
+  height={height}
+  role="img"
+  aria-label="TOEFLY"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <text x="0" y="66" font-family="var(--font)" font-size="72" font-weight="700" letter-spacing="-2">
+    <tspan fill="var(--ink)">TOE</tspan>
+    <tspan fill="#04AC6A">FLY</tspan>
+  </text>
+</svg>

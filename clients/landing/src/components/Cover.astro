@@ -1,0 +1,71 @@
+---
+/*
+ * Week cover "open books" from design/prototype/js/covers.js (week-07-open-books): cover-gradient, white line art on
+ * the right at opacity .35. Stops come from --cover-stop-* so the dark theme uses cover-gradient-dark.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={['cover', className]} aria-hidden="true">
+  <svg viewBox="0 0 1600 400" preserveAspectRatio="xMaxYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="cover-g" gradientUnits="userSpaceOnUse" x1="113.4" y1="-196.4" x2="1486.6" y2="596.4">
+        <stop offset="0" stop-color="var(--cover-stop-1, #04AC6A)"></stop>
+        <stop offset=".5" stop-color="var(--cover-stop-2, #3CC98A)"></stop>
+        <stop offset="1" stop-color="var(--cover-stop-3, #A7EBC8)"></stop>
+      </linearGradient>
+      <radialGradient id="cover-r">
+        <stop offset="0" stop-color="#FFFFFF" stop-opacity=".18"></stop>
+        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop>
+      </radialGradient>
+    </defs>
+    <rect width="1600" height="400" fill="url(#cover-g)"></rect>
+    <circle cx="1180" cy="40" r="210" fill="url(#cover-r)"></circle>
+    <circle cx="1500" cy="390" r="170" fill="url(#cover-r)"></circle>
+    <circle cx="260" cy="330" r="130" fill="#FFFFFF" opacity="0.1"></circle>
+    <g
+      transform="translate(1060 0)"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.35"
+    >
+      <path d="M20 380H390V335H20Z M20 380V335M40 358H100"></path>
+      <path d="M55 335V292H375V335M55 292H375"></path>
+      <path d="M65 292V252H345V292M345 252H65M300 272H325"></path>
+      <path d="M70 250V222C120 200 195 205 235 235 M235 235C275 205 350 200 400 222V250"></path>
+      <path d="M70 250C120 232 195 240 235 262C275 240 350 232 400 250"></path>
+      <path d="M235 235V262"></path>
+      <path d="M100 232C140 224 185 232 215 248M255 248C285 232 330 224 370 232"></path>
+      <path d="M420 380V240H450V380M450 380V205H488V380M420 270H450M450 235H488"></path>
+      <path d="M0 380H500"></path>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .cover {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(120deg, var(--cover-stop-1) 0%, var(--cover-stop-2) 50%, var(--cover-stop-3) 100%);
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cover-overlay);
+    pointer-events: none;
+  }
+  .cover > svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>

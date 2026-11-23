@@ -1,0 +1,92 @@
+---
+import ChevronDown from '@lucide/astro/icons/chevron-down';
+import { site } from '../../data/site';
+
+const items = [
+  {
+    q: 'Is TOEFLY the official TOEFL test?',
+    a: `No. TOEFLY prepares you for the TOEFL iBT in its 2026 format, but it is an independent product. ${site.trademark}`,
+  },
+  {
+    q: 'How accurate is the predicted band?',
+    a: 'It is an estimate from your answers and mock exams, and it is always labelled that way. When there is too little data, you see how many tasks are left before a prediction instead of a number.',
+  },
+  {
+    q: 'Do I need a tutor to use it?',
+    a: 'No. Most learners study on their own and Toefly Tutor plans their weeks. If you work with a tutor, they can join you on the Tutor plan and approve each week.',
+  },
+  {
+    q: 'What happens after the free week?',
+    a: 'Your plan and progress stay. To keep getting new weeks, mock exams and unlimited AI checks, switch to Pro or join a tutor who has a Tutor plan.',
+  },
+  {
+    q: 'Which devices does it work on?',
+    a: 'The web app works in any current browser on a computer or phone. The iPhone app is in testing and shares the same account.',
+  },
+];
+---
+
+<section class="section faq" aria-labelledby="faq-title">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <h2 id="faq-title">Questions</h2>
+    </div>
+    <div class="items">
+      {items.map((item) => (
+        <details>
+          <summary>
+            <span>{item.q}</span>
+            <ChevronDown size={20} aria-hidden="true" />
+          </summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .narrow {
+    max-width: calc(760px + var(--gutter) * 2);
+  }
+
+  .items {
+    border-top: 1px solid var(--border);
+  }
+
+  details {
+    border-bottom: 1px solid var(--border);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 56px;
+    padding: 14px 0;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary :global(svg) {
+    flex: none;
+    color: var(--ink-muted);
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  details[open] summary :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  details p {
+    padding-bottom: 18px;
+    color: var(--ink-muted);
+    max-width: 64ch;
+  }
+</style>

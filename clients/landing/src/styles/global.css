@@ -1,0 +1,409 @@
+/* TOEFLY landing. Tokens follow design/prototype/css/theme.css and docs/07-ux-ui.md §2 (canon: docs/00-README.md §7). */
+
+@import '@fontsource-variable/inter/wght.css';
+
+:root {
+  --brand-50: #e6f7ef;
+  --brand-200: #a7ebc8;
+  --brand-400: #3cc98a;
+  --brand-500: #04ac6a;
+  --brand-600: #08945b;
+  --brand-700: #0f7d4d;
+  --brand-800: #106b44;
+
+  --canvas: #f4f8f5;
+  --surface: #ffffff;
+  --surface-sunken: #eaf0ec;
+  --ink: #14231a;
+  --ink-muted: #5b6b61;
+  --ink-inverse: #ffffff;
+  --border: #dce4df;
+  --border-strong: #b9c7be;
+  --accent: #04ac6a;
+  --accent-soft: #e6f7ef;
+  --accent-on-soft: #106b44;
+  --link: #0f7d4d;
+  --link-hover: #106b44;
+  --focus-ring: #0f7d4d;
+  --success: #0f7d4d;
+  --danger: #b42318;
+  --danger-soft: #feeceb;
+  --success-soft: #e6f7ef;
+
+  --tag-reading-bg: #fff4c2;
+  --tag-reading-fg: #7a5a00;
+  --tag-listening-bg: #ddf4f8;
+  --tag-listening-fg: #0b6378;
+  --tag-writing-bg: #fbe3f1;
+  --tag-writing-fg: #9c2a6b;
+  --tag-speaking-bg: #e6f7ef;
+  --tag-speaking-fg: #106b44;
+  --tag-vocabulary-bg: #ece9fb;
+  --tag-vocabulary-fg: #4b3fa6;
+  --tag-grammar-bg: #fdebdd;
+  --tag-grammar-fg: #9a4a12;
+  --tag-resources-bg: #eef2ef;
+  --tag-resources-fg: #3c4c42;
+
+  --glass-fill: rgba(255, 255, 255, 0.62);
+  --glass-stroke: rgba(255, 255, 255, 0.7);
+  --glass-shadow: rgba(0, 60, 30, 0.1);
+
+  --button-gradient: linear-gradient(135deg, #0f7d4d 0%, #0a8752 100%);
+  --button-gradient-hover: linear-gradient(135deg, #106b44 0%, #0f7d4d 100%);
+  --button-shadow: 0 4px 14px rgba(8, 148, 91, 0.35);
+  --cover-stop-1: #04ac6a;
+  --cover-stop-2: #3cc98a;
+  --cover-stop-3: #a7ebc8;
+  --cover-overlay: transparent;
+  --bar-gradient: linear-gradient(90deg, #0f7d4d, #04ac6a);
+  --mesh-bg: #eaf6ee;
+  --mesh-opacity: 1;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-full: 999px;
+
+  --elevation-1: 0 1px 2px rgba(20, 35, 26, 0.06), 0 1px 1px rgba(20, 35, 26, 0.04);
+  --elevation-2: 0 8px 24px rgba(20, 35, 26, 0.1);
+  --elevation-glass: 0 8px 32px var(--glass-shadow);
+
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --font: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --header-h: 64px;
+  --page: 1120px;
+  --gutter: 16px;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --canvas: #0b140f;
+  --surface: #14211a;
+  --surface-sunken: #0f1a14;
+  --ink: #e8f2ec;
+  --ink-muted: #97a89e;
+  --ink-inverse: #0b140f;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --accent-soft: #173a25;
+  --accent-on-soft: #6fd9a4;
+  --link: #3cc98a;
+  --link-hover: #6fd9a4;
+  --focus-ring: #3cc98a;
+  --success: #3cc98a;
+  --danger: #ff8a80;
+  --danger-soft: #3a1714;
+  --success-soft: #173a25;
+
+  --tag-reading-bg: #2e2a12;
+  --tag-reading-fg: #f2d46b;
+  --tag-listening-bg: #0e2a31;
+  --tag-listening-fg: #7fd3e6;
+  --tag-writing-bg: #33162a;
+  --tag-writing-fg: #f0a3cf;
+  --tag-speaking-bg: #173a25;
+  --tag-speaking-fg: #6fd9a4;
+  --tag-vocabulary-bg: #221e3d;
+  --tag-vocabulary-fg: #b8aef5;
+  --tag-grammar-bg: #33200f;
+  --tag-grammar-fg: #f5b583;
+  --tag-resources-bg: #1e2b24;
+  --tag-resources-fg: #c9d6ce;
+
+  --glass-fill: rgba(16, 32, 22, 0.66);
+  --glass-stroke: rgba(255, 255, 255, 0.1);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+
+  --button-shadow: 0 4px 14px rgba(4, 172, 106, 0.25);
+  --cover-stop-2: #2fb57c;
+  --cover-stop-3: #6fd9a4;
+  --cover-overlay: rgba(11, 20, 15, 0.18);
+  --mesh-bg: #0f1e15;
+  --mesh-opacity: 0.35;
+
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --elevation-2: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+a {
+  color: var(--link);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--page) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--elevation-2);
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+/* Buttons: pills with the button gradient, identical on web and iOS (docs/07 §2.5, P5). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--button-gradient);
+  color: #ffffff;
+  box-shadow: var(--button-shadow);
+}
+
+.btn-primary:hover {
+  background: var(--button-gradient-hover);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:hover {
+  color: var(--ink);
+  background: var(--accent-soft);
+}
+
+.btn-sm {
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
+/* Section tags (docs/07 §2.3). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.tag-reading {
+  background: var(--tag-reading-bg);
+  color: var(--tag-reading-fg);
+}
+.tag-listening {
+  background: var(--tag-listening-bg);
+  color: var(--tag-listening-fg);
+}
+.tag-writing {
+  background: var(--tag-writing-bg);
+  color: var(--tag-writing-fg);
+}
+.tag-speaking {
+  background: var(--tag-speaking-bg);
+  color: var(--tag-speaking-fg);
+}
+.tag-vocabulary {
+  background: var(--tag-vocabulary-bg);
+  color: var(--tag-vocabulary-fg);
+}
+.tag-grammar {
+  background: var(--tag-grammar-bg);
+  color: var(--tag-grammar-fg);
+}
+.tag-resources {
+  background: var(--tag-resources-bg);
+  color: var(--tag-resources-fg);
+}
+
+/* Section rhythm. */
+.section {
+  padding-block: 72px;
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-block: 104px;
+  }
+}
+
+.section-head {
+  max-width: 680px;
+  margin-bottom: 40px;
+}
+
+.section-head h2 {
+  font-size: clamp(1.625rem, 1.2rem + 1.6vw, 2.25rem);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.section-head p {
+  margin-top: 14px;
+  color: var(--ink-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* Theme-paired screenshots: both variants are in the DOM, CSS shows the one for the active theme. */
+:root:not([data-theme='dark']) .only-dark,
+:root[data-theme='dark'] .only-light {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

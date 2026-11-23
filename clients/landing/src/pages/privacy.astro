@@ -1,0 +1,135 @@
+---
+import Legal from '../layouts/Legal.astro';
+import { contact } from '../data/site';
+---
+
+<Legal
+  title="Privacy policy"
+  description="What data TOEFLY collects, why, who processes it, how long it is kept and how to export or delete it."
+  updated="2026-11-23"
+  version="0.1"
+>
+  <h2>Who we are</h2>
+  <p>
+    TOEFLY is a TOEFL iBT preparation service built by its author as a diploma project. The author is the controller of
+    your personal data. For privacy questions and requests, contact us through{' '}
+    <a href={contact.href}>{contact.label}</a>. Security issues go through our{' '}
+    <a href="https://github.com/graffegiraffe/TOEFLY/security/policy">security policy</a>.
+  </p>
+
+  <h2>What we collect</h2>
+  <ul>
+    <li>Account: email, name, time zone, and the sign-in provider if you use Google or Apple.</li>
+    <li>Your goal: target score, exam date and daily study time.</li>
+    <li>Study activity: answers, scores, time spent, your weeks, your vocabulary and your mistakes.</li>
+    <li>Your work: essays, emails, voice recordings and their transcripts, and chats with Toefly Tutor.</li>
+    <li>Payments: a customer ID, the plan and the amounts. Card details stay with the payment provider.</li>
+    <li>Technical data: a shortened IP address, the app you use and security events such as sign-ins.</li>
+  </ul>
+
+  <h2>Why we use it</h2>
+  <ul>
+    <li>To run your account and your study plan, as part of our agreement with you.</li>
+    <li>
+      To check Writing and Speaking with AI, to chat with Toefly Tutor and to build your weeks, only with your consent.
+      Without it, the rest of TOEFLY still works.
+    </li>
+    <li>To record and score your voice, only with a separate consent.</li>
+    <li>To send service emails and study reminders. You can turn reminders off. Marketing emails need your consent.</li>
+  </ul>
+
+  <h2>AI processing</h2>
+  <p>
+    Before text goes to an outside AI provider, names, emails, phone numbers and other personal details are masked.
+    Audio cannot be masked; it is used to transcribe your answer and score pronunciation, not to identify you. AI scores
+    are always marked as an estimate, and a tutor can re-score your work.
+  </p>
+
+  <h2>Who processes your data</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Provider</th>
+          <th scope="col">What for</th>
+          <th scope="col">Where</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>GroqCloud</td>
+          <td>AI text checks, chat and speech-to-text (masked text, audio)</td>
+          <td>USA</td>
+        </tr>
+        <tr>
+          <td>Microsoft Azure Speech</td>
+          <td>Pronunciation scoring and speech synthesis</td>
+          <td>EU</td>
+        </tr>
+        <tr>
+          <td>Brevo</td>
+          <td>Emails</td>
+          <td>EU</td>
+        </tr>
+        <tr>
+          <td>Stripe, bePaid</td>
+          <td>Payments</td>
+          <td>EU, USA, Belarus</td>
+        </tr>
+        <tr>
+          <td>Cloudflare</td>
+          <td>Network, hosting of this page, file storage</td>
+          <td>Global</td>
+        </tr>
+        <tr>
+          <td>Oracle Cloud</td>
+          <td>Servers</td>
+          <td>EU</td>
+        </tr>
+        <tr>
+          <td>Grafana Cloud</td>
+          <td>Monitoring, without your content</td>
+          <td>EU</td>
+        </tr>
+        <tr>
+          <td>Google, Apple</td>
+          <td>Sign-in, if you choose it</td>
+          <td>Global</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    If you join a tutor, they see your progress and your work until you leave them. We do not sell your data and show no
+    ads.
+  </p>
+
+  <h2>How long we keep it</h2>
+  <ul>
+    <li>Your account and study data: until you delete your account. Full deletion takes up to 30 days.</li>
+    <li>Voice recordings: 90 days.</li>
+    <li>Application logs: 14 days. Security logs: 1 year.</li>
+    <li>Payment records: as long as the law requires.</li>
+    <li>Deleted data can remain in encrypted backups for up to 365 days and is not restored into the service.</li>
+  </ul>
+
+  <h2>Your rights</h2>
+  <p>
+    You can see, correct, export and delete your data, restrict or object to its use, and withdraw any consent at any
+    time. Most of this is in the app under Settings, Privacy: export arrives within 24 hours as a JSON archive, and
+    account deletion starts at once. Other requests are answered within 30 days. You can also complain to the data
+    protection authority where you live.
+  </p>
+
+  <h2>Cookies</h2>
+  <p>
+    This page sets no cookies. It saves your theme choice in your browser’s local storage. The web app uses one session
+    cookie that it needs to keep you signed in. There are no analytics or advertising cookies.
+  </p>
+
+  <h2>Age</h2>
+  <p>TOEFLY is for people aged 16 and over.</p>
+
+  <h2>Changes</h2>
+  <p>When this policy changes, we tell you in the app and ask you to accept the new version.</p>
+</Legal>

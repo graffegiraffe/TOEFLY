@@ -1,0 +1,98 @@
+---
+import Logo from './Logo.astro';
+import { appLink, contact, site } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap grid">
+    <div class="brand">
+      <Logo height={20} />
+      <p>A week with a tutor, in your pocket.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        <li>
+          <a href="/#pricing">Pricing</a>
+        </li>
+        <li>
+          <a href="/#sources">Study materials</a>
+        </li>
+        <li>
+          <a href="/privacy">Privacy policy</a>
+        </li>
+        <li>
+          <a href="/terms">Terms of use</a>
+        </li>
+        <li>
+          <a href={contact.href}>Contact</a>
+        </li>
+        <li>
+          <a href={appLink('/sign-in')}>Sign in</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="legal">
+      <p>{site.trademark}</p>
+      <p>&copy; {year} TOEFLY</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding-block: 40px;
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+  }
+
+  .grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  .brand p {
+    margin-top: 10px;
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    padding: 0;
+    list-style: none;
+  }
+
+  ul a {
+    display: inline-block;
+    padding-block: 6px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  ul a:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+
+  .legal {
+    display: grid;
+    gap: 6px;
+    font-size: 0.8125rem;
+  }
+
+  @media (min-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr 2fr;
+      align-items: start;
+    }
+
+    .legal {
+      grid-column: 1 / -1;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+  }
+</style>

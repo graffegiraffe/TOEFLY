@@ -1,0 +1,146 @@
+---
+import { appLink } from '../../data/site';
+
+const learner = [
+  {
+    need: 'You drop out by week three',
+    answer: 'Today shows what to do now. Missed tasks move to another day, and a week that falls behind is rebuilt.',
+  },
+  {
+    need: 'Nobody checks your essays',
+    answer:
+      'Writing is scored on the ETS 0 to 5 rubric in seconds, with comments in your text. Rewrite it up to three times and watch the score move.',
+  },
+  {
+    need: 'You cannot hear your own mistakes',
+    answer:
+      'Speaking answers get a transcript, a model answer and pronunciation scores down to single sounds, from a voice interviewer that works like the real test.',
+  },
+  {
+    need: 'You do not know if you will make it',
+    answer: 'Your plan starts from the exam date. The predicted band updates every week, with mock exams on the way.',
+  },
+];
+
+const tutor = [
+  {
+    need: 'Hours spent building weeks',
+    answer:
+      'Toefly Tutor drafts each week from your student’s mistakes. You edit and approve it, or it publishes in 48 hours.',
+  },
+  {
+    need: 'A pile of essays to mark',
+    answer: 'Every Writing and Speaking task gets a first AI check. You add your own comments right in the text.',
+  },
+  {
+    need: 'Your own books and handouts',
+    answer:
+      'Upload your PDFs and put a page range into any section of a week. Turn a page into an interactive task when you need one.',
+  },
+  {
+    need: 'Knowing who needs you this week',
+    answer: 'One dashboard with each student’s progress, streak and predicted band.',
+  },
+];
+---
+
+<section class="section audiences" aria-labelledby="audiences-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="audiences-title">What a tutor gives you, without the hourly rate</h2>
+      <p>
+        Most people do not fail the TOEFL for lack of knowledge. They fail because preparation falls apart on the way.
+        TOEFLY covers the three things a tutor usually brings: rhythm, feedback and a route.
+      </p>
+    </div>
+
+    <div class="cols">
+      <article class="col" aria-labelledby="for-learners">
+        <h3 id="for-learners">For learners</h3>
+        <dl>
+          {learner.map((row) => (
+            <div class="row">
+              <dt>{row.need}</dt>
+              <dd>{row.answer}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="btn btn-primary" href={appLink('/sign-up')}>
+          Start free
+        </a>
+      </article>
+
+      <article class="col" id="tutors" aria-labelledby="for-tutors">
+        <h3 id="for-tutors">For tutors</h3>
+        <dl>
+          {tutor.map((row) => (
+            <div class="row">
+              <dt>{row.need}</dt>
+              <dd>{row.answer}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="btn btn-secondary" href={appLink('/sign-up?role=tutor')}>
+          Create a tutor account
+        </a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cols {
+    display: grid;
+    gap: 24px;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  h3 {
+    font-size: 1.375rem;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  dl {
+    margin: 20px 0 28px;
+    width: 100%;
+  }
+
+  .row {
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin-top: 4px;
+    color: var(--ink-muted);
+  }
+
+  .col :global(.btn) {
+    margin-top: auto;
+  }
+
+  @media (min-width: 900px) {
+    .cols {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .col {
+      padding: 36px 36px 32px;
+    }
+  }
+</style>

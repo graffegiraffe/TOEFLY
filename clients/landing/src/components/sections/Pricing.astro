@@ -1,0 +1,151 @@
+---
+import Check from '@lucide/astro/icons/check';
+import { formatPrice, plans } from '../../data/plans';
+import { appLink } from '../../data/site';
+---
+
+<section class="section pricing" id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="pricing-title">Pricing</h2>
+      <p>
+        Pro costs less than one lesson with a tutor a month. A tutor plan gives every student Pro, which comes out
+        cheaper than each of them paying alone.
+      </p>
+    </div>
+
+    <ul class="plans">
+      {plans.map((plan) => (
+        <li class:list={['plan', { featured: plan.highlighted }]}>
+          <p class="audience">{plan.audience === 'student' ? 'For learners' : 'For tutors'}</p>
+          <h3 id={`plan-${plan.code}`}>{plan.name}</h3>
+          <p class="price">
+            <span class="amount">{formatPrice(plan)}</span>
+            <span class="per">{plan.interval ? `per ${plan.interval}` : 'forever'}</span>
+          </p>
+          <p class="summary">{plan.summary}</p>
+          <ul class="features">
+            {plan.features.map((f) => (
+              <li>
+                <Check size={18} aria-hidden="true" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a
+            class:list={['btn', plan.highlighted ? 'btn-primary' : 'btn-secondary']}
+            href={appLink(plan.cta.path)}
+            aria-describedby={`plan-${plan.code}`}
+          >
+            {plan.cta.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="fine">Prices in euros, VAT included for customers in the EU.</p>
+  </div>
+</section>
+
+<style>
+  .plans {
+    display: grid;
+    gap: 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .plan {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  .featured {
+    border: 2px solid var(--brand-500);
+    box-shadow: var(--elevation-2);
+  }
+
+  .audience {
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+
+  h3 {
+    margin-top: 4px;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .amount {
+    font-size: 2.25rem;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .per {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+  }
+
+  .summary {
+    margin-top: 12px;
+    color: var(--ink-muted);
+    min-height: 3.2em;
+  }
+
+  .features {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0 24px;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  .features li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .features :global(svg) {
+    margin-top: 2px;
+    color: var(--success);
+  }
+
+  .plan .btn {
+    margin-top: auto;
+    width: 100%;
+  }
+
+  .fine {
+    margin-top: 20px;
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+
+  @media (min-width: 640px) {
+    .plans {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .plans {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>
