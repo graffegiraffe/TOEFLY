@@ -1,0 +1,520 @@
+{
+ "good-x8": [
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 3.173,
+   "difficulty": 5.282434,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 4.466858,
+   "difficulty": 5.272968,
+   "intervalSeconds": 345600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-06T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 14.217284,
+   "difficulty": 5.263545,
+   "intervalSeconds": 1209600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-20T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 43.725094,
+   "difficulty": 5.254165,
+   "intervalSeconds": 3801600
+  },
+  {
+   "rating": 3,
+   "at": "2027-01-03T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 124.796556,
+   "difficulty": 5.244829,
+   "intervalSeconds": 10800000
+  },
+  {
+   "rating": 3,
+   "at": "2027-05-08T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 328.473441,
+   "difficulty": 5.235535,
+   "intervalSeconds": 28339200
+  },
+  {
+   "rating": 3,
+   "at": "2028-03-31T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 805.608294,
+   "difficulty": 5.226285,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2029-03-31T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 1311.522798,
+   "difficulty": 5.217076,
+   "intervalSeconds": 31536000
+  }
+ ],
+ "easy-first": [
+  {
+   "rating": 4,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 15.69105,
+   "difficulty": 3.224502,
+   "intervalSeconds": 1382400
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-18T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 60.708279,
+   "difficulty": 3.224502,
+   "intervalSeconds": 5270400
+  },
+  {
+   "rating": 3,
+   "at": "2027-01-18T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 206.992331,
+   "difficulty": 3.224502,
+   "intervalSeconds": 17884800
+  },
+  {
+   "rating": 3,
+   "at": "2027-08-13T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 636.081288,
+   "difficulty": 3.224502,
+   "intervalSeconds": 31536000
+  }
+ ],
+ "again-hard-good": [
+  {
+   "rating": 1,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "LEARNING",
+   "step": 0,
+   "stability": 0.40255,
+   "difficulty": 7.1949,
+   "intervalSeconds": 60
+  },
+  {
+   "rating": 2,
+   "at": "2026-11-02T09:01:00+00:00",
+   "state": "LEARNING",
+   "step": 0,
+   "stability": 0.338078,
+   "difficulty": 7.629717,
+   "intervalSeconds": 330
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:06:30+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 0.475937,
+   "difficulty": 7.609453,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:16:30+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 0.67001,
+   "difficulty": 7.589282,
+   "intervalSeconds": 86400
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-03T09:16:30+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 2.386426,
+   "difficulty": 7.569204,
+   "intervalSeconds": 172800
+  },
+  {
+   "rating": 1,
+   "at": "2026-11-05T09:16:30+00:00",
+   "state": "RELEARNING",
+   "step": 0,
+   "stability": 0.820383,
+   "difficulty": 8.334464,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-05T09:26:30+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 1.154912,
+   "difficulty": 8.310958,
+   "intervalSeconds": 86400
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-06T09:26:30+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 2.503787,
+   "difficulty": 8.28756,
+   "intervalSeconds": 259200
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-09T09:26:30+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 6.103981,
+   "difficulty": 8.26427,
+   "intervalSeconds": 518400
+  }
+ ],
+ "hard-path": [
+  {
+   "rating": 2,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "LEARNING",
+   "step": 0,
+   "stability": 1.18385,
+   "difficulty": 6.488305,
+   "intervalSeconds": 330
+  },
+  {
+   "rating": 2,
+   "at": "2026-11-02T09:05:30+00:00",
+   "state": "LEARNING",
+   "step": 0,
+   "stability": 0.994246,
+   "difficulty": 7.040502,
+   "intervalSeconds": 330
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:11:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 1.399671,
+   "difficulty": 7.022948,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 2,
+   "at": "2026-11-02T09:21:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 1.175502,
+   "difficulty": 7.486329,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 2,
+   "at": "2026-11-02T09:31:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 0.987235,
+   "difficulty": 7.872734,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 2,
+   "at": "2026-11-02T09:41:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 0.829121,
+   "difficulty": 8.194948,
+   "intervalSeconds": 600
+  }
+ ],
+ "lapse-twice": [
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 3.173,
+   "difficulty": 5.282434,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 4.466858,
+   "difficulty": 5.272968,
+   "intervalSeconds": 345600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-06T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 14.217284,
+   "difficulty": 5.263545,
+   "intervalSeconds": 1209600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-20T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 43.725094,
+   "difficulty": 5.254165,
+   "intervalSeconds": 3801600
+  },
+  {
+   "rating": 1,
+   "at": "2027-01-03T09:10:00+00:00",
+   "state": "RELEARNING",
+   "step": 0,
+   "stability": 4.224195,
+   "difficulty": 6.777926,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 1,
+   "at": "2027-01-03T09:20:00+00:00",
+   "state": "RELEARNING",
+   "step": 0,
+   "stability": 2.116442,
+   "difficulty": 7.80244,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 3,
+   "at": "2027-01-03T09:30:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 2.979466,
+   "difficulty": 7.781382,
+   "intervalSeconds": 259200
+  },
+  {
+   "rating": 3,
+   "at": "2027-01-06T09:30:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 7.244125,
+   "difficulty": 7.76042,
+   "intervalSeconds": 604800
+  },
+  {
+   "rating": 4,
+   "at": "2027-01-13T09:30:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 34.290407,
+   "difficulty": 7.377817,
+   "intervalSeconds": 2937600
+  },
+  {
+   "rating": 3,
+   "at": "2027-02-16T09:30:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 75.003991,
+   "difficulty": 7.358712,
+   "intervalSeconds": 6480000
+  }
+ ],
+ "easy-x5": [
+  {
+   "rating": 4,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 15.69105,
+   "difficulty": 3.224502,
+   "intervalSeconds": 1382400
+  },
+  {
+   "rating": 4,
+   "at": "2026-11-18T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 150.283561,
+   "difficulty": 2.130121,
+   "intervalSeconds": 12960000
+  },
+  {
+   "rating": 4,
+   "at": "2027-04-17T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 1252.223339,
+   "difficulty": 1.0,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 4,
+   "at": "2028-04-16T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 3782.331638,
+   "difficulty": 1.0,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 4,
+   "at": "2029-04-16T09:00:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 6049.396774,
+   "difficulty": 1.0,
+   "intervalSeconds": 31536000
+  }
+ ],
+ "good-to-cap": [
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:00:00+00:00",
+   "state": "LEARNING",
+   "step": 1,
+   "stability": 3.173,
+   "difficulty": 5.282434,
+   "intervalSeconds": 600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-02T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 4.466858,
+   "difficulty": 5.272968,
+   "intervalSeconds": 345600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-06T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 14.217284,
+   "difficulty": 5.263545,
+   "intervalSeconds": 1209600
+  },
+  {
+   "rating": 3,
+   "at": "2026-11-20T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 43.725094,
+   "difficulty": 5.254165,
+   "intervalSeconds": 3801600
+  },
+  {
+   "rating": 3,
+   "at": "2027-01-03T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 124.796556,
+   "difficulty": 5.244829,
+   "intervalSeconds": 10800000
+  },
+  {
+   "rating": 3,
+   "at": "2027-05-08T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 328.473441,
+   "difficulty": 5.235535,
+   "intervalSeconds": 28339200
+  },
+  {
+   "rating": 3,
+   "at": "2028-03-31T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 805.608294,
+   "difficulty": 5.226285,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2029-03-31T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 1311.522798,
+   "difficulty": 5.217076,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2030-03-31T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 1798.923342,
+   "difficulty": 5.207911,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2031-03-31T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 2273.037152,
+   "difficulty": 5.198787,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2032-03-30T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 2737.052914,
+   "difficulty": 5.189705,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2033-03-30T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 3193.024921,
+   "difficulty": 5.180665,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2034-03-30T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 3642.369175,
+   "difficulty": 5.171667,
+   "intervalSeconds": 31536000
+  },
+  {
+   "rating": 3,
+   "at": "2035-03-30T09:10:00+00:00",
+   "state": "REVIEW",
+   "step": null,
+   "stability": 4086.114655,
+   "difficulty": 5.16271,
+   "intervalSeconds": 31536000
+  }
+ ]
+}
