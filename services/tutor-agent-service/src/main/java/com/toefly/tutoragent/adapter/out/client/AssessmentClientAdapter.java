@@ -45,7 +45,7 @@ public class AssessmentClientAdapter implements AssessmentPort {
                         c.path("subcategory").asString("OTHER"),
                         c.path("severity").asString("MINOR")));
             }
-            String evaluatedAt = OwnerCalls.text(evaluation.path("evaluatedAt"));
+            String evaluatedAt = OwnerCalls.text(v.path("evaluatedAt"));
             versions.add(new Version(
                     v.path("versionNo").asInt(),
                     v.path("status").asString(""),
@@ -63,7 +63,7 @@ public class AssessmentClientAdapter implements AssessmentPort {
                 body.path("taskType").asString(""),
                 body.path("status").asString(""),
                 versions,
-                OwnerCalls.text(body.path("modelAnswer")));
+                OwnerCalls.text(body.path("modelAnswer").path("text")));
     }
 
     @Override

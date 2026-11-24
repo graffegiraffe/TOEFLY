@@ -9,6 +9,7 @@ import com.toefly.tutoragent.application.port.out.MistakeMemoryRepository;
 import com.toefly.tutoragent.application.port.out.MistakeRepository;
 import com.toefly.tutoragent.application.port.out.OwnerToolsPort;
 import com.toefly.tutoragent.application.port.out.PracticePort;
+import com.toefly.tutoragent.application.port.out.PracticeResultRepository;
 import com.toefly.tutoragent.application.port.out.WeeklyReviewRepository;
 import com.toefly.tutoragent.domain.chat.ChatContextType;
 import com.toefly.tutoragent.domain.chat.PendingAction;
@@ -49,6 +50,7 @@ public class ToolExecutor {
             Map.entry("getWeeklyReview", "Opening your weekly review"));
 
     private final OwnerToolsPort owners;
+    private final PracticeResultRepository results;
     private final PracticePort practice;
     private final AssessmentPort assessment;
     private final LearnerModelUseCase learner;
@@ -61,6 +63,7 @@ public class ToolExecutor {
 
     public ToolExecutor(
             OwnerToolsPort owners,
+            PracticeResultRepository results,
             PracticePort practice,
             AssessmentPort assessment,
             LearnerModelUseCase learner,
@@ -71,6 +74,7 @@ public class ToolExecutor {
             Taxonomy taxonomy,
             Clock clock) {
         this.owners = owners;
+        this.results = results;
         this.practice = practice;
         this.assessment = assessment;
         this.learner = learner;
@@ -173,7 +177,12 @@ public class ToolExecutor {
     }
 
     private Outcome attempt(Map<String, Object> args, ToolContext ctx) {
-        PracticePort.AttemptReview review = practice.review(uuid(args, "attemptId"), ctx.bearer());
+        UUID attemptId = uuid(args, "attemptId");
+        if (!results.ownerOf(attemptId).map(ctx.userId()::equals).orElse(false)) {
+            practice.review(attemptId, ctx.bearer());
+            return new Outcome("NOT_FOUND", Map.of("error", "No such attempt of this student."), null);
+        }
+        PracticePort.AttemptReview review = practice.review(attemptId, ctx.bearer());
         UUID only = args.get("itemId") == null ? null : uuid(args, "itemId");
         List<Map<String, Object>> items = review.items().stream()
                 .filter(i -> only == null || i.itemId().equals(only))

@@ -217,6 +217,15 @@ final class Fakes {
             rows.put(result.sourceId(), result);
         }
 
+        void own(UUID sourceId, UUID userId) {
+            rows.put(sourceId, new Result(sourceId, userId, "READ_ACADEMIC_PASSAGE", 0.5, null, NOW));
+        }
+
+        @Override
+        public java.util.Optional<UUID> ownerOf(UUID sourceId) {
+            return java.util.Optional.ofNullable(rows.get(sourceId)).map(Result::userId);
+        }
+
         @Override
         public List<Result> between(UUID userId, Instant from, Instant to) {
             return rows.values().stream()

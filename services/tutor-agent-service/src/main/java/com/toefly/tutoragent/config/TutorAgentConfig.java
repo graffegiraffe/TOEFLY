@@ -206,6 +206,7 @@ class TutorAgentConfig {
     @Bean
     ToolExecutor toolExecutor(
             OwnerToolsPort owners,
+            PracticeResultRepository results,
             PracticePort practice,
             AssessmentPort assessment,
             LearnerModelUseCase learner,
@@ -215,7 +216,8 @@ class TutorAgentConfig {
             AiPort ai,
             Taxonomy taxonomy,
             Clock clock) {
-        return new ToolExecutor(owners, practice, assessment, learner, mistakes, memory, reviews, ai, taxonomy, clock);
+        return new ToolExecutor(
+                owners, results, practice, assessment, learner, mistakes, memory, reviews, ai, taxonomy, clock);
     }
 
     @Bean
@@ -231,6 +233,7 @@ class TutorAgentConfig {
             PromptPort prompts,
             OwnerToolsPort owners,
             ToolExecutor tools,
+            PracticeResultRepository results,
             PracticePort practice,
             AssessmentPort assessment,
             WeeklyReviewRepository reviews,
@@ -250,7 +253,7 @@ class TutorAgentConfig {
                 prompts,
                 owners,
                 tools,
-                new ScreenContextAssembler(practice, assessment, owners, reviews),
+                new ScreenContextAssembler(practice, results, assessment, owners, reviews),
                 ToolSpecsLoader.load(json),
                 taxonomy,
                 transactions,

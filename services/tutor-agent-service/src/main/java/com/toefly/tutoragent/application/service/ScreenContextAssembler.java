@@ -4,6 +4,7 @@ import com.toefly.tutoragent.application.port.NotSubmittedException;
 import com.toefly.tutoragent.application.port.out.AssessmentPort;
 import com.toefly.tutoragent.application.port.out.OwnerToolsPort;
 import com.toefly.tutoragent.application.port.out.PracticePort;
+import com.toefly.tutoragent.application.port.out.PracticeResultRepository;
 import com.toefly.tutoragent.application.port.out.WeeklyReviewRepository;
 import com.toefly.tutoragent.domain.chat.ChatContext;
 import com.toefly.tutoragent.domain.chat.ChatContextType;
@@ -24,13 +25,19 @@ public class ScreenContextAssembler {
     static final int MAX_DRAFT_WORDS = 500;
 
     private final PracticePort practice;
+    private final PracticeResultRepository results;
     private final AssessmentPort assessment;
     private final OwnerToolsPort owners;
     private final WeeklyReviewRepository reviews;
 
     public ScreenContextAssembler(
-            PracticePort practice, AssessmentPort assessment, OwnerToolsPort owners, WeeklyReviewRepository reviews) {
+            PracticePort practice,
+            PracticeResultRepository results,
+            AssessmentPort assessment,
+            OwnerToolsPort owners,
+            WeeklyReviewRepository reviews) {
         this.practice = practice;
+        this.results = results;
         this.assessment = assessment;
         this.owners = owners;
         this.reviews = reviews;
@@ -51,7 +58,7 @@ public class ScreenContextAssembler {
         }
         try {
             return switch (context.type()) {
-                case ATTEMPT_REVIEW, ATTEMPT_IN_PROGRESS -> attempt(context, bearer);
+                case ATTEMPT_REVIEW, ATTEMPT_IN_PROGRESS -> attempt(context, userId, bearer);
                 case SUBMISSION_REVIEW, SUBMISSION_DRAFT -> submission(context, userId, bearer);
                 case WEEK -> week(context, userId, bearer);
                 case WEEKLY_REVIEW -> weeklyReview(context, userId);
@@ -70,7 +77,7 @@ public class ScreenContextAssembler {
         }
     }
 
-    private Screen attempt(ChatContext context, @Nullable String bearer) {
+    private Screen attempt(ChatContext context, UUID userId, @Nullable String bearer) {
         if (context.ref() == null) {
             return new Screen(context.withType(ChatContextType.ATTEMPT_IN_PROGRESS), unsubmitted(), List.of(), "");
         }
@@ -83,6 +90,9 @@ public class ScreenContextAssembler {
                     unsubmitted(),
                     List.of(),
                     "");
+        }
+        if (!results.ownerOf(context.ref()).map(userId::equals).orElse(false)) {
+            return new Screen(ChatContext.general(), "The referenced attempt is not available.", List.of(), "");
         }
         StringBuilder text =
                 new StringBuilder("Submitted attempt " + review.attemptId() + " (" + review.taskType() + ").\n");

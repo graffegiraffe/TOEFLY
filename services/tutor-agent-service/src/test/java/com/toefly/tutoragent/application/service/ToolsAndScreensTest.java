@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 class ToolsAndScreensTest {
 
     final UUID user = UUID.randomUUID();
+    final Fakes.Results results = new Fakes.Results();
     final Fakes.Practice practice = new Fakes.Practice();
     final Fakes.Assessment assessment = new Fakes.Assessment();
     final Fakes.Reviews reviews = new Fakes.Reviews();
@@ -47,8 +48,18 @@ class ToolsAndScreensTest {
                 Fakes.TX,
                 Fakes.clock());
         tools = new ToolExecutor(
-                owners, practice, assessment, learner, mistakes, memory, reviews, ai, Fakes.taxonomy(), Fakes.clock());
-        screens = new ScreenContextAssembler(practice, assessment, owners, reviews);
+                owners,
+                results,
+                practice,
+                assessment,
+                learner,
+                mistakes,
+                memory,
+                reviews,
+                ai,
+                Fakes.taxonomy(),
+                Fakes.clock());
+        screens = new ScreenContextAssembler(practice, results, assessment, owners, reviews);
         general =
                 new ToolExecutor.ToolContext(user, "t", UUID.randomUUID(), UUID.randomUUID(), ChatContextType.GENERAL);
     }
@@ -212,6 +223,7 @@ class ToolsAndScreensTest {
                         .type())
                 .isEqualTo(ChatContextType.ATTEMPT_IN_PROGRESS);
         UUID attempt = UUID.randomUUID();
+        results.own(attempt, user);
         practice.reviews.put(
                 attempt,
                 new PracticePort.AttemptReview(

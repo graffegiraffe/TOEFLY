@@ -13,6 +13,9 @@ public interface PracticeResultRepository {
 
     List<Result> between(UUID userId, Instant from, Instant to);
 
+    /** The learner of a scored attempt or evaluated submission, if this service has seen it. */
+    java.util.Optional<UUID> ownerOf(UUID sourceId);
+
     record Result(
             UUID sourceId,
             UUID userId,

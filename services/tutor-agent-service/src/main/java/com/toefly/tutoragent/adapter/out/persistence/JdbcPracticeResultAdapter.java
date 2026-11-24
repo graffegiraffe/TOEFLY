@@ -52,4 +52,12 @@ public class JdbcPracticeResultAdapter implements PracticeResultRepository {
                         rs.getTimestamp("occurred_at").toInstant()))
                 .list();
     }
+
+    @Override
+    public java.util.Optional<UUID> ownerOf(UUID sourceId) {
+        return jdbc.sql("SELECT user_id FROM practice_result WHERE source_id = :s")
+                .param("s", sourceId)
+                .query(UUID.class)
+                .optional();
+    }
 }

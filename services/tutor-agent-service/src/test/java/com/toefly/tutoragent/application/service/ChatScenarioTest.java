@@ -48,6 +48,7 @@ class ChatScenarioTest {
     final Fakes.Ai ai = new Fakes.Ai();
     final Model model = new Model();
     final Owners owners = new Owners();
+    final Fakes.Results results = new Fakes.Results();
     final Fakes.Practice practice = new Fakes.Practice();
     final Fakes.Assessment assessment = new Fakes.Assessment();
     final Fakes.Reviews reviews = new Fakes.Reviews();
@@ -71,7 +72,17 @@ class ChatScenarioTest {
                 Fakes.TX,
                 Fakes.clock());
         ToolExecutor tools = new ToolExecutor(
-                owners, practice, assessment, learner, mistakes, memory, reviews, ai, Fakes.taxonomy(), Fakes.clock());
+                owners,
+                results,
+                practice,
+                assessment,
+                learner,
+                mistakes,
+                memory,
+                reviews,
+                ai,
+                Fakes.taxonomy(),
+                Fakes.clock());
         PromptPort prompts = key -> new PromptPort.Prompt(
                 key,
                 1,
@@ -89,7 +100,7 @@ class ChatScenarioTest {
                 prompts,
                 owners,
                 tools,
-                new ScreenContextAssembler(practice, assessment, owners, reviews),
+                new ScreenContextAssembler(practice, results, assessment, owners, reviews),
                 List.of(
                         new ChatModelPort.ToolSpec("getAttemptReview", "review", "{}"),
                         new ChatModelPort.ToolSpec("searchItems", "search", "{}"),
@@ -136,6 +147,7 @@ class ChatScenarioTest {
     void toolLoop() {
         UUID attempt = UUID.randomUUID();
         UUID item = UUID.randomUUID();
+        results.own(attempt, user);
         practice.reviews.put(
                 attempt,
                 new PracticePort.AttemptReview(
