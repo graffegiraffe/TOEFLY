@@ -57,22 +57,46 @@ class TutorChatLiveEvalTest {
             results.add(run(c, live, ai, model));
             System.out.println("case " + c.path("id").asString() + ": " + results.getLast().get("pass"));
         }
-        List<JsonNode> nodes = results.stream().map(r -> TutorEvals.JSON.valueToTree(r)).map(JsonNode.class::cast).toList();
-        Map<String, Double> metrics = TutorEvalMetrics.chat(nodes);
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("suite", "tutor-chat");
         report.put("runAt", Instant.now().toString());
         report.put("goldSource", "SCENARIO_LABELS");
         report.put("promptSha256", TutorEvals.promptHashes(PROMPTS));
+        boolean merge = !only.isBlank() && Boolean.getBoolean("evals.merge");
+        if (merge) {
+            results = mergeInto(TutorEvals.REPORTS.resolve("tutor-chat.json"), results, report);
+        }
+        List<JsonNode> nodes = results.stream().map(r -> TutorEvals.JSON.valueToTree(r)).map(JsonNode.class::cast).toList();
+        Map<String, Double> metrics = TutorEvalMetrics.chat(nodes);
         report.put("metrics", metrics);
         report.put("misses", TutorEvalMetrics.misses(metrics, TutorEvalMetrics.CHAT_THRESHOLDS));
         report.put("cases", results);
         Files.createDirectories(TutorEvals.REPORTS);
         Files.writeString(
-                TutorEvals.REPORTS.resolve(only.isBlank() ? "tutor-chat.json" : "tutor-chat-partial.json"),
+                TutorEvals.REPORTS.resolve(only.isBlank() || merge ? "tutor-chat.json" : "tutor-chat-partial.json"),
                 TutorEvals.JSON.writerWithDefaultPrettyPrinter().writeValueAsString(report) + "\n");
         System.out.println("tutor-chat metrics " + metrics + " misses " + report.get("misses"));
         assertThat(results).isNotEmpty();
+    }
+
+    /**
+     * Replaces the rerun cases in the last full report, keeps its run time and adds the rerun to {@code reruns}; the
+     * prompts must be the ones the full report was made with.
+     */
+    @SuppressWarnings("unchecked")
+    static List<Map<String, Object>> mergeInto(Path file, List<Map<String, Object>> rerun, Map<String, Object> report) {
+        Map<String, Object> full = TutorEvals.JSON.convertValue(TutorEvals.read(file), Map.class);
+        assertThat(full.get("promptSha256")).as("prompts changed since the full run").isEqualTo(report.get("promptSha256"));
+        Map<String, Map<String, Object>> byId = new LinkedHashMap<>();
+        rerun.forEach(r -> byId.put((String) r.get("id"), r));
+        List<Map<String, Object>> cases = ((List<Map<String, Object>>) full.get("cases")).stream()
+                .map(c -> byId.getOrDefault((String) c.get("id"), c))
+                .toList();
+        List<Object> reruns = new ArrayList<>((List<Object>) full.getOrDefault("reruns", List.of()));
+        reruns.add(Map.of("runAt", report.get("runAt"), "cases", List.copyOf(byId.keySet())));
+        report.put("runAt", full.get("runAt"));
+        report.put("reruns", reruns);
+        return cases;
     }
 
     Map<String, Object> run(JsonNode c, TutorEvals live, AiPort ai, ChatModelPort liveModel) {

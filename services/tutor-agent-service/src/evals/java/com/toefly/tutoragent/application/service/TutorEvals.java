@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.web.client.RestClient;
@@ -40,6 +41,8 @@ final class TutorEvals {
     static final Path PROMPTS = Path.of("../ai-gateway/src/main/resources/prompts");
     static final Path REPORTS = Path.of("src/evals/reports");
     static final Pattern NUMBER = Pattern.compile("\\d+(\\.\\d+)?");
+    static final Pattern UUID_TEXT = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+    static final Pattern NEXT_STEP = Pattern.compile("(?iu)next step|следующий шаг");
 
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     private final String gateway = env("TOEFLY_AI_GATEWAY_URL", "http://localhost:8095");
@@ -151,8 +154,19 @@ final class TutorEvals {
      * band scale (1–6 in steps of 0.5), small counts up to 10 in advice, and a percent whose fraction is in the facts
      * (40% for an error rate of 0.4).
      */
+    /**
+     * Whether every number the answer states about the student comes from the facts it was given. The next step after
+     * "Next step" is advice (minutes to add, a 30-second prompt), not a claim, so only the text before it is checked; a
+     * band point, a small count, a percent of a fraction in the facts and a sum or difference of two facts pass.
+     */
     static boolean numbersGrounded(String answer, String facts) {
-        Matcher m = NUMBER.matcher(answer);
+        String claims = NEXT_STEP.split(answer, 2)[0];
+        List<Double> known = new ArrayList<>();
+        Matcher f = NUMBER.matcher(UUID_TEXT.matcher(facts).replaceAll(" "));
+        while (f.find()) {
+            known.add(Double.parseDouble(f.group()));
+        }
+        Matcher m = NUMBER.matcher(claims);
         while (m.find()) {
             String n = m.group();
             double value = Double.parseDouble(n);
@@ -160,11 +174,22 @@ final class TutorEvals {
             boolean smallCount = value <= 10 && value == Math.rint(value);
             String fraction = Double.toString(value / 100).replaceAll("0+$", "");
             boolean percentOfFraction = facts.contains(fraction.endsWith(".") ? fraction + "0" : fraction);
-            if (!facts.contains(n) && !bandPoint && !smallCount && !percentOfFraction) {
+            if (!facts.contains(n) && !bandPoint && !smallCount && !percentOfFraction && !derived(value, known)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean derived(double value, List<Double> known) {
+        for (double a : known) {
+            for (double b : known) {
+                if (Math.abs(a + b - value) < 1e-9 || Math.abs(a - b - value) < 1e-9) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     static JsonNode read(Path file) {
