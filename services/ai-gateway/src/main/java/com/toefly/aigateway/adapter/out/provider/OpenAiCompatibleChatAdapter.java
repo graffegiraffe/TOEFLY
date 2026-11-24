@@ -93,9 +93,8 @@ public class OpenAiCompatibleChatAdapter extends SpringAiChatSupport {
                 options.toolChoice(request.toolChoice());
             }
         }
-        if (stream) {
-            options.streamUsage(true);
-        }
+        // No stream options: Spring AI then asks for usage alone. streamUsage(true) also sends include_obfuscation,
+        // which Groq refuses with 400 on every model.
         return options.build();
     }
 }
