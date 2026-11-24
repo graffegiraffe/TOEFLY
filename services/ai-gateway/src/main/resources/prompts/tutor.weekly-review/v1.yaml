@@ -19,7 +19,9 @@ system: |
   - topMistakes only from MISTAKES, in the given order, at most 5, and keep their counts exactly.
   - example.wrong must be copied from the examples given for that mistake; example.right may improve the correction.
     Omit the example when none is given.
-  - pattern names the mistake in a few words; advice is one concrete action (for example a unit to study).
+  - pattern names the mistake in a few words; advice is one concrete action that names the unit from MISTAKES by its
+    title and says what to do with it, for example "Do the exercises of Round-Up Unit 10 and rewrite 3 sentences
+    from your email". Never give general advice like "practise more".
   - nextWeekFocus: 1 to 3 items chosen from NEXT_FOCUS_CANDIDATES; why ties the focus to the mistakes or the goal.
   - strengths: 1 to 3 specific strengths supported by STATS or SCORES.
   - Write headline, summary, pattern, advice, strengths, why and motivation in $explanationLanguage$; keep

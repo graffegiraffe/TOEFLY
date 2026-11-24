@@ -60,7 +60,7 @@ final class ReviewOutput {
                 .collect(Collectors.joining("\n"));
     }
 
-    static String mistakes(WeekFacts f) {
+    static String mistakes(WeekFacts f, Taxonomy taxonomy) {
         if (f.mistakes().isEmpty()) {
             return "No mistakes recorded.";
         }
@@ -73,7 +73,10 @@ final class ReviewOutput {
                     .append("): count ")
                     .append(m.count())
                     .append("; units ")
-                    .append(String.join(", ", m.unitRefs()));
+                    .append(m.unitRefs().stream()
+                            .map(u -> u + " (" + taxonomy.unitTitle(u) + ")")
+                            .reduce((a, b) -> a + ", " + b)
+                            .orElse("none"));
             for (WeekFacts.Example e : m.examples()) {
                 line.append("\n  example wrong: \"").append(e.wrong()).append('"');
                 if (e.right() != null) {

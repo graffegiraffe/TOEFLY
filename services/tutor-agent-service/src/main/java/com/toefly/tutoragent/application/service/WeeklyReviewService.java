@@ -310,12 +310,11 @@ public class WeeklyReviewService implements WeeklyReviewUseCase {
                 : present.stream().mapToDouble(Double::doubleValue).average().orElse(0);
     }
 
-    private static Map<String, Object> variables(
-            WeekFacts facts, ExplanationLanguage language, List<String> violations) {
+    private Map<String, Object> variables(WeekFacts facts, ExplanationLanguage language, List<String> violations) {
         Map<String, Object> variables = new LinkedHashMap<>();
         variables.put("weekStats", ReviewOutput.stats(facts));
         variables.put("scores", ReviewOutput.scores(facts));
-        variables.put("mistakes", ReviewOutput.mistakes(facts));
+        variables.put("mistakes", ReviewOutput.mistakes(facts, taxonomy));
         variables.put("previous", String.join(", ", facts.previousTopMistakes()));
         variables.put("focusCandidates", ReviewOutput.candidates(facts));
         variables.put("explanationLanguage", language == ExplanationLanguage.RU ? "Russian" : "English");
