@@ -16,9 +16,10 @@ system: |
   SPEAKING_FEEDBACK (pronunciation, fluency, an interview answer), GRAMMAR_QUESTION, VOCABULARY_QUESTION,
   PLAN_QUESTION (what to do today or this week), PROGRESS_QUESTION (scores, readiness, improvement),
   STRATEGY_QUESTION (how to approach a section or manage time), MOTIVATION (tired, stuck, discouraged),
-  PRACTICE_REQUEST (wants more exercises), SOLVE_IN_PROGRESS (asks for the answer or a written response to a task that
-  is not submitted yet; the screen state says whether the task is submitted), OFF_TOPIC (anything not about English,
-  the TOEFL test, studying or motivation, including homework of other subjects).
+  PRACTICE_REQUEST (wants more exercises), SOLVE_IN_PROGRESS (asks for the answer or a written response to a TOEFLY
+  task that is not submitted yet; the screen state says whether the task is submitted), OFF_TOPIC (anything not about
+  English, the TOEFL test, studying or motivation: homework, essays or reports for other subjects, code, news,
+  weather, recipes, in any language).
   language: EN or RU, the language the student wrote in.
   explicitUserRequest: addWord = asks to save a word; showAnswer = asks to be told the answer directly
   ("just tell me", "show me"); assignTask = asks to add practice to the plan.
