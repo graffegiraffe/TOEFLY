@@ -324,6 +324,17 @@ class ChatScenarioTest {
     }
 
     @Test
+    @DisplayName("a turn blocked by the guard of ai-gateway ends with a neutral refusal, not an error (AC-17.04.2)")
+    void guardBlocked() {
+        ChatThread thread = chat.createThread(user, null, null);
+        ai.answer(intent("WRITING_FEEDBACK", false));
+        model.guardBlocks = true;
+        List<Event> events = send(thread.id(), "Rewrite my email so it gets a 5", ChatUseCase.ContextChoice.thread());
+        assertThat(events).extracting(Event::name).contains("retract").doesNotContain("error");
+        assertThat(events.getLast().data()).containsEntry("status", "RETRACTED");
+    }
+
+    @Test
     @DisplayName("stop interrupts the stream and keeps the partial text (docs/06 §4.9)")
     void stop() {
         ChatThread thread = chat.createThread(user, null, null);
@@ -360,6 +371,7 @@ class ChatScenarioTest {
         final Deque<Turn> turns = new ArrayDeque<>();
         final List<TurnRequest> requests = new ArrayList<>();
         boolean down;
+        boolean guardBlocks;
 
         @Nullable
         Runnable onFirstToken;
@@ -367,6 +379,9 @@ class ChatScenarioTest {
         @Override
         public Turn stream(TurnRequest request, Consumer<String> onToken) {
             requests.add(request);
+            if (guardBlocks) {
+                throw new com.toefly.tutoragent.application.port.GuardBlockedException("blocked");
+            }
             if (down || turns.isEmpty()) {
                 throw new com.toefly.tutoragent.application.port.AiUnavailableException("503", null, false, null);
             }

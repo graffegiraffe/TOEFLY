@@ -287,6 +287,12 @@ public class ChatService implements ChatUseCase {
         } catch (Stopped stopped) {
             finish(turn, text.toString(), ChatMessage.Status.INTERRUPTED, state);
             emit.send("done", done(turn, state, "INTERRUPTED"));
+        } catch (com.toefly.tutoragent.application.port.GuardBlockedException blocked) {
+            String refusal = Replies.refusal(
+                    chats.thread(turn.threadId()).map(ChatThread::language).orElse(ExplanationLanguage.EN));
+            emit.send("retract", Map.of("reason", "GUARD", "replacement", refusal));
+            finish(turn, refusal, ChatMessage.Status.RETRACTED, state);
+            emit.send("done", done(turn, state, "RETRACTED"));
         } catch (AiUnavailableException unavailable) {
             log.warn("Chat answer {} failed: {}", turn.answerId(), unavailable.getMessage());
             finish(turn, text.toString(), ChatMessage.Status.FAILED, state);

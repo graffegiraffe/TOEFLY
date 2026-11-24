@@ -102,6 +102,10 @@ public class GatewayChatModelAdapter implements ChatModelPort {
             if (failure.getClass().getName().contains("Stopped")) {
                 throw failure;
             }
+            if (String.valueOf(failure.getMessage()).contains("ai-guard-blocked")) {
+                throw new com.toefly.tutoragent.application.port.GuardBlockedException(
+                        "the guard of ai-gateway blocked the turn");
+            }
             throw new AiUnavailableException("ai-gateway chat failed: " + failure.getMessage(), null, false, failure);
         }
         return new Turn(text.toString(), new ArrayList<>(calls.values()), aiCallId, in, out);
