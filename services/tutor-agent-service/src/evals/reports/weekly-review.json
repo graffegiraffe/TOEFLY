@@ -1,0 +1,58 @@
+{
+  "suite" : "weekly-review",
+  "runAt" : "2026-11-23T14:43:17.398266Z",
+  "promptSha256" : {
+    "tutor.weekly-review" : "a558f9b4e60b111da897b5567fdb427a1230eb31291fa6933e6c205d4ecd9938",
+    "tutor.eval.judge" : "19090891fc20232b51a9a2d4c5a4b666f0115a0d23b9ddc822d02b5c7b79f86e"
+  },
+  "metrics" : {
+    "cases" : 10.0,
+    "numericFidelity" : 0.0,
+    "aiWordedRate" : 0.0,
+    "specificity" : 0.0,
+    "tone" : 0.0,
+    "errors" : 10.0
+  },
+  "misses" : [ "aiWordedRate = 0.0", "numericFidelity = 0.0", "specificity = 0.0", "tone = 0.0" ],
+  "cases" : [ {
+    "id" : "week-01",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-02",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-03",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-04",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-05",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-06",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-07",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-08",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-09",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  }, {
+    "id" : "week-10",
+    "error" : "IllegalStateException: Keycloak is unreachable",
+    "aiFallback" : true
+  } ]
+}

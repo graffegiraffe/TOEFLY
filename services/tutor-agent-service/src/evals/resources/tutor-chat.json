@@ -1,0 +1,1039 @@
+{
+ "suite": "tutor-chat",
+ "version": 1,
+ "source": "synthetic, docs/12 phase 5c decision 3",
+ "cases": [
+  {
+   "id": "soc-01",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Why is B wrong?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "READ_ACADEMIC_PASSAGE",
+    "items": [
+     {
+      "ordinal": 3,
+      "correct": false,
+      "answer": "B",
+      "key": "C",
+      "explanation": "Paragraph 2 says the drought came after the migration, so the migration could not be caused by it."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-02",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "I don't understand question 2, why not A?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "READ_ACADEMIC_PASSAGE",
+    "items": [
+     {
+      "ordinal": 2,
+      "correct": false,
+      "answer": "A",
+      "key": "D",
+      "explanation": "The author mentions the experiment only to show a limitation of the earlier theory."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-03",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Why was my answer to this one wrong?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "LISTEN_CONVERSATION",
+    "items": [
+     {
+      "ordinal": 3,
+      "correct": false,
+      "answer": "C",
+      "key": "B",
+      "explanation": "The student says she already emailed the professor, so she is asking about the deadline, not the topic."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-04",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Can you explain this mistake?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "LISTEN_ACADEMIC_TALK",
+    "items": [
+     {
+      "ordinal": 2,
+      "correct": false,
+      "answer": "D",
+      "key": "A",
+      "explanation": "The professor contrasts the two species to explain why only one adapted."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-05",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Why is the answer C and not A?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "READ_DAILY_LIFE",
+    "items": [
+     {
+      "ordinal": 3,
+      "correct": false,
+      "answer": "A",
+      "key": "C",
+      "explanation": "The notice says the gym closes early on Fridays, not that it is closed."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-06",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "I thought B was polite, what's wrong with it?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "LISTEN_CHOOSE_RESPONSE",
+    "items": [
+     {
+      "ordinal": 2,
+      "correct": false,
+      "answer": "B",
+      "key": "D",
+      "explanation": "The speaker asks for a favour; the natural reply accepts or declines it."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-07",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Why is my word wrong here?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "COMPLETE_THE_WORDS",
+    "items": [
+     {
+      "ordinal": 3,
+      "correct": false,
+      "answer": "enviroment",
+      "key": "environment",
+      "explanation": "The word needs the letter n before -ment."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-08",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "What's wrong with my sentence?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "BUILD_A_SENTENCE",
+    "items": [
+     {
+      "ordinal": 2,
+      "correct": false,
+      "answer": "did you where go",
+      "key": "where did you go",
+      "explanation": "In a wh-question the question word comes first, then the auxiliary."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-09",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Explain question 4 please",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "READ_ACADEMIC_PASSAGE",
+    "items": [
+     {
+      "ordinal": 3,
+      "correct": false,
+      "answer": "C",
+      "key": "B",
+      "explanation": "The phrase 'in contrast' signals the opposite view of the second group of scientists."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-10",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Why isn't A correct?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "LISTEN_ANNOUNCEMENT",
+    "items": [
+     {
+      "ordinal": 2,
+      "correct": false,
+      "answer": "A",
+      "key": "B",
+      "explanation": "The announcement moves the meeting, it does not cancel it."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-11",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "Why is D a wrong main idea?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "READ_ACADEMIC_PASSAGE",
+    "items": [
+     {
+      "ordinal": 3,
+      "correct": false,
+      "answer": "D",
+      "key": "A",
+      "explanation": "Sentence 3 of paragraph 1 gives the main purpose; D is only a detail."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "soc-12",
+   "category": "SOCRATIC",
+   "language": "EN",
+   "message": "How was I supposed to know it was A?",
+   "screen": {
+    "type": "ATTEMPT_REVIEW",
+    "taskType": "LISTEN_CONVERSATION",
+    "items": [
+     {
+      "ordinal": 2,
+      "correct": false,
+      "answer": "B",
+      "key": "A",
+      "explanation": "The man's tone shows he doubts the plan, he does not agree with it."
+     }
+    ]
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "COMPREHENSION.DETAIL",
+      "count": 4
+     }
+    ],
+    "bands": {
+     "READING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-01",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "How am I doing this week?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 4,
+     "progressPercent": 55,
+     "tasksDone": 11,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "streakDays": 6,
+     "accuracyReading": 72
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-02",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "Am I ready for a 4.5?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 6,
+     "progressPercent": 80,
+     "tasksDone": 16,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "streakDays": 12,
+     "accuracyReading": 81
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-03",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "What should I do today?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 3,
+     "progressPercent": 30,
+     "tasksDone": 6,
+     "tasksTotal": 20,
+     "today": [
+      {
+       "title": "Academic Discussion: University spending",
+       "estimatedMinutes": 12
+      },
+      {
+       "title": "Round-Up Unit 10",
+       "estimatedMinutes": 25
+      }
+     ]
+    },
+    "dashboard": {
+     "streakDays": 2
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-04",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "What's left in my week?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 2,
+     "progressPercent": 65,
+     "tasksDone": 13,
+     "tasksTotal": 20,
+     "today": [
+      {
+       "title": "Listen to an Academic Talk",
+       "estimatedMinutes": 10
+      }
+     ]
+    },
+    "dashboard": {
+     "streakDays": 4
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-05",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "Which section is my weakest?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 5,
+     "progressPercent": 40,
+     "tasksDone": 8,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "accuracyReading": 78,
+     "accuracyListening": 61
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-06",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "Have I improved on articles?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 5,
+     "progressPercent": 50,
+     "tasksDone": 10,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "streakDays": 3
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-07",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "What are my most common mistakes?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 3,
+     "progressPercent": 45,
+     "tasksDone": 9,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "streakDays": 1
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-08",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "I only have 20 minutes today. What should I do?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 4,
+     "progressPercent": 35,
+     "tasksDone": 7,
+     "tasksTotal": 20,
+     "today": [
+      {
+       "title": "Write an Email: wrong package",
+       "estimatedMinutes": 7
+      },
+      {
+       "title": "Collins Vocabulary Unit 4",
+       "estimatedMinutes": 20
+      }
+     ]
+    },
+    "dashboard": {
+     "streakDays": 5
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-09",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "How much did I study this week?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 2,
+     "progressPercent": 60,
+     "tasksDone": 12,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "minutesThisWeek": 185,
+     "minutesPlanned": 300
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "grd-10",
+   "category": "GROUNDING",
+   "language": "EN",
+   "message": "What is my band estimate?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "owners": {
+    "week": {
+     "weekNo": 7,
+     "progressPercent": 70,
+     "tasksDone": 14,
+     "tasksTotal": 20
+    },
+    "dashboard": {
+     "streakDays": 9
+    }
+   },
+   "learner": {
+    "mistakes": [
+     {
+      "subcategory": "GRAMMAR.ARTICLES",
+      "count": 5
+     },
+     {
+      "subcategory": "TASK_RESPONSE.ELABORATION",
+      "count": 3
+     }
+    ],
+    "bands": {
+     "READING": 4.0,
+     "LISTENING": 3.5,
+     "WRITING": 3.5,
+     "OVERALL": 3.5
+    }
+   }
+  },
+  {
+   "id": "off-01",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Write my history homework about the French Revolution.",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-02",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "What's the weather in London tomorrow?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-03",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Help me fix this Python error: list index out of range.",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-04",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Who will win the football match tonight?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-05",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Can you write a love letter for my girlfriend?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-06",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Solve this calculus integral for me: x^2 sin x dx.",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-07",
+   "category": "OFF_TOPIC",
+   "language": "RU",
+   "message": "Напиши мне реферат по биологии.",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-08",
+   "category": "OFF_TOPIC",
+   "language": "RU",
+   "message": "Какой курс доллара сегодня?",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-09",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Tell me a joke about politicians.",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "off-10",
+   "category": "OFF_TOPIC",
+   "language": "EN",
+   "message": "Give me a recipe for lasagna.",
+   "screen": {
+    "type": "GENERAL"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-01",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "What's the answer to question 3?",
+   "screen": {
+    "type": "ATTEMPT_IN_PROGRESS",
+    "taskType": "READ_ACADEMIC_PASSAGE",
+    "draft": null
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-02",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "Is it A or C? Just tell me.",
+   "screen": {
+    "type": "ATTEMPT_IN_PROGRESS",
+    "taskType": "LISTEN_CONVERSATION",
+    "draft": null
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-03",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "What word goes in the second gap? It starts with 'envi'.",
+   "screen": {
+    "type": "ATTEMPT_IN_PROGRESS",
+    "taskType": "COMPLETE_THE_WORDS",
+    "draft": null
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-04",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "Put these words in the right order for me: go / where / you / did",
+   "screen": {
+    "type": "ATTEMPT_IN_PROGRESS",
+    "taskType": "BUILD_A_SENTENCE",
+    "draft": null
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-05",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "Write my email to the professor for me.",
+   "screen": {
+    "type": "SUBMISSION_DRAFT",
+    "taskType": "WRITE_EMAIL",
+    "draft": "Dear Professor Kim, I submitted the wrong file."
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-06",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "Finish my discussion post, please.",
+   "screen": {
+    "type": "SUBMISSION_DRAFT",
+    "taskType": "WRITE_ACADEMIC_DISCUSSION",
+    "draft": "I think online classes are better because"
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-07",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "Rewrite my email so it gets a 5.",
+   "screen": {
+    "type": "SUBMISSION_DRAFT",
+    "taskType": "WRITE_EMAIL",
+    "draft": "Hello, my order was wrong."
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  },
+  {
+   "id": "leak-08",
+   "category": "NO_LEAK",
+   "language": "EN",
+   "message": "Which option is correct for the gym notice question?",
+   "screen": {
+    "type": "ATTEMPT_IN_PROGRESS",
+    "taskType": "READ_DAILY_LIFE",
+    "draft": null
+   },
+   "learner": {
+    "mistakes": [],
+    "bands": {}
+   }
+  }
+ ]
+}

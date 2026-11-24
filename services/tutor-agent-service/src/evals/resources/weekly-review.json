@@ -1,0 +1,597 @@
+{
+ "suite": "weekly-review",
+ "version": 1,
+ "source": "synthetic, docs/12 phase 5c decision 3",
+ "cases": [
+  {
+   "id": "week-01",
+   "weekNo": 2,
+   "tasksTotal": 20,
+   "tasksDone": 17,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 5,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 2,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.63
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.1
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "SPELLING.COMMON",
+     "wrong": "enviroment",
+     "right": "environment",
+     "count": 4
+    },
+    {
+     "subcategory": "TASK_RESPONSE.ELABORATION",
+     "wrong": "Online classes are good.",
+     "right": "Online classes are good because students can rewatch lectures.",
+     "count": 3
+    },
+    {
+     "subcategory": "COHERENCE.TRANSITIONS",
+     "wrong": "Firstly... Secondly... Thirdly...",
+     "right": "First... In addition... Finally...",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.6
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-02",
+   "weekNo": 3,
+   "tasksTotal": 20,
+   "tasksDone": 12,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 4,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 2,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.6599999999999999
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.2
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "GRAMMAR.SUBJECT_VERB_AGREEMENT",
+     "wrong": "people lives",
+     "right": "people live",
+     "count": 4
+    },
+    {
+     "subcategory": "COHERENCE.TRANSITIONS",
+     "wrong": "Firstly... Secondly... Thirdly...",
+     "right": "First... In addition... Finally...",
+     "count": 3
+    },
+    {
+     "subcategory": "SPELLING.COMMON",
+     "wrong": "enviroment",
+     "right": "environment",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.7
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-03",
+   "weekNo": 4,
+   "tasksTotal": 20,
+   "tasksDone": 9,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 3,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 1,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.69
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.3
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "GRAMMAR.ARTICLES",
+     "wrong": "in library",
+     "right": "in the library",
+     "count": 4
+    },
+    {
+     "subcategory": "VOCABULARY.WORD_CHOICE",
+     "wrong": "make a research",
+     "right": "do research",
+     "count": 3
+    },
+    {
+     "subcategory": "GRAMMAR.VERB_TENSES",
+     "wrong": "I have went there",
+     "right": "I went there",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.8
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-04",
+   "weekNo": 5,
+   "tasksTotal": 20,
+   "tasksDone": 15,
+   "language": "RU",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 4,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 2,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.72
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.4
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "COHERENCE.TRANSITIONS",
+     "wrong": "Firstly... Secondly... Thirdly...",
+     "right": "First... In addition... Finally...",
+     "count": 4
+    },
+    {
+     "subcategory": "GRAMMAR.ARTICLES",
+     "wrong": "in library",
+     "right": "in the library",
+     "count": 3
+    },
+    {
+     "subcategory": "GRAMMAR.VERB_TENSES",
+     "wrong": "I have went there",
+     "right": "I went there",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.5
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-05",
+   "weekNo": 6,
+   "tasksTotal": 20,
+   "tasksDone": 19,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 5,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 3,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.75
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.0
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "GRAMMAR.ARTICLES",
+     "wrong": "in library",
+     "right": "in the library",
+     "count": 4
+    },
+    {
+     "subcategory": "TASK_RESPONSE.ELABORATION",
+     "wrong": "Online classes are good.",
+     "right": "Online classes are good because students can rewatch lectures.",
+     "count": 3
+    },
+    {
+     "subcategory": "VOCABULARY.WORD_CHOICE",
+     "wrong": "make a research",
+     "right": "do research",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.6
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-06",
+   "weekNo": 7,
+   "tasksTotal": 20,
+   "tasksDone": 14,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 4,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 2,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.78
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.1
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "GRAMMAR.SUBJECT_VERB_AGREEMENT",
+     "wrong": "people lives",
+     "right": "people live",
+     "count": 4
+    },
+    {
+     "subcategory": "GRAMMAR.VERB_TENSES",
+     "wrong": "I have went there",
+     "right": "I went there",
+     "count": 3
+    },
+    {
+     "subcategory": "VOCABULARY.WORD_CHOICE",
+     "wrong": "make a research",
+     "right": "do research",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.7
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-07",
+   "weekNo": 8,
+   "tasksTotal": 20,
+   "tasksDone": 11,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 3,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 1,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.8099999999999999
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.2
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "SPELLING.COMMON",
+     "wrong": "enviroment",
+     "right": "environment",
+     "count": 4
+    },
+    {
+     "subcategory": "GRAMMAR.ARTICLES",
+     "wrong": "in library",
+     "right": "in the library",
+     "count": 3
+    },
+    {
+     "subcategory": "GRAMMAR.SUBJECT_VERB_AGREEMENT",
+     "wrong": "people lives",
+     "right": "people live",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.8
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-08",
+   "weekNo": 9,
+   "tasksTotal": 20,
+   "tasksDone": 16,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 5,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 2,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.84
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.3
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "GRAMMAR.VERB_TENSES",
+     "wrong": "I have went there",
+     "right": "I went there",
+     "count": 4
+    },
+    {
+     "subcategory": "GRAMMAR.ARTICLES",
+     "wrong": "in library",
+     "right": "in the library",
+     "count": 3
+    },
+    {
+     "subcategory": "GRAMMAR.SUBJECT_VERB_AGREEMENT",
+     "wrong": "people lives",
+     "right": "people live",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.5
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-09",
+   "weekNo": 10,
+   "tasksTotal": 20,
+   "tasksDone": 13,
+   "language": "RU",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 4,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 2,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.87
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.4
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "VOCABULARY.WORD_CHOICE",
+     "wrong": "make a research",
+     "right": "do research",
+     "count": 4
+    },
+    {
+     "subcategory": "TASK_RESPONSE.ELABORATION",
+     "wrong": "Online classes are good.",
+     "right": "Online classes are good because students can rewatch lectures.",
+     "count": 3
+    },
+    {
+     "subcategory": "GRAMMAR.VERB_TENSES",
+     "wrong": "I have went there",
+     "right": "I went there",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.6
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  },
+  {
+   "id": "week-10",
+   "weekNo": 11,
+   "tasksTotal": 20,
+   "tasksDone": 18,
+   "language": "EN",
+   "sections": [
+    {
+     "section": "READING",
+     "tasksTotal": 5,
+     "tasksDone": 5,
+     "minutesPlanned": 75,
+     "minutesDone": 60
+    },
+    {
+     "section": "WRITING",
+     "tasksTotal": 3,
+     "tasksDone": 3,
+     "minutesPlanned": 40,
+     "minutesDone": 30
+    }
+   ],
+   "scores": [
+    {
+     "taskType": "READ_ACADEMIC_PASSAGE",
+     "accuracy": 0.8999999999999999
+    },
+    {
+     "taskType": "WRITE_EMAIL",
+     "score": 3.0
+    }
+   ],
+   "mistakes": [
+    {
+     "subcategory": "GRAMMAR.SUBJECT_VERB_AGREEMENT",
+     "wrong": "people lives",
+     "right": "people live",
+     "count": 4
+    },
+    {
+     "subcategory": "VOCABULARY.WORD_CHOICE",
+     "wrong": "make a research",
+     "right": "do research",
+     "count": 3
+    },
+    {
+     "subcategory": "GRAMMAR.VERB_TENSES",
+     "wrong": "I have went there",
+     "right": "I went there",
+     "count": 2
+    }
+   ],
+   "bands": {
+    "OVERALL": 3.7
+   },
+   "previousBands": {
+    "OVERALL": 3.5
+   }
+  }
+ ]
+}
