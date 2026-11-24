@@ -274,7 +274,9 @@ public class ToolExecutor {
         List<Map<String, Object>> stats = new ArrayList<>();
         for (MistakeStat s : model.mistakeStats()) {
             if ((category != null && !s.category().name().equals(category))
-                    || (subcategory != null && !s.subcategory().equals(subcategory))
+                    || (subcategory != null
+                            && !s.subcategory().equals(subcategory)
+                            && !s.subcategory().endsWith("." + subcategory))
                     || s.lastSeenAt().isBefore(since)) {
                 continue;
             }
