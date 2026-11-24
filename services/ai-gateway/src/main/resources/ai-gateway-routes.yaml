@@ -159,7 +159,7 @@ routes:
   - useCase: EVAL_JUDGE
     candidates: ["ZAI:glm-4.7-flash", "ZAI:glm-4.5-flash", "GROQ:qwen/qwen3.8-27b"]
     temperature: 0.0
-    maxOutputTokens: 500
+    maxOutputTokens: 1500
     cacheable: true
     timeout: PT60S
   - useCase: GUARD
