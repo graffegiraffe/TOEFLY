@@ -1,0 +1,36 @@
+name: add_week_task_internal
+description: tutor-agent-service adds an extra task the learner confirmed (assignExtraTask, docs/06 §4.5)
+request:
+  method: POST
+  url: /internal/v1/weeks/5b1e9c3a-2f0d-4c8e-9a7b-1d2c3e4f5a6b/tasks
+  headers:
+    Authorization: Bearer service-token
+    Content-Type: application/json
+    Idempotency-Key: 8f1c2d3e-4b5a-4c6d-9e7f-0a1b2c3d4e5f
+  body:
+    source: TUTOR_AGENT
+    itemSetId: 3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f
+    day: NEXT_FREE_DAY
+    reason: More practice on articles after your last email.
+response:
+  status: 201
+  body:
+    weekId: 5b1e9c3a-2f0d-4c8e-9a7b-1d2c3e4f5a6b
+    kind: ITEM_SET
+    section: READING
+    taskType: READ_DAILY_LIFE
+    itemSetId: 3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f
+    status: PENDING
+    addedBy: TUTOR_AGENT
+    rationale: More practice on articles after your last email.
+  matchers:
+    body:
+      - path: $.taskId
+        type: by_regex
+        predefined: uuid
+      - path: $.dayIndex
+        type: by_type
+      - path: $.estimatedMinutes
+        type: by_type
+      - path: $.title
+        type: by_type

@@ -1,6 +1,13 @@
 package com.toefly.planning.adapter;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -10,6 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.toefly.common.events.CloudEventHeaders;
 import com.toefly.common.events.EventPayloadSerializer;
 import com.toefly.common.test.ApicurioTestcontainersConfiguration;
@@ -23,10 +32,18 @@ import com.toefly.common.test.contract.MockMvcExchanger;
 import com.toefly.common.test.contract.OutboxMessageReceiver;
 import com.toefly.events.assessment.SubmissionEvaluatedV1;
 import com.toefly.events.common.AttemptMode;
+import com.toefly.events.common.MistakeCategory;
 import com.toefly.events.common.Section;
 import com.toefly.events.practice.AttemptScoredV1;
 import com.toefly.events.practice.AttemptStartedV1;
 import com.toefly.events.profile.OnboardingCompletedV1;
+import com.toefly.events.tutoragent.FocusItemV1;
+import com.toefly.events.tutoragent.LearnerModelUpdatedV1;
+import com.toefly.events.tutoragent.MistakeStatV1;
+import com.toefly.events.tutoragent.MistakeStatus;
+import com.toefly.events.tutoragent.MistakeTrend;
+import com.toefly.events.tutoragent.ReviewMistakeV1;
+import com.toefly.events.tutoragent.WeeklyReviewGeneratedV1;
 import com.toefly.planning.application.port.in.BuildStudyPlanUseCase;
 import com.toefly.planning.application.port.in.OnboardingGoal;
 import com.toefly.planning.application.port.in.RolloverUseCase;
@@ -39,6 +56,9 @@ import com.toefly.planning.application.port.out.UnitCatalogPort;
 import com.toefly.planning.application.port.out.WeekRepository;
 import com.toefly.planning.config.ShiftableClock;
 import com.toefly.planning.domain.composition.UnitRef;
+import com.toefly.planning.domain.learner.LearnerModelView;
+import com.toefly.planning.domain.learner.MistakeStat;
+import com.toefly.planning.domain.week.DraftSource;
 import com.toefly.planning.domain.week.TaskType;
 import com.toefly.planning.domain.week.Week;
 import com.toefly.planning.domain.week.WeekTask;
@@ -56,12 +76,15 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -77,9 +100,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -96,9 +123,59 @@ import tools.jackson.databind.json.JsonMapper;
     PostgresTestcontainersConfiguration.class,
     KafkaTestcontainersConfiguration.class,
     ApicurioTestcontainersConfiguration.class,
-    PlanningComponentIT.TestClock.class
+    PlanningComponentIT.TestClock.class,
+    PlanningComponentIT.Topics.class
 })
 class PlanningComponentIT {
+
+    /** Topics the listeners consume; Topics creates them with their retry and dead-letter topics. */
+    static final List<String> CONSUMED = List.of(
+            "toefly.assessment.submission-evaluated.v1",
+            "toefly.content.item-set-hidden.v1",
+            "toefly.content.item-set-published.v1",
+            "toefly.practice.ability-updated.v1",
+            "toefly.practice.attempt-scored.v1",
+            "toefly.practice.attempt-started.v1",
+            "toefly.profile.account-deletion-requested.v1",
+            "toefly.profile.onboarding-completed.v1",
+            "toefly.profile.preferences-updated.v1",
+            "toefly.tutor-agent.learner-model-updated.v1",
+            "toefly.tutor-agent.weekly-review-generated.v1");
+
+    /**
+     * A fresh broker has none of the consumed topics; they are created before the listeners start, so every container
+     * gets its partitions at once instead of rebalancing the group while the topics appear (slow CI runners).
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    static class Topics {
+        @Bean
+        KafkaAdmin.NewTopics consumedTopics() {
+            return new KafkaAdmin.NewTopics(CONSUMED.stream()
+                    .flatMap(topic -> Stream.of(topic, topic + ".retry", topic + ".dlq"))
+                    .map(topic ->
+                            TopicBuilder.name(topic).partitions(3).replicas(1).build())
+                    .toArray(NewTopic[]::new));
+        }
+    }
+
+    /** ai-gateway and the token endpoint of Keycloak. */
+    static final WireMockServer DEPENDENCIES = new WireMockServer(options().dynamicPort());
+
+    static {
+        DEPENDENCIES.start();
+    }
+
+    @DynamicPropertySource
+    static void dependencies(DynamicPropertyRegistry registry) {
+        registry.add("toefly.planning.ai-gateway-url", DEPENDENCIES::baseUrl);
+        registry.add(
+                "spring.security.oauth2.client.provider.keycloak.token-uri", () -> DEPENDENCIES.baseUrl() + "/token");
+    }
+
+    @AfterAll
+    static void stopDependencies() {
+        DEPENDENCIES.stop();
+    }
 
     static final JsonMapper JSON = JsonMapper.builder().build();
     /** A shared CI runner needs longer for the consumer group to settle on all topics after start. */
@@ -178,14 +255,30 @@ class PlanningComponentIT {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofMillis(500))
-                .until(() -> listenerRegistry.getAllListenerContainers().stream()
-                        .filter(MessageListenerContainer::isRunning)
-                        .allMatch(c -> c.getAssignedPartitions() != null
-                                && !c.getAssignedPartitions().isEmpty()));
+                .untilAsserted(() -> {
+                    List<MessageListenerContainer> running = listenerRegistry.getAllListenerContainers().stream()
+                            .filter(MessageListenerContainer::isRunning)
+                            .toList();
+                    assertThat(running.stream()
+                                    .flatMap(c ->
+                                            Stream.of(c.getContainerProperties().getTopics()))
+                                    .filter(topic -> !topic.endsWith(".retry") && !topic.endsWith(".dlq"))
+                                    .distinct())
+                            .as("consumed topics missing from CONSUMED")
+                            .allMatch(CONSUMED::contains);
+                    assertThat(running.stream()
+                                    .filter(c -> c.getAssignedPartitions() == null
+                                            || c.getAssignedPartitions().isEmpty())
+                                    .map(MessageListenerContainer::getListenerId))
+                            .as("listener containers without partitions")
+                            .isEmpty();
+                });
     }
 
     @BeforeEach
     void catalog() {
+        DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo("/token"))
+                .willReturn(okJson("{\"access_token\":\"svc\",\"token_type\":\"Bearer\",\"expires_in\":300}")));
         awaitListenerAssignment();
         clock.reset();
         when(units.roundUp()).thenReturn(units("Round-Up Unit"));
@@ -208,6 +301,23 @@ class PlanningComponentIT {
                             null,
                             Instant.now());
                 }
+            }
+        }
+        if (jdbc.sql("SELECT count(*) FROM item_set_catalog WHERE task_type = 'GRAMMAR_EXERCISE'")
+                        .query(Integer.class)
+                        .single()
+                == 0) {
+            for (int i = 0; i < 10; i++) {
+                sync.itemSetPublished(
+                        UUID.randomUUID(),
+                        1,
+                        TaskType.GRAMMAR_EXERCISE,
+                        "TOEFL_2026",
+                        0,
+                        8.0,
+                        "articles " + i,
+                        null,
+                        Instant.now());
             }
         }
     }
@@ -305,7 +415,286 @@ class PlanningComponentIT {
                 .andExpect(jsonPath("$.progressPercent").isNumber());
     }
 
+    @Test
+    @DisplayName("docs/12 5c decision 1: learner-model-updated keeps the newest learner model once per event")
+    void learnerModelFromKafka() throws Exception {
+        UUID user = UUID.randomUUID();
+        LearnerModelUpdatedV1 newer = learnerModel(user, 7, 4);
+        LearnerModelUpdatedV1 older = learnerModel(user, 6, 1);
+        send("toefly.tutor-agent.learner-model-updated.v1", user.toString(), newer.getEventId(), newer);
+        send("toefly.tutor-agent.learner-model-updated.v1", user.toString(), newer.getEventId(), newer);
+        send("toefly.tutor-agent.learner-model-updated.v1", user.toString(), older.getEventId(), older);
+
+        Awaitility.await()
+                .atMost(KAFKA_WAIT)
+                .untilAsserted(() -> assertThat(jdbc.sql("SELECT count(*) FROM processed_events WHERE event_id = :id")
+                                .param("id", older.getEventId())
+                                .query(Integer.class)
+                                .single())
+                        .isEqualTo(1));
+        assertThat(jdbc.sql("""
+                        SELECT version || ':' || (mistake_stats -> 0 ->> 'subcategory') || ':'
+                            || (mistake_stats -> 0 ->> 'occurrencesLast7Days') || ':' || (bands ->> 'WRITING')
+                        FROM learner_model_view WHERE user_id = :user
+                        """).param("user", user).query(String.class).single())
+                .isEqualTo("7:GRAMMAR.ARTICLES:4:3.5");
+    }
+
+    static LearnerModelUpdatedV1 learnerModel(UUID user, long version, int articles) {
+        return LearnerModelUpdatedV1.newBuilder()
+                .setEventId(UUID.randomUUID())
+                .setOccurredAt(Instant.now())
+                .setUserId(user)
+                .setVersion(version)
+                .setUpdatedAt(Instant.now())
+                .setMistakeStats(List.of(
+                        MistakeStatV1.newBuilder()
+                                .setCategory(MistakeCategory.GRAMMAR)
+                                .setSubcategory("ARTICLES")
+                                .setWeight(3.2)
+                                .setErrorRate(0.3)
+                                .setPriority(2.4)
+                                .setTrend(MistakeTrend.WORSENING)
+                                .setStatus(MistakeStatus.ACTIVE)
+                                .setOccurrencesLast7Days(articles)
+                                .setUnitRefs(List.of("ROUNDUP5.U10", "COLLINS_GR.U02"))
+                                .build(),
+                        MistakeStatV1.newBuilder()
+                                .setCategory(MistakeCategory.TASK_RESPONSE)
+                                .setSubcategory("TASK_RESPONSE.ELABORATION")
+                                .setWeight(1.1)
+                                .setErrorRate(0.2)
+                                .setPriority(0.9)
+                                .setTrend(MistakeTrend.STABLE)
+                                .setStatus(MistakeStatus.WATCH)
+                                .setOccurrencesLast7Days(2)
+                                .setUnitRefs(List.of())
+                                .build()))
+                .setBands(Map.of("WRITING", 3.5, "OVERALL", 4.0))
+                .build();
+    }
+
+    // ---- WeekGenerator (docs/06-ai-agent.md §5.2) ----
+
+    /** Week 1 done and closed: Week 2 of the rules waits; the learner model has recurring article mistakes. */
+    private UUID closedWeekOne() {
+        UUID user = plan();
+        for (WeekTask task : weekOf(user).tasks()) {
+            if (task.kind() == WeekTaskKind.ITEM_SET) {
+                attempts.attemptScored(
+                        user, task.id(), UUID.randomUUID(), task.taskType(), 2, 2, true, Instant.now(), Cause.none());
+            } else {
+                tasks.complete(user, task.id());
+            }
+        }
+        tasks.finishEarly(user, weekOf(user).id());
+        sync.learnerModelUpdated(new LearnerModelView(
+                user,
+                1,
+                Instant.now(),
+                List.of(new MistakeStat("GRAMMAR", "ARTICLES", 2.0, "ACTIVE", 4, List.of("ROUNDUP5.U10"))),
+                Map.of("WRITING", 3.5)));
+        return user;
+    }
+
+    private void sendReview(UUID user, UUID reviewId) throws Exception {
+        WeeklyReviewGeneratedV1 review = WeeklyReviewGeneratedV1.newBuilder()
+                .setEventId(UUID.randomUUID())
+                .setOccurredAt(Instant.now())
+                .setUserId(user)
+                .setReviewId(reviewId)
+                .setWeekId(week(user, 1).id())
+                .setWeekNo(1)
+                .setGeneratedAt(Instant.now())
+                .setLanguage("EN")
+                .setAiFallback(false)
+                .setLowActivity(false)
+                .setTopMistakes(List.of(ReviewMistakeV1.newBuilder()
+                        .setCategory(MistakeCategory.GRAMMAR)
+                        .setSubcategory("GRAMMAR.ARTICLES")
+                        .setCount(4)
+                        .build()))
+                .setNextWeekFocus(List.of(FocusItemV1.newBuilder()
+                        .setSubcategory("GRAMMAR.ARTICLES")
+                        .setWhy("Articles were your most frequent mistake.")
+                        .build()))
+                .build();
+        send("toefly.tutor-agent.weekly-review-generated.v1", user.toString(), review.getEventId(), review);
+        send("toefly.tutor-agent.weekly-review-generated.v1", user.toString(), review.getEventId(), review);
+    }
+
+    private Week week(UUID user, int weekNo) {
+        UUID plan = jdbc.sql("SELECT id FROM study_plan WHERE user_id = :user")
+                .param("user", user)
+                .query(UUID.class)
+                .single();
+        return weeks.findByPlan(plan).stream()
+                .filter(week -> week.weekNo() == weekNo)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private int published(UUID weekId) {
+        return jdbc.sql("SELECT count(*) FROM outbox_event WHERE topic = :topic AND subject = :subject")
+                .param("topic", "toefly.planning.week-published.v1")
+                .param("subject", "weeks/" + weekId)
+                .query(Integer.class)
+                .single();
+    }
+
+    private static String fixture(String name) throws java.io.IOException {
+        try (var in = PlanningComponentIT.class.getResourceAsStream("/ai-fixtures/week-generator/" + name)) {
+            return new String(java.util.Objects.requireNonNull(in).readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    @Test
+    @DisplayName("docs/12 5c decision 1, AC-14.05.2: weekly-review-generated publishes Week 2 drafted by WeekGenerator")
+    void weeklyReviewDraftsNextWeek() throws Exception {
+        UUID user = closedWeekOne();
+        UUID reviewId = UUID.randomUUID();
+        DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo("/internal/v1/ai/chat/completions"))
+                .withRequestBody(matchingJsonPath("$.userId", WireMock.equalTo(user.toString())))
+                .withRequestBody(matchingJsonPath("$.useCase", WireMock.equalTo("WEEK_GENERATION")))
+                .withRequestBody(matchingJsonPath("$.promptKey", WireMock.equalTo("planning.week.generate")))
+                .withRequestBody(
+                        matchingJsonPath("$.idempotencyKey", WireMock.matching("WeekGenerator:.*:" + reviewId + ":1")))
+                .willReturn(okJson(fixture("component-valid.json"))));
+        UUID week2 = week(user, 2).id();
+
+        sendReview(user, reviewId);
+
+        Awaitility.await()
+                .atMost(KAFKA_WAIT)
+                .untilAsserted(() -> assertThat(week(user, 2).draft().source()).isEqualTo(DraftSource.AI));
+        assertThat(week(user, 2).id()).isEqualTo(week2);
+        assertThat(week(user, 2).draft().stamp()).isNotNull();
+        assertThat(published(week2)).isEqualTo(2);
+        mvc.perform(get("/api/v1/weeks/" + week2).with(student(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.aiFallback").value(false))
+                .andExpect(jsonPath("$.rationale").value(Matchers.startsWith("Use a, an and the")))
+                .andExpect(jsonPath("$.sections[?(@.section == 'GRAMMAR')].tasks[?(@.taskType == 'GRAMMAR_EXERCISE')]"
+                                + ".rationale")
+                        .value("Because of mistakes in your writing"));
+        assertThat(DEPENDENCIES.findAll(postRequestedFor(urlPathEqualTo("/internal/v1/ai/chat/completions"))
+                        .withRequestBody(matchingJsonPath("$.userId", WireMock.equalTo(user.toString())))))
+                .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("docs/06 §5.2: ai-gateway down, Week 2 falls back to GreedyWeekPacker with aiFallback = true")
+    void weeklyReviewFallsBack() throws Exception {
+        UUID user = closedWeekOne();
+        DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo("/internal/v1/ai/chat/completions"))
+                .withRequestBody(matchingJsonPath("$.userId", WireMock.equalTo(user.toString())))
+                .willReturn(aResponse()
+                        .withStatus(503)
+                        .withHeader("Content-Type", "application/problem+json")
+                        .withBody("{\"type\":\"https://toefly.app/problems/ai-unavailable\",\"status\":503}")));
+        UUID week2 = week(user, 2).id();
+
+        sendReview(user, UUID.randomUUID());
+
+        Awaitility.await()
+                .atMost(KAFKA_WAIT)
+                .untilAsserted(() -> assertThat(week(user, 2).draft().source()).isEqualTo(DraftSource.AI_FALLBACK));
+        assertThat(published(week2)).isEqualTo(2);
+        mvc.perform(get("/api/v1/weeks/" + week2).with(student(user)))
+                .andExpect(jsonPath("$.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.aiFallback").value(true))
+                .andExpect(jsonPath("$.rationale").value(Matchers.startsWith("Focus of the week: articles")));
+    }
+
     // ---- REST ----
+
+    @Test
+    @DisplayName("docs/06 §4.5 assignExtraTask: addWeekTaskInternal is idempotent, limited to 3 and 501 for the tutor")
+    void extraTasksOfTheAgent() throws Exception {
+        UUID user = plan();
+        Week week = weekOf(user);
+        UUID key = UUID.randomUUID();
+        UUID first = UUID.randomUUID();
+        for (int i = 0; i < 4; i++) {
+            sync.itemSetPublished(
+                    i == 0 ? first : UUID.randomUUID(),
+                    1,
+                    TaskType.READ_DAILY_LIFE,
+                    "TOEFL_2026",
+                    0,
+                    2.5,
+                    "extra " + i,
+                    null,
+                    Instant.now());
+        }
+        String body = "{\"source\":\"TUTOR_AGENT\",\"itemSetId\":\"" + first
+                + "\",\"day\":\"TODAY\",\"reason\":\"Articles again\"}";
+        String taskId = null;
+        for (int i = 0; i < 2; i++) {
+            MvcResult result = mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                            .with(service())
+                            .header("Idempotency-Key", key.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isCreated())
+                    .andExpect(header().exists("Location"))
+                    .andExpect(jsonPath("$.addedBy").value("TUTOR_AGENT"))
+                    .andExpect(jsonPath("$.rationale").value("Articles again"))
+                    .andExpect(jsonPath("$.dayIndex").value(1))
+                    .andReturn();
+            String id = body(result).path("taskId").asString();
+            assertThat(taskId == null || taskId.equals(id)).isTrue();
+            taskId = id;
+            if (i == 1) {
+                assertThat(result.getResponse().getHeader("Idempotent-Replayed"))
+                        .isEqualTo("true");
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            UUID set = jdbc.sql("SELECT item_set_id FROM item_set_catalog WHERE topic = :topic")
+                    .param("topic", "extra " + (i + 1))
+                    .query(UUID.class)
+                    .list()
+                    .getLast();
+            var result = mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                    .with(service())
+                    .header("Idempotency-Key", UUID.randomUUID().toString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"source\":\"TUTOR_AGENT\",\"itemSetId\":\"" + set + "\",\"reason\":\"More\"}"));
+            if (i < 2) {
+                result.andExpect(status().isCreated());
+            } else {
+                result.andExpect(status().isConflict())
+                        .andExpect(jsonPath("$.type").value("https://toefly.app/problems/extra-task-limit-reached"))
+                        .andExpect(jsonPath("$.code").value("EXTRA_TASK_LIMIT_REACHED"));
+            }
+        }
+        mvc.perform(get("/api/v1/weeks/" + week.id()).with(student(user)))
+                .andExpect(jsonPath("$.sections[*].tasks[?(@.addedBy == 'TUTOR_AGENT')].taskId", hasSize(3)));
+        mvc.perform(post("/internal/v1/weeks/" + UUID.randomUUID() + "/tasks")
+                        .with(service())
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+        mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                        .with(service())
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"source":"TUTOR","studentId":"%s","tutorId":"%s","title":"Pages 10-12",
+                                 "estimatedMinutes":20,"task":{"kind":"ITEM_SET","weekSection":"READING","dayIndex":2,
+                                 "itemSetId":"%s"}}
+                                """.formatted(user, UUID.randomUUID(), first)))
+                .andExpect(status().isNotImplemented());
+        mvc.perform(post("/internal/v1/weeks/" + week.id() + "/tasks")
+                        .with(student(user))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
     @DisplayName("AC-04.02.1, AC-05.01.1: the week, the gallery and Today of the learner")
@@ -540,8 +929,18 @@ class PlanningComponentIT {
         tasks.finishEarly(user, weekOf(user).id());
     }
 
-    /** The fixed learner and week of the REST contracts. */
+    /** The fixed learner, week and item set of the REST contracts. */
     private void prepareContractData() {
+        sync.itemSetPublished(
+                UUID.fromString(ContractData.ITEM_SET),
+                1,
+                TaskType.READ_DAILY_LIFE,
+                "TOEFL_2026",
+                0,
+                2.5,
+                "a notice about the library",
+                null,
+                Instant.now());
         UUID owner = UUID.fromString(ContractData.STUDENT);
         if (planCount(owner) == 0) {
             plans.onboardingCompleted(goal(owner), Cause.none());
@@ -680,7 +1079,6 @@ class PlanningComponentIT {
         return JwtFixtures.withRoles(UUID.randomUUID(), "SERVICE");
     }
 
-    @SuppressWarnings("unused")
     private static JsonNode body(MvcResult result) throws Exception {
         return JSON.readTree(result.getResponse().getContentAsString());
     }
@@ -689,6 +1087,7 @@ class PlanningComponentIT {
     static final class ContractData {
         static final String STUDENT = "7d0d2c6a-6b1f-4a47-9f0e-2f4a3e9b5c21";
         static final String WEEK = "5b1e9c3a-2f0d-4c8e-9a7b-1d2c3e4f5a6b";
+        static final String ITEM_SET = "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f";
 
         private ContractData() {}
     }

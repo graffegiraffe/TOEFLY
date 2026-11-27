@@ -354,9 +354,80 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ItemSet' }
         '404': { $ref: '#/components/responses/Problem' }
+  /internal/v1/item-sets/search:
+    post:
+      tags: [Internal]
+      operationId: searchItemSetsInternal
+      summary: Extra practice sets for the searchItems tool of the tutor agent
+      description: |
+        Approved TOEFL_2026 sets of the task type, never those tagged `exam-reserved`, without vector search
+        (docs/12 phase 5c decision 2). `skillFocus` matches a skill tag of the set (`reading.inference`, case-insensitive)
+        or the subskill of one of its items (`INFERENCE`, the part after the last dot); `topic` matches the topic or the
+        full text of the set. With `referenceB` the difficulty filters b: `EASIER` < b − 0.5, `SAME` within ±0.5,
+        `HARDER` > b + 0.5, closest to `referenceB` first; without it the order is by id. Accepts the scope `internal`
+        or any user JWT (the catalog is not personal).
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-safe: true
+      x-toefly-roles: [SERVICE]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ItemSetSearchQuery' }
+      responses:
+        '200':
+          description: At most `limit` sets
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemSetSearchHits' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+  /internal/v1/grammar-units/search:
+    get:
+      tags: [Internal]
+      operationId: searchGrammarUnitsInternal
+      summary: Grammar units for the explainGrammarRule tool of the tutor agent
+      description: |
+        Approved grammar units. `subcategory` (for example `GRAMMAR.ARTICLES`) finds its unit through the mistake
+        taxonomy of docs/06 §6.3; `topic` matches words of the unit titles and topic codes, and a taxonomy code or a
+        unit code (`ROUNDUP5.U10`) given as the topic is resolved the same way. The unit of the subcategory comes
+        first, then units by the number of matching words. Without both the list is empty. Accepts the scope
+        `internal` or any user JWT.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SERVICE]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - { name: topic, in: query, required: false, schema: { type: string, maxLength: 120 } }
+        - { name: subcategory, in: query, required: false, schema: { type: string, maxLength: 60 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 10, default: 3 } }
+      responses:
+        '200':
+          description: Units, best match first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrammarUnitHits' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    serviceAuth:
+      type: oauth2
+      description: Client credentials of `svc-<service>`.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes:
+            internal: Service-to-service calls
   parameters:
     ItemSetId: { name: itemSetId, in: path, required: true, schema: { type: string, format: uuid } }
     Section: { name: section, in: query, required: false, schema: { $ref: '#/components/schemas/Section' } }
@@ -645,3 +716,51 @@ components:
         status: { type: integer }
         detail: { type: string }
         code: { type: string }
+    RelativeDifficulty: { type: string, enum: [EASIER, SAME, HARDER] }
+    ItemSetSearchQuery:
+      type: object
+      required: [taskType]
+      additionalProperties: false
+      properties:
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        skillFocus: { type: string, maxLength: 80, description: 'Skill tag or mistake subcategory, e.g. READING.INFERENCE' }
+        topic: { type: string, maxLength: 100 }
+        difficulty: { allOf: [{ $ref: '#/components/schemas/RelativeDifficulty' }], default: SAME }
+        referenceB: { type: number, minimum: -4, maximum: 4, description: 'Difficulty b that `difficulty` is relative to' }
+        excludeItemSetIds: { type: array, maxItems: 200, items: { type: string, format: uuid } }
+        limit: { type: integer, minimum: 1, maximum: 5, default: 3 }
+    ItemSetSearchHits:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ItemSetHitSummary' }
+    ItemSetHitSummary:
+      type: object
+      required: [itemSetId, taskType, title, estimatedMinutes, difficultyB, skills]
+      properties:
+        itemSetId: { type: string, format: uuid }
+        taskType: { $ref: '#/components/schemas/TaskType' }
+        title: { type: string, description: 'Title of the stimulus, else the topic' }
+        topic: { type: string }
+        estimatedMinutes: { type: number }
+        difficultyB: { type: number }
+        skills: { type: array, items: { type: string } }
+    GrammarUnitHits:
+      type: object
+      required: [units]
+      properties:
+        units:
+          type: array
+          items: { $ref: '#/components/schemas/GrammarUnitHit' }
+    GrammarUnitHit:
+      type: object
+      required: [unitId, code, title, source, estimatedMinutes]
+      properties:
+        unitId: { type: string, format: uuid }
+        code: { type: string, description: 'Unit code of the taxonomy, e.g. ROUNDUP5.U10' }
+        title: { type: string }
+        source: { type: string, description: 'Title of the source book' }
+        estimatedMinutes: { type: number, description: 'Planned time of a grammar unit (60 minutes, as planning-service)' }
+        summary: { type: string, description: 'Summary of the rule card, if the unit has one' }

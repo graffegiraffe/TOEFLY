@@ -24,6 +24,7 @@ tags:
   - { name: Activity, description: 'Активность по дням и время против норм ETS' }
   - { name: AdminMetrics, description: 'Продуктовые метрики и расход AI' }
   - { name: Projections, description: 'Перестройка read-моделей' }
+  - { name: InternalAnalytics, description: 'Внутренние чтения для tutor-agent-service (docs/05 §9.3)' }
 paths:
   /dashboards/student:
     get:
@@ -191,6 +192,65 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /internal/v1/users/{userId}/dashboard:
+    servers:
+      - url: http://analytics-service.toefly.svc.cluster.local:8094
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalAnalytics]
+      operationId: getStudentDashboardInternal
+      summary: Дашборд ученика (для инструментов агента)
+      description: |
+        Тот же ответ, что `GET /dashboards/student`, из read-модели сервиса. Допустим scope `internal` или JWT с
+        `sub == userId` (docs/05 §9.1).
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Дашборд.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudentDashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /internal/v1/users/{userId}/time-reports:
+    servers:
+      - url: http://analytics-service.toefly.svc.cluster.local:8094
+        description: Кластер (не публикуется через api-gateway)
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    get:
+      tags: [InternalAnalytics]
+      operationId: getTimeReportInternal
+      summary: Время против норм ETS за период (для инструментов агента)
+      description: |
+        Тот же ответ, что `GET /time-reports`; период — дни часового пояса ученика до сегодняшнего включительно:
+        `TODAY` — сегодня, `THIS_WEEK` — с первого дня текущей учебной недели (без недели — последние 7 дней, как
+        «время за неделю» дашборда), `LAST_4_WEEKS` — последние 28 дней. Допустим scope `internal` или JWT с
+        `sub == userId`.
+      x-toefly-internal: true
+      x-toefly-leaf: true
+      x-toefly-roles: [SVC]
+      security:
+        - serviceAuth: [internal]
+        - bearerAuth: []
+      parameters:
+        - { name: period, in: query, required: false, schema: { $ref: '#/components/schemas/ReportPeriod' } }
+      responses:
+        '200':
+          description: Отчёт.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TimeReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
 components:
   securitySchemes:
     bearerAuth:
@@ -198,7 +258,20 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Access token Keycloak, realm `toefly`, `aud=toefly-api`.
+    serviceAuth:
+      type: oauth2
+      description: Client credentials клиента `svc-<service>`.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.toefly.app/realms/toefly/protocol/openid-connect/token
+          scopes:
+            internal: Внутренние вызовы сервис-сервис
   parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -255,6 +328,11 @@ components:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
   schemas:
+    ReportPeriod:
+      type: string
+      description: Период отчёта о времени для инструмента `getTimeStats` (docs/06 §4.5).
+      enum: [TODAY, THIS_WEEK, LAST_4_WEEKS]
+      default: THIS_WEEK
     Problem:
       type: object
       description: Problem Details (RFC 9457) с расширениями TOEFLY.

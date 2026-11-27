@@ -23,7 +23,7 @@ tags:
   - { name: Today, description: 'Задания на сегодня' }
   - { name: WeekTasks, description: 'Выполнение и пропуск заданий недели' }
   - { name: Tutor, description: 'Ученики и черновики недель репетитора' }
-  - { name: InternalWeeks, description: 'Внутренний API для classroom-service (x-toefly-internal)' }
+  - { name: InternalWeeks, description: 'Внутренний API для classroom-service и tutor-agent-service (x-toefly-internal)' }
 paths:
   /study-plans:
     post:
@@ -625,8 +625,13 @@ paths:
       operationId: addWeekTaskInternal
       summary: Вставить задание в неделю ученика
       description: |
-        Вызывается `classroom-service` при вставке диапазона страниц или утверждённого ItemSet репетитором.
-        Права репетитора проверены вызывающим; planning проверяет связь по локальной проекции `tutor_student_link`.
+        Вид запроса задаёт `source`.
+        `TUTOR_AGENT` — `tutor-agent-service` после подтверждения ученика (`assignExtraTask`, docs/06 §4.5): ItemSet из
+        локального каталога в день `TODAY`, `TOMORROW` или первый свободный (`NEXT_FREE_DAY`); не более 3 таких заданий
+        в неделе (`409 extra-task-limit-reached`), нагрузка дня не выше 1.25 × minutesPerDay и не более 2 заданий одного
+        типа в день (`409 day-budget-exceeded`); причина хранится в `rationale`, задание помечено `addedBy = TUTOR_AGENT`.
+        `TUTOR` — `classroom-service` при вставке диапазона страниц или утверждённого ItemSet репетитором (этап 10,
+        до него `501 not-implemented`). Закрытая неделя — `409 week-not-editable`.
       x-toefly-internal: true
       x-toefly-leaf: true
       x-toefly-roles: [SVC]
@@ -655,6 +660,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
         '428': { $ref: '#/components/responses/PreconditionRequired' }
         '500': { $ref: '#/components/responses/InternalError' }
   /internal/v1/users/{userId}/weeks/current:
@@ -1062,6 +1068,7 @@ components:
         progressPercent: { type: number, minimum: 0, maximum: 100, description: Доля выполненного оценочного времени. }
         mockExam: { type: boolean }
         rationale: { type: [string, 'null'], description: 'Текст «почему эта неделя такая» (может отсутствовать, если ai-gateway был недоступен).' }
+        aiFallback: { type: boolean, description: 'WeekGenerator не дал корректного черновика, неделя собрана правилами (`GreedyWeekPacker`), тексты «why for you» шаблонные (docs/06 §5.2).' }
         approvalDeadline: { type: [string, 'null'], format: date-time }
         autoPublished: { type: boolean }
         pendingSlots: { type: integer, minimum: 0, description: 'Число заданий, ожидающих генерации.' }
@@ -1137,6 +1144,11 @@ components:
             - { type: 'null' }
         note: { type: [string, 'null'], maxLength: 1000 }
         rationale: { type: [string, 'null'], maxLength: 500, description: Короткое обоснование агента для репетитора. }
+        addedBy:
+          description: Кто добавил задание в опубликованную неделю; `null` — задание состава недели.
+          oneOf:
+            - { $ref: '#/components/schemas/WeekTaskAddedBy' }
+            - { type: 'null' }
         lastAttemptId: { type: [string, 'null'], format: uuid }
         completedAt: { type: [string, 'null'], format: date-time }
     AddWeekTaskBase:
@@ -1320,11 +1332,41 @@ components:
           type: array
           items: { $ref: '#/components/schemas/PendingApproval' }
         page: { $ref: '#/components/schemas/PageInfo' }
+    WeekTaskAddedBy:
+      type: string
+      enum: [TUTOR, TUTOR_AGENT]
+    ExtraTaskDay:
+      type: string
+      enum: [TODAY, TOMORROW, NEXT_FREE_DAY]
     InternalAddWeekTaskRequest:
+      description: Задание для недели ученика; вид запроса задаёт `source`.
+      oneOf:
+        - { $ref: '#/components/schemas/InternalAgentTaskRequest' }
+        - { $ref: '#/components/schemas/InternalTutorTaskRequest' }
+      discriminator:
+        propertyName: source
+        mapping:
+          TUTOR_AGENT: '#/components/schemas/InternalAgentTaskRequest'
+          TUTOR: '#/components/schemas/InternalTutorTaskRequest'
+    InternalAgentTaskRequest:
+      type: object
+      description: Дополнительное задание от Toefly Tutor (`assignExtraTask`); метаданные набора planning берёт из локального каталога `item_set_catalog`.
+      required: [source, itemSetId, reason]
+      properties:
+        source: { type: string, const: TUTOR_AGENT }
+        itemSetId: { type: string, format: uuid }
+        day:
+          allOf:
+            - { $ref: '#/components/schemas/ExtraTaskDay' }
+          default: NEXT_FREE_DAY
+        reason: { type: string, minLength: 1, maxLength: 200, description: Короткая причина для ученика и репетитора. }
+      additionalProperties: false
+    InternalTutorTaskRequest:
       type: object
       description: Вызывающий (`classroom-service`) передаёт готовые метаданные, чтобы эндпоинт оставался листовым (без обращения к `content-service`).
-      required: [studentId, tutorId, title, estimatedMinutes, task]
+      required: [source, studentId, tutorId, title, estimatedMinutes, task]
       properties:
+        source: { type: string, const: TUTOR }
         studentId: { type: string, format: uuid }
         tutorId: { type: string, format: uuid }
         title: { type: string, minLength: 1, maxLength: 200 }

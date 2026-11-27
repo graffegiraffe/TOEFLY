@@ -1,6 +1,7 @@
 name: ai-evals
 
-# Evals of the AI workers (docs/06-ai-agent.md §7.4). Until the private bucket of phase 13 exists, the eval sets stay
+# Evals of the AI workers (docs/06-ai-agent.md §7.4): WritingGrader and, since phase 5c, Toefly Tutor (chat and weekly
+# review, whose thresholds block because the expected labels come from the scenarios). Until the private bucket of phase 13 exists, the eval sets stay
 # with the author: the live run is local and its report without texts is committed to src/evals/reports/. On a pull
 # request this workflow replays that report: the prompts and anchors must be the ones the report was made with, and
 # the metrics must equal the ones recomputed from the per-case results; thresholds are warnings while the gold scores
@@ -13,6 +14,8 @@ on:
       - "services/*/src/main/java/**/application/service/WritingGrader.java"
       - "services/assessment-service/src/main/resources/grading/**"
       - "services/assessment-service/src/evals/**"
+      - "services/tutor-agent-service/src/evals/**"
+      - "services/tutor-agent-service/src/main/java/**/application/service/ChatService.java"
       - "evals/manifest.json"
   workflow_dispatch:
 
@@ -39,18 +42,26 @@ jobs:
         run: >-
           ./mvnw -B -ntp -Pevals -pl services/assessment-service -am test
           -Dtest=EvalReportReplayTest -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Replay the eval reports of Toefly Tutor
+        if: always()
+        run: >-
+          ./mvnw -B -ntp -Pevals -pl services/tutor-agent-service -am test
+          -Dtest=TutorEvalReplayTest -Dsurefire.failIfNoSpecifiedTests=false
       - name: Summary
         if: always()
         run: |
-          summary=services/assessment-service/target/evals-summary.md
-          if [ -f "$summary" ]; then cat "$summary" >> "$GITHUB_STEP_SUMMARY"; fi
+          for summary in services/assessment-service/target/evals-summary.md services/tutor-agent-service/target/evals-summary.md; do
+            if [ -f "$summary" ]; then cat "$summary" >> "$GITHUB_STEP_SUMMARY"; fi
+          done
       - name: Comment on the pull request
         if: always() && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          summary=services/assessment-service/target/evals-summary.md
-          [ -f "$summary" ] || exit 0
+          summary=target-evals-summary.md
+          cat services/assessment-service/target/evals-summary.md services/tutor-agent-service/target/evals-summary.md \
+            > "$summary" 2>/dev/null || true
+          [ -s "$summary" ] || exit 0
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$summary" --edit-last \
             || gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$summary"

@@ -1,8 +1,10 @@
 package com.toefly.planning.config;
 
 import com.toefly.common.security.ClientCredentialsInterceptor;
+import com.toefly.planning.adapter.out.client.AiGatewayWeekDraftAdapter;
 import com.toefly.planning.adapter.out.client.ContentUnitCatalogAdapter;
 import com.toefly.planning.application.port.out.UnitCatalogPort;
+import com.toefly.planning.application.port.out.WeekDraftAiPort;
 import com.toefly.planning.application.service.PlanningSettings;
 import com.toefly.planning.domain.composition.CompositionRules;
 import com.toefly.planning.domain.composition.ResourceLink;
@@ -91,6 +93,20 @@ class PlanningConfig {
         factory.setReadTimeout(Duration.ofSeconds(2));
         return new ContentUnitCatalogAdapter(builder.clone()
                 .baseUrl(properties.contentUrl())
+                .requestFactory(factory)
+                .requestInterceptor(new ClientCredentialsInterceptor(clients, REGISTRATION))
+                .build());
+    }
+
+    /** ai-gateway for WeekGenerator, background group: 1 s to connect, 120 s to read (docs/05 §9.3.8). */
+    @Bean
+    WeekDraftAiPort weekDraftAi(
+            RestClient.Builder builder, OAuth2AuthorizedClientManager clients, PlanningProperties properties) {
+        var factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(1));
+        factory.setReadTimeout(properties.aiReadTimeout());
+        return new AiGatewayWeekDraftAdapter(builder.clone()
+                .baseUrl(properties.aiGatewayUrl())
                 .requestFactory(factory)
                 .requestInterceptor(new ClientCredentialsInterceptor(clients, REGISTRATION))
                 .build());

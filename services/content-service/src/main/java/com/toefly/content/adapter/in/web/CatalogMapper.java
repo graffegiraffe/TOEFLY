@@ -80,6 +80,27 @@ final class CatalogMapper {
                 .warnings(e.warnings());
     }
 
+    /** The title of the stimulus of a payload, else the fallback (the topic of the set). */
+    static String stimulusTitle(String payload, String fallback) {
+        JsonNode title = JSON.readTree(payload).path("stimulus").path("title");
+        return title.isString() && !title.asString().isBlank() ? title.asString() : fallback;
+    }
+
+    /** {@code summary} of a rule card, else its {@code title}; null without a card. */
+    static @org.jspecify.annotations.Nullable String ruleSummary(
+            @org.jspecify.annotations.Nullable String ruleCardJson) {
+        if (ruleCardJson == null) {
+            return null;
+        }
+        JsonNode card = JSON.readTree(ruleCardJson);
+        for (String field : new String[] {"summary", "title"}) {
+            if (card.path(field).isString() && !card.path(field).asString().isBlank()) {
+                return card.path(field).asString();
+            }
+        }
+        return null;
+    }
+
     static ItemSet full(com.toefly.content.domain.catalog.ItemSet s, Source source, boolean withKeys) {
         JsonNode payload = JSON.readTree(s.payload());
         Map<String, Object> body = JSON.convertValue(

@@ -1,0 +1,20 @@
+name: search_grammar_units_internal
+description: the explainGrammarRule tool of the tutor agent finds the unit of a mistake subcategory (docs/06 §4.5, §6.3, docs/12 phase 5c decision 2)
+request:
+  method: GET
+  url: /internal/v1/grammar-units/search?subcategory=GRAMMAR.VERB_TENSES&limit=3
+  headers:
+    Authorization: Bearer service-token
+response:
+  status: 200
+  body:
+    units:
+      - code: ROUNDUP5.U01
+        title: Present forms
+        source: Demo reading
+        estimatedMinutes: 60
+  matchers:
+    body:
+      - path: $.units[0].unitId
+        type: by_regex
+        predefined: uuid

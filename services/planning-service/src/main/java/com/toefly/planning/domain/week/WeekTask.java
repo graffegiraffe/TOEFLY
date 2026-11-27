@@ -102,6 +102,37 @@ public final class WeekTask {
                 null);
     }
 
+    /** The same pending task with another "why for you" text, for example from WeekGenerator. */
+    public WeekTask withRationale(@Nullable String why) {
+        return laidOut(dayNo, why);
+    }
+
+    /** The same pending task on {@code day} with the given "why for you" text; the week orders it later. */
+    public WeekTask laidOut(int day, @Nullable String why) {
+        if (status != WeekTaskStatus.PENDING || attemptId != null) {
+            throw new IllegalStateException("Only a new pending task can be laid out");
+        }
+        return new WeekTask(
+                id,
+                kind,
+                section,
+                taskType,
+                refId,
+                title,
+                estimatedMinutes,
+                origin,
+                why,
+                repeat,
+                WeekTaskStatus.PENDING,
+                null,
+                day,
+                sortOrder,
+                null,
+                null,
+                null,
+                null);
+    }
+
     void start(UUID attempt, Instant now) {
         if (status == WeekTaskStatus.PENDING) {
             status = WeekTaskStatus.IN_PROGRESS;

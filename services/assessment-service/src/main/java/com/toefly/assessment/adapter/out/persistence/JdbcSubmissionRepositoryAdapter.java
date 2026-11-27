@@ -13,6 +13,7 @@ import com.toefly.assessment.domain.evaluation.MistakeCategory;
 import com.toefly.assessment.domain.evaluation.PassRecord;
 import com.toefly.assessment.domain.evaluation.Severity;
 import com.toefly.assessment.domain.submission.AttemptMode;
+import com.toefly.assessment.domain.submission.ModelAnswer;
 import com.toefly.assessment.domain.submission.Submission;
 import com.toefly.assessment.domain.submission.SubmissionStatus;
 import com.toefly.assessment.domain.submission.SubmissionVersion;
@@ -293,6 +294,27 @@ public class JdbcSubmissionRepositoryAdapter implements SubmissionRepository {
                 .param("e", evaluationId)
                 .update();
         insertAnnotations(evaluationId, annotations);
+    }
+
+    @Override
+    public void saveModelAnswer(UUID submissionId, ModelAnswer answer) {
+        jdbc.sql("""
+                        INSERT INTO submission_model_answer (submission_id, body, source)
+                        VALUES (:id, :body, :source)
+                        ON CONFLICT (submission_id) DO UPDATE SET body = EXCLUDED.body, source = EXCLUDED.source
+                        """)
+                .param("id", submissionId)
+                .param("body", answer.text())
+                .param("source", answer.source())
+                .update();
+    }
+
+    @Override
+    public Optional<ModelAnswer> modelAnswer(UUID submissionId) {
+        return jdbc.sql("SELECT body, source FROM submission_model_answer WHERE submission_id = :id")
+                .param("id", submissionId)
+                .query((rs, n) -> new ModelAnswer(rs.getString("body"), rs.getString("source")))
+                .optional();
     }
 
     @Override

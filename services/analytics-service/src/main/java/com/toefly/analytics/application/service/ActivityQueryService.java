@@ -3,10 +3,13 @@ package com.toefly.analytics.application.service;
 import com.toefly.analytics.application.port.in.ActivityQueryUseCase;
 import com.toefly.analytics.application.port.in.Caller;
 import com.toefly.analytics.application.port.in.InvalidPeriodException;
+import com.toefly.analytics.application.port.in.ReportPeriod;
 import com.toefly.analytics.application.port.out.ActivityRepository;
+import com.toefly.analytics.application.port.out.DashboardRepository;
 import com.toefly.analytics.application.port.out.LearnerRepository;
 import com.toefly.analytics.domain.activity.ActivityDay;
 import com.toefly.analytics.domain.activity.TimeReport;
+import com.toefly.analytics.domain.dashboard.StudentDashboard;
 import com.toefly.analytics.domain.learner.LearnerSettings;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -24,13 +27,19 @@ public class ActivityQueryService implements ActivityQueryUseCase {
     /** Default period of the time report: the last seven days including today. */
     static final int DEFAULT_DAYS = 7;
 
+    /** Days of {@link ReportPeriod#LAST_4_WEEKS}. */
+    static final int FOUR_WEEKS_DAYS = 28;
+
     private final ActivityRepository activity;
     private final LearnerRepository learners;
+    private final DashboardRepository dashboards;
     private final Clock clock;
 
-    public ActivityQueryService(ActivityRepository activity, LearnerRepository learners, Clock clock) {
+    public ActivityQueryService(
+            ActivityRepository activity, LearnerRepository learners, DashboardRepository dashboards, Clock clock) {
         this.activity = activity;
         this.learners = learners;
+        this.dashboards = dashboards;
         this.clock = clock;
     }
 
@@ -47,10 +56,37 @@ public class ActivityQueryService implements ActivityQueryUseCase {
     public TimeReport timeReport(
             Caller caller, @Nullable UUID studentId, @Nullable LocalDate from, @Nullable LocalDate to) {
         UUID userId = Access.target(caller, studentId);
-        LearnerSettings settings = learners.find(userId).orElseGet(() -> LearnerSettings.unknown(userId));
+        LearnerSettings settings = settings(userId);
         LocalDate today = settings.today(clock.instant());
         LocalDate end = to == null ? today.plusDays(1) : to;
         LocalDate start = from == null ? end.minusDays(DEFAULT_DAYS) : from;
+        return report(userId, settings, today, start, end);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TimeReport timeReportOf(UUID userId, ReportPeriod period) {
+        LearnerSettings settings = settings(userId);
+        LocalDate today = settings.today(clock.instant());
+        LocalDate start = switch (period) {
+            case TODAY -> today;
+            case THIS_WEEK ->
+                DashboardQueryService.weekStart(
+                        dashboards
+                                .find(userId)
+                                .map(StudentDashboard::currentWeek)
+                                .orElse(null),
+                        today);
+            case LAST_4_WEEKS -> today.minusDays(FOUR_WEEKS_DAYS - 1);
+        };
+        return report(userId, settings, today, start, today.plusDays(1));
+    }
+
+    private LearnerSettings settings(UUID userId) {
+        return learners.find(userId).orElseGet(() -> LearnerSettings.unknown(userId));
+    }
+
+    private TimeReport report(UUID userId, LearnerSettings settings, LocalDate today, LocalDate start, LocalDate end) {
         check(start, end);
         LocalDate planStart = settings.planStart();
         LocalDate planFrom = planStart != null && planStart.isAfter(start) ? planStart : start;

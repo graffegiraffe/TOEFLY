@@ -3,6 +3,7 @@ package com.toefly.planning.application.port.out;
 import com.toefly.planning.domain.week.TaskType;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -15,6 +16,9 @@ public interface ItemSetCatalogPort {
 
     /** Visible sets of a type in the format of the exam, without sets of tutors. */
     List<CatalogEntry> visible(TaskType type);
+
+    /** A visible set by id, of any format and owner; empty for a hidden or unknown set. */
+    Optional<CatalogEntry> find(UUID itemSetId);
 
     record CatalogEntry(
             UUID itemSetId,

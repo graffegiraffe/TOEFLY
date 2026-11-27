@@ -3,6 +3,7 @@ package com.toefly.assessment.application.port.out;
 import com.toefly.assessment.application.port.in.SubmissionFilter;
 import com.toefly.assessment.domain.evaluation.Evaluation;
 import com.toefly.assessment.domain.evaluation.InlineAnnotation;
+import com.toefly.assessment.domain.submission.ModelAnswer;
 import com.toefly.assessment.domain.submission.Submission;
 import com.toefly.assessment.domain.submission.TaskType;
 import java.util.List;
@@ -29,6 +30,11 @@ public interface SubmissionRepository {
     List<Evaluation> evaluations(UUID submissionId);
 
     void updateAnnotations(UUID evaluationId, List<InlineAnnotation> annotations);
+
+    /** Keeps the model answer of the task of a submission; a later call replaces it. */
+    void saveModelAnswer(UUID submissionId, ModelAnswer answer);
+
+    Optional<ModelAnswer> modelAnswer(UUID submissionId);
 
     /** Effective scores of first versions of a type for the estimate, newest first. */
     List<Double> firstVersionScores(UUID userId, TaskType type, int limit);

@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "body", "ctaLabel", "deepLink"],
+  "properties": {
+    "title": { "type": "string", "maxLength": 60 },
+    "body": { "type": "string", "maxLength": 240 },
+    "ctaLabel": { "type": "string", "maxLength": 24 },
+    "deepLink": { "type": "string", "maxLength": 80 }
+  }
+}

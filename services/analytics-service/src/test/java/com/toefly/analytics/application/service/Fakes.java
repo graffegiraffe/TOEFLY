@@ -59,7 +59,7 @@ final class Fakes {
     final EventRecorder recorder = new EventRecorder(journal, projections, learners, dashboards, activity, metrics);
     final ProjectionReplayer replayer = new ProjectionReplayer(journal, projections);
     final DashboardQueryService dashboardQuery = new DashboardQueryService(dashboards, activity, learners, clock);
-    final ActivityQueryService activityQuery = new ActivityQueryService(activity, learners, clock);
+    final ActivityQueryService activityQuery = new ActivityQueryService(activity, learners, dashboards, clock);
     final AdminMetricsService adminMetrics = new AdminMetricsService(metrics, activity, usage, clock);
 
     boolean record(AnalyticsEvent event) {

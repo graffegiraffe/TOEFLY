@@ -53,6 +53,9 @@ toefly:
     auto-register: false
   planning:
     content-url: http://localhost:8082
+    # WeekGenerator (docs/06 §5.2): background group of ai-gateway calls; a call waits up to 60 s for quota inside it.
+    ai-gateway-url: http://localhost:8095
+    ai-read-timeout: PT120S
     # Writing joins in phase 5b; the open Speaking types wait for phase 6 (docs/12, phase 4 decision 2, 5b decision 14).
     available-task-types:
       - COMPLETE_THE_WORDS

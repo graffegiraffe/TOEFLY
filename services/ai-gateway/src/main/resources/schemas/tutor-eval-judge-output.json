@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["socratic", "givesAnswer", "refusesOffTopic", "usesStudentData", "specificity", "tone", "rationale"],
+  "properties": {
+    "socratic": { "type": "boolean" },
+    "givesAnswer": { "type": "boolean" },
+    "refusesOffTopic": { "type": "boolean" },
+    "usesStudentData": { "type": "boolean" },
+    "specificity": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "tone": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "rationale": { "type": "string", "maxLength": 300 }
+  }
+}

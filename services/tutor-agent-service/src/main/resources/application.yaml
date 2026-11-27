@@ -1,0 +1,92 @@
+spring:
+  application:
+    name: tutor-agent-service
+  datasource:
+    url: jdbc:postgresql://localhost:${TOEFLY_POSTGRES_PORT:5432}/tutor_agent_db
+    username: tutor_agent_app
+    password: tutor_agent_app
+  flyway:
+    locations: classpath:db/migration,classpath:db/common
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: tutor-agent-service
+      auto-offset-reset: earliest
+      isolation-level: read_committed
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      properties:
+        apicurio.registry.url: ${toefly.events.registry-url}
+        apicurio.registry.use-specific-avro-reader: true
+        apicurio.registry.fault-tolerant-refresh: true
+    listener:
+      ack-mode: record
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/toefly
+          audiences: toefly-api
+      client:
+        registration:
+          svc-tutor-agent-service:
+            provider: keycloak
+            client-id: svc-tutor-agent-service
+            client-secret: ${SVC_TUTOR_AGENT_SERVICE_SECRET:svc-tutor-agent-service-local}
+            authorization-grant-type: client_credentials
+            scope: internal
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/toefly/protocol/openid-connect/token
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8088
+
+toefly:
+  events:
+    registry-url: http://localhost:8380/apis/registry/v3
+    auto-register: false
+  tutor-agent:
+    ai-gateway-url: http://localhost:8095
+    practice-url: http://localhost:8084
+    planning-url: http://localhost:8087
+    assessment-url: http://localhost:8085
+    content-url: http://localhost:8082
+    analytics-url: http://localhost:8094
+
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+toefly:
+  events:
+    auto-register: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+logging:
+  structured:
+    format:
+      console: ecs

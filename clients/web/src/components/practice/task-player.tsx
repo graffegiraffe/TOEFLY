@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, Headphones, Pause, Play, Timer } fr
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Attempt, AttemptItem, AttemptReview } from '@/api/generated/practice';
+import { useHideTutor, useTutorScreen } from '@/components/tutor/use-tutor';
 import { Button } from '@/components/ui/button';
 import { OfflineError } from '@/lib/practice/answer-sync';
 import { isAnswered, type Answer } from '@/lib/practice/answers';
@@ -44,6 +45,20 @@ export function TaskPlayer({ attempt, onSubmitted, onExit }: TaskPlayerProps) {
   const stimulus = (attempt.stimulus ?? {}) as Stimulus;
   const current = items[index];
   const legacy = attempt.taskType.startsWith('LEGACY_');
+  const exam = attempt.mode === 'EXAM';
+
+  // AC-17.05.1: no AI Tutor in an exam; in Practice the service sees the attempt in progress and gives hints only.
+  useHideTutor(exam);
+  useTutorScreen(
+    exam
+      ? null
+      : {
+          type: 'ATTEMPT_IN_PROGRESS',
+          ref: attempt.attemptId,
+          itemId: current?.itemId ?? null,
+          label: t('tutor.context.question', { n: index + 1, task: t(`practice.taskType.${attempt.taskType}`) }),
+        },
+  );
 
   useEffect(() => {
     if (current) session.setCurrentItem(current.itemId);

@@ -7,5 +7,7 @@ public enum TaskOrigin {
     /** Extra sets picked for weak types by the planner or the agent. */
     AI,
     /** Added by the tutor; kept through rebalances. */
-    TUTOR
+    TUTOR,
+    /** Added by Toefly Tutor after the learner confirmed it ({@code assignExtraTask}); at most 3 a week. */
+    TUTOR_AGENT
 }

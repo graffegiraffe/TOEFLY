@@ -16,6 +16,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 @ConfigurationProperties("toefly.planning")
 public record PlanningProperties(
         String contentUrl,
+        @DefaultValue("http://localhost:8095") String aiGatewayUrl,
+        @DefaultValue("PT120S") Duration aiReadTimeout,
         Set<TaskType> availableTaskTypes,
         @DefaultValue("false") boolean vocabularyReviewEnabled,
         @DefaultValue("false") boolean mockExamEnabled,

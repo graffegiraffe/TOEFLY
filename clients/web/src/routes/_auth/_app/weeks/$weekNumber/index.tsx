@@ -1,13 +1,17 @@
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, notFound } from '@tanstack/react-router';
-import { Check, ChevronRight, Info, NotebookPen, RefreshCw } from 'lucide-react';
+import { Check, ChevronRight, Info, MessageCircle, NotebookPen, RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Week } from '@/api/generated/planning';
 import { useFinishWeekEarly } from '@/api/planning';
+import { weeklyReviewQuery } from '@/api/tutor';
+import { useTutor, useTutorScreen } from '@/components/tutor/use-tutor';
 import { Cover } from '@/components/weeks/cover';
 import { sectionCoverId, weekCoverId } from '@/lib/covers';
 import { WeekLoader } from '@/components/weeks/week-loader';
 import { WeekTable } from '@/components/weeks/week-table';
+import { WeekTabs } from '@/components/weeks/week-tabs';
 import { Button, buttonClass } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -40,6 +44,14 @@ function WeekView({ week }: { week: Week }) {
   const allTasks = week.sections.flatMap((block) => block.tasks);
   const excludedTitles = allTasks.filter((task) => excluded.includes(task.taskId)).map((task) => task.title);
   const lastDay = new Intl.DateTimeFormat(i18n.language, { month: 'short', day: 'numeric' }).format(dateOf(week, 7));
+  const completed = week.status === 'COMPLETED';
+  const { openTutor } = useTutor();
+  const tutorContext = {
+    type: 'WEEK' as const,
+    ref: week.weekId,
+    label: t('tutor.context.week', { number: week.weekNo }),
+  };
+  useTutorScreen(tutorContext);
   return (
     <div className="flex flex-col gap-6">
       <Cover id={weekCoverId(week.weekNo, Boolean(week.mockExam))} className="h-36 rounded-2xl md:h-[200px]" />
@@ -47,12 +59,19 @@ function WeekView({ week }: { week: Week }) {
         <h1 className="text-title-1 font-bold tracking-tight text-ink">
           {t('weeks.weekTitle', { number: week.weekNo })}
         </h1>
-        {open && progress >= 100 && week.dayCount === 7 && (
-          <Button variant="secondary" disabled={finish.isPending} onClick={() => finish.mutate(week.weekId)}>
-            {t('weeks.finishEarly')}
+        <div className="flex flex-wrap gap-2">
+          {open && progress >= 100 && week.dayCount === 7 && (
+            <Button variant="secondary" disabled={finish.isPending} onClick={() => finish.mutate(week.weekId)}>
+              {t('weeks.finishEarly')}
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => openTutor(tutorContext)}>
+            <MessageCircle className="size-4" aria-hidden="true" />
+            {t('weeks.askTutor')}
           </Button>
-        )}
+        </div>
       </div>
+      {completed && <WeekTabs weekNo={week.weekNo} current="week" />}
       <dl className="grid grid-cols-[120px_1fr] items-center gap-x-4 gap-y-3 text-body">
         <dt className="text-ink-muted">{t('weeks.date')}</dt>
         <dd className="text-ink">{formatRange(week.startDate, week.endDate, i18n.language)}</dd>
@@ -171,17 +190,49 @@ function WeekView({ week }: { week: Week }) {
           })}
         </div>
       </section>
+      <WeeklyReviewCard week={week} completed={completed} availableOn={lastDay} />
+    </div>
+  );
+}
+
+/** The link to the weekly review (docs/07-ux-ui.md §5.7): inactive until the week closes, then the review. */
+function WeeklyReviewCard({ week, completed, availableOn }: { week: Week; completed: boolean; availableOn: string }) {
+  const { t } = useTranslation();
+  const review = useQuery({ ...weeklyReviewQuery(week.weekId), enabled: completed });
+  const icon = (
+    <span className="grid size-10 place-items-center rounded-xl bg-accent-soft text-accent-on-soft">
+      <NotebookPen className="size-5" aria-hidden="true" />
+    </span>
+  );
+  if (!completed) {
+    return (
       <Card className="flex items-center gap-3">
-        <span className="grid size-10 place-items-center rounded-xl bg-accent-soft text-accent-on-soft">
-          <NotebookPen className="size-5" aria-hidden="true" />
-        </span>
+        {icon}
         <div className="flex-1">
           <div className="font-semibold text-ink">{t('weeks.weeklyReview')}</div>
-          <div className="text-caption text-ink-muted">{t('weeks.weeklyReviewSoon', { date: lastDay })}</div>
+          <div className="text-caption text-ink-muted">{t('weeks.weeklyReviewSoon', { date: availableOn })}</div>
         </div>
-        <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" />
       </Card>
-    </div>
+    );
+  }
+  return (
+    <Link
+      to="/weeks/$weekNumber/review"
+      params={{ weekNumber: String(week.weekNo) }}
+      className="flex items-center gap-3 rounded-xl border border-border bg-surface p-6 shadow-e1 transition-shadow hover:shadow-e2"
+      data-testid="weekly-review-card"
+    >
+      {icon}
+      <div className="flex-1">
+        <div className="font-semibold text-ink">
+          {review.data ? t('weeklyReview.ready', { number: week.weekNo }) : t('weeks.weeklyReview')}
+        </div>
+        <div className="text-caption text-ink-muted">
+          {review.data ? t('weeklyReview.open') : t('weeklyReview.preparing')}
+        </div>
+      </div>
+      <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" />
+    </Link>
   );
 }
 

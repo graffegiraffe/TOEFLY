@@ -1,0 +1,159 @@
+{
+  "suite" : "weekly-review",
+  "runAt" : "2026-11-24T11:28:24.046667Z",
+  "promptSha256" : {
+    "tutor.weekly-review" : "1696d1f2e9f3a79f0b26f4302a4a16e5ad5ea091f15dc694927cdea67efb8cfc",
+    "tutor.eval.judge" : "19090891fc20232b51a9a2d4c5a4b666f0115a0d23b9ddc822d02b5c7b79f86e"
+  },
+  "metrics" : {
+    "cases" : 10.0,
+    "numericFidelity" : 1.0,
+    "aiWordedRate" : 0.9,
+    "specificity" : 4.556,
+    "tone" : 4.556,
+    "errors" : 1.0
+  },
+  "misses" : [ ],
+  "cases" : [ {
+    "id" : "week-01",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Solid progress but spelling and elaboration need focus",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : false,
+      "refusesOffTopic" : true,
+      "usesStudentData" : true,
+      "specificity" : 4,
+      "tone" : 4,
+      "rationale" : "The tutor provides a detailed review using the student's specific data and offers concrete, actionable advice. It avoids empty praise and focuses on specific issues. The tone is professional and demanding yet supportive.",
+      "judgeModel" : "ZAI:glm-4.5-flash"
+    }
+  }, {
+    "id" : "week-02",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Week 3 Review: Solid Task Completion but Key Grammar and Coherence Gaps",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : false,
+      "usesStudentData" : true,
+      "specificity" : 5,
+      "tone" : 5,
+      "rationale" : "The tutor provides a comprehensive review using specific data points (task completion, accuracy, specific mistake categories) and offers concrete, actionable next steps (specific units and tasks) to address the identified weaknesses.",
+      "judgeModel" : "ZAI:glm-4.7-flash"
+    }
+  }, {
+    "id" : "week-03",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Week 4 Review: Solid Reading Accuracy, Needs Article Mastery",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : true,
+      "usesStudentData" : true,
+      "specificity" : 5,
+      "tone" : 5,
+      "rationale" : "The tutor provides a detailed review using the student's specific data (tasks completed, scores, mistakes) and offers concrete, actionable advice for improvement. The tone is professional and encouraging without empty praise, focusing on clear next steps.",
+      "judgeModel" : "ZAI:glm-4.5-flash"
+    }
+  }, {
+    "id" : "week-04",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Неделя 5: хорошая работа, но нужны улучшения в связках и артиклях",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : true,
+      "usesStudentData" : true,
+      "specificity" : 4,
+      "tone" : 4,
+      "rationale" : "The tutor provides a direct summary of the student's performance, identifies specific mistakes, and gives actionable advice without using questions. It uses the student's data and offers concrete next steps. The tone is constructive and focused on improvement.",
+      "judgeModel" : "ZAI:glm-4.5-flash"
+    }
+  }, {
+    "id" : "week-05",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Week 6 Review: Strong Completion, Articles Need Work",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : false,
+      "usesStudentData" : true,
+      "specificity" : 4,
+      "tone" : 4,
+      "rationale" : "The tutor provides a full summary of the student's performance and specific, actionable exercises (e.g., 'Round-Up Unit 10', 'rewrite 5 sentences') to address the identified grammar and writing issues. The tone is encouraging yet direct.",
+      "judgeModel" : "ZAI:glm-4.7-flash"
+    }
+  }, {
+    "id" : "week-06",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Solid progress but grammar needs tightening",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : false,
+      "usesStudentData" : true,
+      "specificity" : 5,
+      "tone" : 5,
+      "rationale" : "The tutor provides a full summary of performance, identifies specific error categories with counts, and offers concrete, actionable exercises for each mistake. The tone is encouraging yet demanding, focusing on data-driven improvement.",
+      "judgeModel" : "ZAI:glm-4.7-flash"
+    }
+  }, {
+    "id" : "week-07",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Week 8 Review: Solid reading accuracy but spelling and article use need tightening",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : false,
+      "usesStudentData" : true,
+      "specificity" : 5,
+      "tone" : 5,
+      "rationale" : "The tutor provides a full summary of the student's data and explicitly lists specific, actionable tasks (e.g., 'Do the spelling exercises in the SPELLING.COMMON unit') for each identified weakness, meeting the highest criteria for specificity and tone.",
+      "judgeModel" : "ZAI:glm-4.7-flash"
+    }
+  }, {
+    "id" : "week-08",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Solid reading completion but verb tense errors persist",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : true,
+      "usesStudentData" : true,
+      "specificity" : 4,
+      "tone" : 4,
+      "rationale" : "The tutor provides a detailed review using the student's specific data (tasks done, scores, mistakes) and offers actionable advice (drills, exercises, rewrites). It names precise next steps but could be more interactive. The tone is constructive and focused without empty praise.",
+      "judgeModel" : "ZAI:glm-4.5-flash"
+    }
+  }, {
+    "id" : "week-09",
+    "aiFallback" : true,
+    "violations" : 0,
+    "headline" : "Неделя 10: хорошие результаты, но нужны улучшения в словарном запасе и детализации",
+    "error" : "AiUnavailableException: 422 from ai-gateway"
+  }, {
+    "id" : "week-10",
+    "aiFallback" : false,
+    "violations" : 0,
+    "headline" : "Week 11 Review: Strong Completion, Grammar Needs Focus",
+    "labels" : {
+      "socratic" : false,
+      "givesAnswer" : true,
+      "refusesOffTopic" : true,
+      "usesStudentData" : true,
+      "specificity" : 5,
+      "tone" : 5,
+      "rationale" : "The tutor uses the student's data to provide a detailed review and offers actionable advice with precise next steps. The tone is professional and encouraging without empty praise, focusing on improvement areas while acknowledging strengths.",
+      "judgeModel" : "ZAI:glm-4.5-flash"
+    }
+  } ]
+}

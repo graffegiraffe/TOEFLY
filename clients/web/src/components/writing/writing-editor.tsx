@@ -5,6 +5,7 @@ import { saveDraft, useSubmitSubmission, DraftConflictError } from '@/api/assess
 import { AttemptMode, type Submission, type SubmissionVersion } from '@/api/generated/assessment';
 import type { ItemSet } from '@/api/generated/content';
 import { newKey } from '@/api/practice';
+import { useHideTutor, useTutorScreen } from '@/components/tutor/use-tutor';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { timerText } from '@/lib/timer';
@@ -41,6 +42,17 @@ export function WritingEditor({ submission, version, draft, itemSet, onSubmitted
   const isEmail = submission.taskType === 'WRITE_EMAIL';
   const revision = draft.versionNo > 1;
   const exam = submission.mode === AttemptMode.Exam;
+  // AC-17.05.1: no AI Tutor in an exam; for a draft the service refuses to write the response (AC-17.03.2).
+  useHideTutor(exam);
+  useTutorScreen(
+    exam
+      ? null
+      : {
+          type: 'SUBMISSION_DRAFT',
+          ref: submission.id,
+          label: t('tutor.context.essay', { version: t(`writing.version.${draft.versionNo}`) }),
+        },
+  );
   const limit = submission.timeLimitSeconds ?? stimulus.timeLimitSeconds ?? defaultTimeLimit(submission.taskType);
 
   const [text, setText] = useState(draft.text);

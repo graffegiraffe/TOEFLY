@@ -28,6 +28,10 @@ public final class Week {
     public static final double REBALANCE_LAG_DAYS = 3;
     public static final Duration REBALANCE_INTERVAL = Duration.ofHours(48);
     public static final Duration ABANDONED_AFTER = Duration.ofDays(7);
+    /** Extra tasks of Toefly Tutor in one week (docs/06-ai-agent.md §4.5). */
+    public static final int MAX_AGENT_TASKS = 3;
+    /** The load a day may reach with an extra task: the tolerance of a day (AC-04.03.1). */
+    public static final double EXTRA_DAY_LOAD = 1.25;
 
     private final UUID id;
     private final UUID planId;
@@ -36,8 +40,9 @@ public final class Week {
     private final int minutesPerDay;
     private final boolean mockExam;
     private final List<TaskType> weakTypes;
-    private final @Nullable String rationale;
-    private final Instant generatedAt;
+    private @Nullable String rationale;
+    private Instant generatedAt;
+    private DraftInfo draft;
     private final List<WeekTask> tasks;
     private WeekStatus status;
     private LocalDate day1;
@@ -73,6 +78,54 @@ public final class Week {
             @Nullable LocalDate lastRolloverDate,
             int version,
             List<WeekTask> tasks) {
+        this(
+                id,
+                planId,
+                userId,
+                weekNo,
+                status,
+                day1,
+                minutesPerDay,
+                mockExam,
+                weakTypes,
+                rationale,
+                generatedAt,
+                publishedAt,
+                completedAt,
+                closedOn,
+                closedBy,
+                rebalancedAt,
+                rebalanceCount,
+                rebalanceSkipped,
+                lastRolloverDate,
+                version,
+                tasks,
+                DraftInfo.rules(List.of()));
+    }
+
+    public Week(
+            UUID id,
+            UUID planId,
+            UUID userId,
+            int weekNo,
+            WeekStatus status,
+            LocalDate day1,
+            int minutesPerDay,
+            boolean mockExam,
+            List<TaskType> weakTypes,
+            @Nullable String rationale,
+            Instant generatedAt,
+            @Nullable Instant publishedAt,
+            @Nullable Instant completedAt,
+            @Nullable LocalDate closedOn,
+            @Nullable WeekCloseReason closedBy,
+            @Nullable Instant rebalancedAt,
+            int rebalanceCount,
+            List<UUID> rebalanceSkipped,
+            @Nullable LocalDate lastRolloverDate,
+            int version,
+            List<WeekTask> tasks,
+            DraftInfo draft) {
         if (weekNo < 1) {
             throw new IllegalArgumentException("weekNo must be positive");
         }
@@ -100,6 +153,7 @@ public final class Week {
         this.lastRolloverDate = lastRolloverDate;
         this.version = version;
         this.tasks = new ArrayList<>(tasks);
+        this.draft = Objects.requireNonNull(draft);
     }
 
     /**
@@ -117,6 +171,33 @@ public final class Week {
             @Nullable String rationale,
             List<WeekTask> tasks,
             Instant now) {
+        return publish(
+                planId,
+                userId,
+                weekNo,
+                day1,
+                minutesPerDay,
+                mockExam,
+                weakTypes,
+                rationale,
+                tasks,
+                now,
+                DraftInfo.rules(List.of()));
+    }
+
+    /** {@link #publish} with the origin of the tasks. */
+    public static Week publish(
+            UUID planId,
+            UUID userId,
+            int weekNo,
+            LocalDate day1,
+            int minutesPerDay,
+            boolean mockExam,
+            List<TaskType> weakTypes,
+            @Nullable String rationale,
+            List<WeekTask> tasks,
+            Instant now,
+            DraftInfo draft) {
         if (tasks.isEmpty()) {
             throw new IllegalArgumentException("A published week has at least one task (INV-WK-03)");
         }
@@ -141,10 +222,48 @@ public final class Week {
                 List.of(),
                 null,
                 0,
-                tasks);
+                tasks,
+                draft);
         DayDistributor.distribute(day1, minutesPerDay, 1, DAYS, List.of(), week.tasks);
         DayDistributor.order(week.tasks);
         return week;
+    }
+
+    // ---- the draft of WeekGenerator (docs/06-ai-agent.md §5.2) ----
+
+    /**
+     * The week of the rules may still follow a weekly review: it is published, nobody started a task in it, and no
+     * review has drafted it yet. A week is drafted by the AI at most once.
+     */
+    public boolean redraftable() {
+        return status == WeekStatus.PUBLISHED
+                && draft.source() == DraftSource.RULES
+                && tasks.stream().allMatch(task -> task.status() == WeekTaskStatus.PENDING && task.attemptId() == null);
+    }
+
+    /**
+     * Replaces the tasks of a week that has not started with the draft of WeekGenerator or of its fallback; the id,
+     * the number and the dates stay, so links to the week keep working.
+     *
+     * @param laidOut the tasks already carry their days (a valid AI draft); otherwise they are distributed here
+     */
+    public void redraft(List<WeekTask> drafted, boolean laidOut, @Nullable String why, DraftInfo info, Instant now) {
+        if (!redraftable()) {
+            throw new WeekRuleException("week-not-editable", "Week " + weekNo + " has started or was drafted already");
+        }
+        if (drafted.isEmpty()) {
+            throw new IllegalArgumentException("A published week has at least one task (INV-WK-03)");
+        }
+        tasks.clear();
+        tasks.addAll(drafted);
+        if (!laidOut) {
+            DayDistributor.distribute(day1, minutesPerDay, 1, DAYS, List.of(), tasks);
+        }
+        DayDistributor.order(tasks);
+        rationale = why;
+        draft = info;
+        generatedAt = now;
+        publishedAt = now;
     }
 
     // ---- days and progress ----
@@ -276,6 +395,64 @@ public final class Week {
         task.moveTo(dayNo);
         DayDistributor.order(tasks);
         return task;
+    }
+
+    /**
+     * An extra task of Toefly Tutor ({@code assignExtraTask}, docs/06-ai-agent.md §4.5): only in an open week, at most
+     * {@value #MAX_AGENT_TASKS} a week, not the same set twice, on a day that keeps its load within 1.25 × the daily
+     * minutes and at most 2 tasks of one type (AC-04.03.1).
+     */
+    public WeekTask addAgentTask(WeekTask task, ExtraTaskDay day, LocalDate today) {
+        requireOpen();
+        if (task.origin() != TaskOrigin.TUTOR_AGENT) {
+            throw new IllegalArgumentException("An extra task of the agent has the origin TUTOR_AGENT");
+        }
+        if (tasks.stream()
+                        .filter(other -> other.origin() == TaskOrigin.TUTOR_AGENT)
+                        .count()
+                >= MAX_AGENT_TASKS) {
+            throw new WeekRuleException(
+                    "extra-task-limit-reached",
+                    "Toefly Tutor already added " + MAX_AGENT_TASKS + " tasks to week " + weekNo);
+        }
+        if (task.refId() != null
+                && tasks.stream().anyMatch(other -> task.refId().equals(other.refId()))) {
+            throw new WeekRuleException("item-set-already-in-week", "The set is already in week " + weekNo);
+        }
+        int todayNo = Math.max(1, dayNo(today));
+        int lastDay = todayNo > DAYS ? MAX_DAYS : DAYS;
+        int first = day == ExtraTaskDay.TOMORROW ? todayNo + 1 : todayNo;
+        int last = day == ExtraTaskDay.NEXT_FREE_DAY ? lastDay : first;
+        if (first > lastDay) {
+            throw new WeekRuleException("validation-failed", "Day " + first + " is outside week " + weekNo);
+        }
+        for (int candidate = first; candidate <= last; candidate++) {
+            if (fits(candidate, task)) {
+                task.moveTo(candidate);
+                tasks.add(task);
+                DayDistributor.order(tasks);
+                return task;
+            }
+        }
+        throw new WeekRuleException(
+                "day-budget-exceeded",
+                "No day from " + date(first) + " has room for " + Math.round(task.estimatedMinutes())
+                        + " more minutes");
+    }
+
+    private boolean fits(int day, WeekTask task) {
+        double load = 0;
+        int sameType = 0;
+        for (WeekTask other : tasks) {
+            if (other.dayNo() != day || other.status() == WeekTaskStatus.SKIPPED) {
+                continue;
+            }
+            load += other.estimatedMinutes();
+            if (task.taskType() != null && task.taskType() == other.taskType()) {
+                sameType++;
+            }
+        }
+        return load + task.estimatedMinutes() <= EXTRA_DAY_LOAD * minutesPerDay + 1e-9 && sameType < 2;
     }
 
     /** Tasks whose attempt ran 7 days without a score go back to PENDING (attempt ABANDONED). */
@@ -520,6 +697,10 @@ public final class Week {
 
     public @Nullable String rationale() {
         return rationale;
+    }
+
+    public DraftInfo draft() {
+        return draft;
     }
 
     public Instant generatedAt() {

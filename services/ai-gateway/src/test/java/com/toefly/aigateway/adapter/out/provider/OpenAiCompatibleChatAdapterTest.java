@@ -50,6 +50,14 @@ class OpenAiCompatibleChatAdapterTest {
     }
 
     @Test
+    @DisplayName("streamed calls set no stream options, so Groq gets no include_obfuscation")
+    void streamSendsNoObfuscationFlag() {
+        OpenAiChatOptions options = (OpenAiChatOptions)
+                adapter(AiProvider.GROQ, "k").options(request(AiProvider.GROQ, "openai/gpt-oss-20b"), true);
+        assertThat(options.getStreamOptions()).isNull();
+    }
+
+    @Test
     @DisplayName("a missing key is refused with the name of its variable")
     void missingKeyIsRefused() {
         assertThatThrownBy(() -> adapter(AiProvider.ZAI, "").model(request(AiProvider.ZAI, "glm-4.7-flash")))

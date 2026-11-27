@@ -1,0 +1,233 @@
+{
+  "_fixture": "Hand-written fixture in the format of a planning.week.generate answer; not a recorded model output.",
+  "output": {
+    "days": [
+      {
+        "day": "WED",
+        "tasks": [
+          {
+            "candidateRef": "c09",
+            "whyForYou": "Because of mistakes in your writing"
+          },
+          {
+            "candidateRef": "c01",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c02",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c15",
+            "whyForYou": "Academic passages are worth the most points in Reading."
+          },
+          {
+            "candidateRef": "c19",
+            "whyForYou": "Keeps your spelling and word endings sharp for Reading."
+          },
+          {
+            "candidateRef": "c31",
+            "whyForYou": "Quick replies train you to catch the speaker's intent."
+          },
+          {
+            "candidateRef": "c33",
+            "whyForYou": "Campus conversations keep your Listening in shape."
+          },
+          {
+            "candidateRef": "c63",
+            "whyForYou": "Strategy page for the section you are practising this week."
+          }
+        ]
+      },
+      {
+        "day": "THU",
+        "tasks": [
+          {
+            "candidateRef": "c61",
+            "whyForYou": "The next book unit keeps your grammar track on schedule."
+          }
+        ]
+      },
+      {
+        "day": "FRI",
+        "tasks": [
+          {
+            "candidateRef": "c62",
+            "whyForYou": "Strategy page for the section you are practising this week."
+          },
+          {
+            "candidateRef": "c24",
+            "whyForYou": "Academic passages are worth the most points in Reading."
+          },
+          {
+            "candidateRef": "c07",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c37",
+            "whyForYou": "Lectures build note-taking for the longest Listening task."
+          },
+          {
+            "candidateRef": "c10",
+            "whyForYou": "Keeps your spelling and word endings sharp for Reading."
+          },
+          {
+            "candidateRef": "c17",
+            "whyForYou": "Short everyday texts keep your Reading pace steady."
+          },
+          {
+            "candidateRef": "c43",
+            "whyForYou": "Quick replies train you to catch the speaker's intent."
+          },
+          {
+            "candidateRef": "c44",
+            "whyForYou": "Campus conversations keep your Listening in shape."
+          },
+          {
+            "candidateRef": "c35",
+            "whyForYou": "Announcements practise picking out the key detail."
+          },
+          {
+            "candidateRef": "c45",
+            "whyForYou": "Announcements practise picking out the key detail."
+          }
+        ]
+      },
+      {
+        "day": "SAT",
+        "tasks": [
+          {
+            "candidateRef": "c04",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c06",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c16",
+            "whyForYou": "Academic passages are worth the most points in Reading."
+          },
+          {
+            "candidateRef": "c21",
+            "whyForYou": "Academic passages are worth the most points in Reading."
+          },
+          {
+            "candidateRef": "c46",
+            "whyForYou": "Lectures build note-taking for the longest Listening task."
+          },
+          {
+            "candidateRef": "c38",
+            "whyForYou": "Lectures build note-taking for the longest Listening task."
+          },
+          {
+            "candidateRef": "c11",
+            "whyForYou": "Keeps your spelling and word endings sharp for Reading."
+          },
+          {
+            "candidateRef": "c14",
+            "whyForYou": "Short everyday texts keep your Reading pace steady."
+          },
+          {
+            "candidateRef": "c32",
+            "whyForYou": "Quick replies train you to catch the speaker's intent."
+          },
+          {
+            "candidateRef": "c34",
+            "whyForYou": "Campus conversations keep your Listening in shape."
+          },
+          {
+            "candidateRef": "c36",
+            "whyForYou": "Announcements practise picking out the key detail."
+          }
+        ]
+      },
+      {
+        "day": "SUN",
+        "tasks": [
+          {
+            "candidateRef": "c59",
+            "whyForYou": "The next Collins unit grows your academic vocabulary."
+          }
+        ]
+      },
+      {
+        "day": "MON",
+        "tasks": [
+          {
+            "candidateRef": "c03",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c05",
+            "whyForYou": "Ordering words around nouns trains the articles you missed in your emails."
+          },
+          {
+            "candidateRef": "c18",
+            "whyForYou": "Academic passages are worth the most points in Reading."
+          },
+          {
+            "candidateRef": "c42",
+            "whyForYou": "Lectures build note-taking for the longest Listening task."
+          },
+          {
+            "candidateRef": "c22",
+            "whyForYou": "Keeps your spelling and word endings sharp for Reading."
+          },
+          {
+            "candidateRef": "c12",
+            "whyForYou": "Keeps your spelling and word endings sharp for Reading."
+          },
+          {
+            "candidateRef": "c39",
+            "whyForYou": "Quick replies train you to catch the speaker's intent."
+          },
+          {
+            "candidateRef": "c20",
+            "whyForYou": "Short everyday texts keep your Reading pace steady."
+          },
+          {
+            "candidateRef": "c13",
+            "whyForYou": "Short everyday texts keep your Reading pace steady."
+          },
+          {
+            "candidateRef": "c41",
+            "whyForYou": "Announcements practise picking out the key detail."
+          },
+          {
+            "candidateRef": "c40",
+            "whyForYou": "Campus conversations keep your Listening in shape."
+          }
+        ]
+      },
+      {
+        "day": "TUE",
+        "tasks": [
+          {
+            "candidateRef": "c60",
+            "whyForYou": "The next book unit keeps your grammar track on schedule."
+          }
+        ]
+      }
+    ],
+    "weekGoal": "Use a, an and the correctly in every sentence you build and write this week.",
+    "focusExplanation": "Articles were your most frequent mistake last week, so the week opens with sentence building and an articles exercise from Round-Up Unit 10. Reading and Listening keep their usual share."
+  },
+  "aiStamp": {
+    "aiCallId": "fixture-week-1",
+    "promptKey": "planning.week.generate",
+    "promptVersion": 1,
+    "provider": "GROQ",
+    "model": "openai/gpt-oss-120b",
+    "fallbackDepth": 0,
+    "degraded": false,
+    "cacheHit": false,
+    "createdAt": "2026-11-22T10:00:00Z"
+  },
+  "usage": {
+    "inputTokens": 3100,
+    "outputTokens": 1400,
+    "latencyMs": 8200
+  },
+  "integrityFlags": []
+}

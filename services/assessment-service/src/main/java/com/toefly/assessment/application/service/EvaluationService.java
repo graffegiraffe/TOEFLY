@@ -15,6 +15,7 @@ import com.toefly.assessment.domain.evaluation.InlineAnnotation;
 import com.toefly.assessment.domain.evaluation.Severity;
 import com.toefly.assessment.domain.grading.AnnotationCarryOver;
 import com.toefly.assessment.domain.submission.DeferredEvaluation;
+import com.toefly.assessment.domain.submission.ModelAnswer;
 import com.toefly.assessment.domain.submission.Submission;
 import com.toefly.assessment.domain.submission.SubmissionVersion;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -79,9 +80,11 @@ class EvaluationService implements EvaluateSubmissionUseCase {
         }
         Submission submission = found.get();
         GradingResult result;
+        ModelAnswer model;
         try {
             TaskContent task = content.load(submission.itemSetId())
                     .orElseThrow(() -> new AiUnavailableException("item set is gone", null, true));
+            model = task.model();
             result = grader.grade(input(submission, versionNo, task));
         } catch (AiUnavailableException | DependencyUnavailableException failure) {
             Duration retryAfter = failure instanceof AiUnavailableException ai ? ai.retryAfter() : null;
@@ -90,7 +93,7 @@ class EvaluationService implements EvaluateSubmissionUseCase {
             commitOnce.test(() -> defer(submissionId, versionNo, retryAfter, failure.getMessage()));
             return;
         }
-        commitOnce.test(() -> complete(submissionId, versionNo, result, cause));
+        commitOnce.test(() -> complete(submissionId, versionNo, result, model, cause));
     }
 
     private GradingInput input(Submission submission, int versionNo, TaskContent task) {
@@ -115,10 +118,15 @@ class EvaluationService implements EvaluateSubmissionUseCase {
                 previous);
     }
 
-    private void complete(UUID submissionId, int versionNo, GradingResult result, Cause cause) {
+    private void complete(
+            UUID submissionId, int versionNo, GradingResult result, @Nullable ModelAnswer model, Cause cause) {
         Submission submission = submissions.find(submissionId).orElseThrow();
         if (!submission.awaitsEvaluation(versionNo)) {
             return;
+        }
+        if (model != null) {
+            // the task may have changed since the submission was created; the review shows the current one
+            submissions.saveModelAnswer(submissionId, model);
         }
         int before = submission.version();
         Instant now = clock.instant();

@@ -2,6 +2,7 @@ import { CircleCheck, CircleX, MessageCircle, Sparkles } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Attempt, AttemptReview, ItemReview } from '@/api/generated/practice';
+import { useTutor, useTutorScreen } from '@/components/tutor/use-tutor';
 import { Button } from '@/components/ui/button';
 import { answerText, fromApi, type Answer } from '@/lib/practice/answers';
 import { parseCloze } from '@/lib/practice/cloze';
@@ -35,6 +36,8 @@ export function ReviewView({ review, attempt, onTryAgain, onBack, tryingAgain }:
   const pace = paceDeviation(review.activeSeconds, review.estimatedSeconds);
   const change = review.abilityChange;
   const delta = change ? change.thetaAfter - change.thetaBefore : 0;
+  const taskName = t(`practice.taskType.${review.taskType}`);
+  useTutorScreen({ type: 'ATTEMPT_REVIEW', ref: review.attemptId, label: taskName });
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,6 +91,8 @@ export function ReviewView({ review, attempt, onTryAgain, onBack, tryingAgain }:
             item={item}
             content={contents.get(item.ordinal) ?? {}}
             taskType={review.taskType}
+            attemptId={review.attemptId}
+            taskName={taskName}
           />
         ))}
       </ol>
@@ -202,8 +207,17 @@ function textOf(answer: Answer | null): string {
   return answer?.type === 'TEXT' ? answer.text : '';
 }
 
-function ItemCard({ item, content, taskType }: { item: ItemReview; content: ItemContent; taskType: string }) {
+interface ItemCardProps {
+  item: ItemReview;
+  content: ItemContent;
+  taskType: string;
+  attemptId: string;
+  taskName: string;
+}
+
+function ItemCard({ item, content, taskType, attemptId, taskName }: ItemCardProps) {
   const { t } = useTranslation();
+  const { openTutor } = useTutor();
   const user = fromApi(item.userAnswer);
   const correct = fromApi(item.correctAnswer);
   const status = !user ? 'unanswered' : item.correct ? 'correct' : 'wrong';
@@ -236,18 +250,21 @@ function ItemCard({ item, content, taskType }: { item: ItemReview; content: Item
         <div className="flex flex-col gap-3 border-t border-border p-4">
           <ItemBody item={item} content={content} user={user} correct={correct} taskType={taskType} />
           <Button
-            variant="ghost"
+            variant="secondary"
             className="self-start"
-            disabled
-            title={t('review.askTutorSoon')}
-            aria-describedby={`ask-${item.itemId}`}
+            aria-label={t('review.askTutorAbout', { n: item.ordinal })}
+            onClick={() =>
+              openTutor({
+                type: 'ATTEMPT_REVIEW',
+                ref: attemptId,
+                itemId: item.itemId,
+                label: t('tutor.context.question', { n: item.ordinal, task: taskName }),
+              })
+            }
           >
             <MessageCircle className="size-4" aria-hidden="true" />
             {t('review.askTutor')}
           </Button>
-          <span id={`ask-${item.itemId}`} className="sr-only">
-            {t('review.askTutorSoon')}
-          </span>
         </div>
       </details>
     </li>

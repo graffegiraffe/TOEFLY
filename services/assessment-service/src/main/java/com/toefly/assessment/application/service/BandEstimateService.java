@@ -63,6 +63,11 @@ class BandEstimateService implements BandEstimateUseCase {
     }
 
     @Override
+    public BandEstimate ofUser(UUID userId) {
+        return inputs.current(userId).orElseGet(() -> compute(userId));
+    }
+
+    @Override
     public List<WeeklyEstimate> history(Caller caller, @Nullable UUID studentId) {
         return inputs.history(access.student(caller, studentId), HISTORY_WEEKS);
     }

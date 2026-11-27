@@ -1,5 +1,6 @@
 package com.toefly.planning.application.port.in;
 
+import com.toefly.planning.domain.learner.LearnerModelView;
 import com.toefly.planning.domain.week.TaskType;
 import com.toefly.planning.domain.week.WeekSection;
 import java.time.Instant;
@@ -23,6 +24,9 @@ public interface SyncLearnerUseCase {
             Instant occurredAt);
 
     void itemSetHidden(UUID itemSetId, Instant occurredAt);
+
+    /** {@code learner-model-updated}: keeps the newest version of the learner model of tutor-agent. */
+    void learnerModelUpdated(LearnerModelView model);
 
     /** {@code account-deletion-requested}: the plan, the weeks and the signals of the user (docs/03 §14). */
     void deleteUser(UUID userId);

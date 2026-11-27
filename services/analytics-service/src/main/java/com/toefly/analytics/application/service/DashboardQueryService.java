@@ -42,7 +42,12 @@ public class DashboardQueryService implements DashboardQueryUseCase {
     @Override
     @Transactional(readOnly = true)
     public StudentDashboardResult student(Caller caller, @Nullable UUID studentId) {
-        UUID userId = Access.target(caller, studentId);
+        return studentOf(Access.target(caller, studentId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StudentDashboardResult studentOf(UUID userId) {
         Instant now = clock.instant();
         LearnerSettings settings = settings(userId);
         LocalDate today = settings.today(now);
