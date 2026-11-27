@@ -35,7 +35,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -48,11 +50,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -72,9 +78,41 @@ import org.testcontainers.kafka.KafkaContainer;
 @Import({
     PostgresTestcontainersConfiguration.class,
     KafkaTestcontainersConfiguration.class,
-    ApicurioTestcontainersConfiguration.class
+    ApicurioTestcontainersConfiguration.class,
+    TutorAgentComponentIT.Topics.class
 })
 class TutorAgentComponentIT {
+
+    /** Topics the listeners consume; Topics creates them with their retry and dead-letter topics. */
+    static final List<String> CONSUMED = List.of(
+            "toefly.assessment.band-estimate-updated.v1",
+            "toefly.assessment.submission-evaluated.v1",
+            "toefly.billing.entitlements-changed.v1",
+            "toefly.planning.week-completed.v1",
+            "toefly.planning.week-rebalanced.v1",
+            "toefly.practice.attempt-scored.v1",
+            "toefly.practice.attempt-started.v1",
+            "toefly.practice.attempt-submitted.v1",
+            "toefly.practice.time-tracked.v1",
+            "toefly.profile.account-deletion-requested.v1",
+            "toefly.profile.onboarding-completed.v1",
+            "toefly.profile.preferences-updated.v1");
+
+    /**
+     * A fresh broker has none of the consumed topics; they are created before the listeners start, so every container
+     * gets its partitions at once instead of rebalancing the group while the topics appear (slow CI runners).
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    static class Topics {
+        @Bean
+        KafkaAdmin.NewTopics consumedTopics() {
+            return new KafkaAdmin.NewTopics(CONSUMED.stream()
+                    .flatMap(topic -> Stream.of(topic, topic + ".retry", topic + ".dlq"))
+                    .map(topic ->
+                            TopicBuilder.name(topic).partitions(3).replicas(1).build())
+                    .toArray(NewTopic[]::new));
+        }
+    }
 
     static final String REVIEW_GENERATED = "toefly.tutor-agent.weekly-review-generated.v1";
     static final WireMockServer DEPENDENCIES = new WireMockServer(options().dynamicPort());
@@ -118,10 +156,24 @@ class TutorAgentComponentIT {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofMillis(500))
-                .until(() -> listeners.getAllListenerContainers().stream()
-                        .filter(MessageListenerContainer::isRunning)
-                        .allMatch(c -> c.getAssignedPartitions() != null
-                                && !c.getAssignedPartitions().isEmpty()));
+                .untilAsserted(() -> {
+                    List<MessageListenerContainer> running = listeners.getAllListenerContainers().stream()
+                            .filter(MessageListenerContainer::isRunning)
+                            .toList();
+                    assertThat(running.stream()
+                                    .flatMap(c ->
+                                            Stream.of(c.getContainerProperties().getTopics()))
+                                    .filter(topic -> !topic.endsWith(".retry") && !topic.endsWith(".dlq"))
+                                    .distinct())
+                            .as("consumed topics missing from CONSUMED")
+                            .allMatch(CONSUMED::contains);
+                    assertThat(running.stream()
+                                    .filter(c -> c.getAssignedPartitions() == null
+                                            || c.getAssignedPartitions().isEmpty())
+                                    .map(MessageListenerContainer::getListenerId))
+                            .as("listener containers without partitions")
+                            .isEmpty();
+                });
         DEPENDENCIES.resetAll();
         DEPENDENCIES.stubFor(WireMock.post(urlPathEqualTo("/token"))
                 .willReturn(okJson("{\"access_token\":\"svc\",\"token_type\":\"Bearer\",\"expires_in\":300}")));

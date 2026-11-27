@@ -76,6 +76,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -99,6 +100,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
@@ -120,9 +123,40 @@ import tools.jackson.databind.json.JsonMapper;
     PostgresTestcontainersConfiguration.class,
     KafkaTestcontainersConfiguration.class,
     ApicurioTestcontainersConfiguration.class,
-    PlanningComponentIT.TestClock.class
+    PlanningComponentIT.TestClock.class,
+    PlanningComponentIT.Topics.class
 })
 class PlanningComponentIT {
+
+    /** Topics the listeners consume; Topics creates them with their retry and dead-letter topics. */
+    static final List<String> CONSUMED = List.of(
+            "toefly.assessment.submission-evaluated.v1",
+            "toefly.content.item-set-hidden.v1",
+            "toefly.content.item-set-published.v1",
+            "toefly.practice.ability-updated.v1",
+            "toefly.practice.attempt-scored.v1",
+            "toefly.practice.attempt-started.v1",
+            "toefly.profile.account-deletion-requested.v1",
+            "toefly.profile.onboarding-completed.v1",
+            "toefly.profile.preferences-updated.v1",
+            "toefly.tutor-agent.learner-model-updated.v1",
+            "toefly.tutor-agent.weekly-review-generated.v1");
+
+    /**
+     * A fresh broker has none of the consumed topics; they are created before the listeners start, so every container
+     * gets its partitions at once instead of rebalancing the group while the topics appear (slow CI runners).
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    static class Topics {
+        @Bean
+        KafkaAdmin.NewTopics consumedTopics() {
+            return new KafkaAdmin.NewTopics(CONSUMED.stream()
+                    .flatMap(topic -> Stream.of(topic, topic + ".retry", topic + ".dlq"))
+                    .map(topic ->
+                            TopicBuilder.name(topic).partitions(3).replicas(1).build())
+                    .toArray(NewTopic[]::new));
+        }
+    }
 
     /** ai-gateway and the token endpoint of Keycloak. */
     static final WireMockServer DEPENDENCIES = new WireMockServer(options().dynamicPort());
@@ -221,10 +255,24 @@ class PlanningComponentIT {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofMillis(500))
-                .until(() -> listenerRegistry.getAllListenerContainers().stream()
-                        .filter(MessageListenerContainer::isRunning)
-                        .allMatch(c -> c.getAssignedPartitions() != null
-                                && !c.getAssignedPartitions().isEmpty()));
+                .untilAsserted(() -> {
+                    List<MessageListenerContainer> running = listenerRegistry.getAllListenerContainers().stream()
+                            .filter(MessageListenerContainer::isRunning)
+                            .toList();
+                    assertThat(running.stream()
+                                    .flatMap(c ->
+                                            Stream.of(c.getContainerProperties().getTopics()))
+                                    .filter(topic -> !topic.endsWith(".retry") && !topic.endsWith(".dlq"))
+                                    .distinct())
+                            .as("consumed topics missing from CONSUMED")
+                            .allMatch(CONSUMED::contains);
+                    assertThat(running.stream()
+                                    .filter(c -> c.getAssignedPartitions() == null
+                                            || c.getAssignedPartitions().isEmpty())
+                                    .map(MessageListenerContainer::getListenerId))
+                            .as("listener containers without partitions")
+                            .isEmpty();
+                });
     }
 
     @BeforeEach
