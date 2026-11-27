@@ -12,6 +12,8 @@ import org.springframework.web.client.HttpStatusCodeException;
 /** Maps exceptions of the OpenAI SDK, RestClient and Spring AI to the three kinds of {@link ProviderFailure}. */
 final class ProviderErrors {
 
+    static final Duration NO_CREDIT_PAUSE = Duration.ofHours(1);
+
     private ProviderErrors() {}
 
     static ProviderFailure map(String provider, Throwable error) {
@@ -47,6 +49,14 @@ final class ProviderErrors {
             String provider, int status, @Nullable Duration retryAfter, @Nullable Throwable cause) {
         if (status == 429) {
             return rateLimited(provider, retryAfter, cause);
+        }
+        if (status == 402) {
+            // Prepaid credit ran out (OpenRouter): skip the model for an hour instead of asking on every call.
+            return new ProviderFailure(
+                    ProviderFailure.Kind.RATE_LIMITED,
+                    provider + " answered 402 (no credit)",
+                    retryAfter != null ? retryAfter : NO_CREDIT_PAUSE,
+                    cause);
         }
         if (status >= 500 || status == 408) {
             return ProviderFailure.unavailable(provider + " answered " + status, cause);

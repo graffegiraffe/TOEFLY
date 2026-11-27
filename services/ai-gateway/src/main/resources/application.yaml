@@ -57,6 +57,10 @@ toefly:
       base-url: https://api.z.ai/api/paas/v4
       api-key: ${ZAI_API_KEY:}
       timeout: PT240S
+    openrouter:
+      base-url: https://openrouter.ai/api/v1
+      api-key: ${OPENROUTER_API_KEY:}
+      timeout: PT60S
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
     azure-speech:
@@ -112,6 +116,10 @@ toefly:
       - { model: "GROQ:openai/gpt-oss-120b", input-per-million: 0.15, output-per-million: 0.60 }
       - { model: "GROQ:openai/gpt-oss-20b", input-per-million: 0.075, output-per-million: 0.30 }
       - { model: "GROQ:qwen/qwen3.8-27b", input-per-million: 0.80, output-per-million: 4.00 }
+      # OpenRouter list prices on 2026-11-27 (cheapest host; the key has its own spend limit, ADR-0033).
+      - { model: "OPENROUTER:openai/gpt-oss-120b", input-per-million: 0.05, output-per-million: 0.25 }
+      - { model: "OPENROUTER:openai/gpt-oss-20b", input-per-million: 0.03, output-per-million: 0.13 }
+      - { model: "OPENROUTER:qwen/qwen3.8-27b", input-per-million: 0.06, output-per-million: 1.96 }
       - { model: "GROQ:whisper-large-v3-turbo", per-audio-hour: 0.04 }
       - { model: "GROQ:whisper-large-v3", per-audio-hour: 0.111 }
       - { model: "AZURE_SPEECH:pronunciation-assessment", per-audio-hour: 1.0 }

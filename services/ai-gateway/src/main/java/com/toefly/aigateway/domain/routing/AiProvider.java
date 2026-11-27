@@ -4,6 +4,7 @@ package com.toefly.aigateway.domain.routing;
 public enum AiProvider {
     GROQ,
     ZAI,
+    OPENROUTER,
     AZURE_SPEECH,
     OLLAMA;
 

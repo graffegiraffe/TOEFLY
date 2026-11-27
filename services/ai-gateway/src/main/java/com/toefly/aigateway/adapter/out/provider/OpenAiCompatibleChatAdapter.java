@@ -11,10 +11,14 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 
 /**
- * A provider with an OpenAI-compatible endpoint (Groq, Z.ai) through Spring AI {@link OpenAiChatModel} (§2.1, ADR-0032).
+ * A provider with an OpenAI-compatible endpoint (Groq, Z.ai, OpenRouter) through Spring AI {@link OpenAiChatModel}
+ * (§2.1, ADR-0032, ADR-0033).
  * Retries of the SDK are off: the fallback chain owns repeats, quota and breakers.
  */
 public class OpenAiCompatibleChatAdapter extends SpringAiChatSupport {
+
+    static final Map<String, Object> OPENROUTER_ROUTING =
+            Map.of("provider", Map.of("require_parameters", true, "data_collection", "deny"));
 
     private final AiProvider provider;
     private final String keyName;
@@ -78,6 +82,11 @@ public class OpenAiCompatibleChatAdapter extends SpringAiChatSupport {
         if (provider == AiProvider.ZAI) {
             // GLM thinks by default and spends the output budget on it; grading needs the JSON answer (ADR-0032).
             options.extraBody(Map.of("thinking", Map.of("type", "disabled")));
+        }
+        if (provider == AiProvider.OPENROUTER) {
+            // Route only to hosts that honour every parameter (JSON mode, reasoning effort) and keep no prompts
+            // (ADR-0033).
+            options.extraBody(OPENROUTER_ROUTING);
         }
         if (request.jsonSchema() != null) {
             OpenAiChatModel.ResponseFormat format = new OpenAiChatModel.ResponseFormat();
