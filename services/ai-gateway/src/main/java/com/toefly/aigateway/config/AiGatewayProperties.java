@@ -13,6 +13,7 @@ public record AiGatewayProperties(
         @Nullable String routesConfig,
         @DefaultValue Groq groq,
         @DefaultValue Zai zai,
+        @DefaultValue OpenRouter openRouter,
         @DefaultValue Ollama ollama,
         @DefaultValue AzureSpeech azureSpeech,
         @DefaultValue Quotas quotas,
@@ -44,6 +45,12 @@ public record AiGatewayProperties(
             @DefaultValue("https://api.z.ai/api/paas/v4") String baseUrl,
             @DefaultValue("") String apiKey,
             @DefaultValue("PT240S") Duration timeout) {}
+
+    /** OpenRouter through its OpenAI-compatible API: paid fallback of the same open models as Groq (ADR-0033). */
+    public record OpenRouter(
+            @DefaultValue("https://openrouter.ai/api/v1") String baseUrl,
+            @DefaultValue("") String apiKey,
+            @DefaultValue("PT60S") Duration timeout) {}
 
     public record Ollama(
             @DefaultValue("http://localhost:11434") String baseUrl) {}

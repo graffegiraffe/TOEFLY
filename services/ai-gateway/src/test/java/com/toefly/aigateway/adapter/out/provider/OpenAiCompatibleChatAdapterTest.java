@@ -50,6 +50,16 @@ class OpenAiCompatibleChatAdapterTest {
     }
 
     @Test
+    @DisplayName("OpenRouter calls require hosts that honour every parameter and keep no prompts (ADR-0033)")
+    void openRouterPinsHostRouting() {
+        OpenAiChatOptions options = (OpenAiChatOptions) adapter(AiProvider.OPENROUTER, "k")
+                .options(request(AiProvider.OPENROUTER, "openai/gpt-oss-120b"), false);
+        assertThat(options.getExtraBody())
+                .containsEntry("provider", Map.of("require_parameters", true, "data_collection", "deny"));
+        assertThat(options.getReasoningEffort()).isEqualTo("low");
+    }
+
+    @Test
     @DisplayName("a missing key is refused with the name of its variable")
     void missingKeyIsRefused() {
         assertThatThrownBy(() -> adapter(AiProvider.ZAI, "").model(request(AiProvider.ZAI, "glm-4.7-flash")))

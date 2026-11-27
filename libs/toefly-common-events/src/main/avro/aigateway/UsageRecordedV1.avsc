@@ -13,7 +13,7 @@
     {"name": "callerService", "type": "string", "doc": "Service that asked for the call."},
     {"name": "feature", "type": ["null", "string"], "default": null, "doc": "Product feature the call is accounted to, e.g. AI_WRITING_CHECK."},
     {"name": "useCase", "type": "string", "doc": "AiUseCase of the call."},
-    {"name": "provider", "type": {"type": "enum", "name": "AiProvider", "namespace": "com.toefly.events.common", "symbols": ["GROQ", "AZURE_SPEECH", "OLLAMA", "ZAI"]}, "doc": "Provider that answered, or the last one tried."},
+    {"name": "provider", "type": {"type": "enum", "name": "AiProvider", "namespace": "com.toefly.events.common", "symbols": ["GROQ", "AZURE_SPEECH", "OLLAMA", "ZAI", "OPENROUTER"]}, "doc": "Provider that answered, or the last one tried."},
     {"name": "model", "type": "string", "doc": "Provider model id."},
     {"name": "promptKey", "type": ["null", "string"], "default": null, "doc": "Prompt of the registry, if any."},
     {"name": "promptVersion", "type": ["null", "int"], "default": null, "doc": "Version of that prompt."},

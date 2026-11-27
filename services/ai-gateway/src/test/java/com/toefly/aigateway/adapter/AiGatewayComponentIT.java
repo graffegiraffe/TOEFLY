@@ -89,6 +89,9 @@ import tools.jackson.databind.json.JsonMapper;
             "toefly.ai.prompts.require-evals=true",
             "toefly.ai.resilience.retry-jitter=PT0S",
             "toefly.ai.groq.api-key=test-groq-key",
+            // Keys from the developer shell must not reach real paid providers (ADR-0033).
+            "toefly.ai.openrouter.api-key=",
+            "toefly.ai.zai.api-key=",
             "toefly.ai.azure-speech.key=test-azure-key"
         })
 @AutoConfigureMockMvc
@@ -261,7 +264,8 @@ class AiGatewayComponentIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.text").value("Reserve model says hello, Alina."))
                 .andExpect(jsonPath("$.aiStamp.provider").value("OLLAMA"))
-                .andExpect(jsonPath("$.aiStamp.fallbackDepth").value(2));
+                // Groq gpt-oss-20b, OpenRouter gpt-oss-20b (no key here), Groq qwen, then Ollama (ADR-0033).
+                .andExpect(jsonPath("$.aiStamp.fallbackDepth").value(3));
 
         assertThat(fallbacks()).isEqualTo(before + 1);
         // gpt-oss-20b and qwen: one call and one repeat each

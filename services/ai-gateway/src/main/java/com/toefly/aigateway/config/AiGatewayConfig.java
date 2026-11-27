@@ -108,6 +108,16 @@ class AiGatewayConfig {
     }
 
     @Bean
+    OpenAiCompatibleChatAdapter openRouterChatAdapter(AiGatewayProperties properties) {
+        return new OpenAiCompatibleChatAdapter(
+                AiProvider.OPENROUTER,
+                "OPENROUTER_API_KEY",
+                properties.openRouter().baseUrl(),
+                properties.openRouter().apiKey(),
+                properties.openRouter().timeout());
+    }
+
+    @Bean
     OllamaApi ollamaApi(AiGatewayProperties properties) {
         // Ollama speaks HTTP/1.1; the default h2c upgrade of the JDK client is refused by some proxies.
         java.net.http.HttpClient http = java.net.http.HttpClient.newBuilder()
